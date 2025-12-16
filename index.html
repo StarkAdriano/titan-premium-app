@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#020617" />
+    <meta name="description" content="Ferramenta de análise institucional para Traders de Forex." />
+    <title>Titan Premium - Institutional Brain</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              titan: {
+                dark: '#0f172a', // Slate 900
+                darker: '#020617', // Slate 950
+                card: '#1e293b', // Slate 800
+                gold: '#d4af37', // Metallic Gold
+                goldLight: '#fcd34d',
+                green: '#10b981', // Emerald 500
+                red: '#ef4444', // Red 500
+                text: '#f1f5f9', // Slate 100
+                muted: '#94a3b8', // Slate 400
+              }
+            },
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      /* Custom Scrollbar for dark theme */
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #0f172a; 
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #334155; 
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #475569; 
+      }
+      body {
+        background-color: #020617;
+        color: #f1f5f9;
+        -webkit-tap-highlight-color: transparent;
+      }
+      input[type=number]::-webkit-inner-spin-button, 
+      input[type=number]::-webkit-outer-spin-button { 
+        -webkit-appearance: none; 
+        margin: 0; 
+      }
+    </style>
+</head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
