@@ -4,6 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta name="theme-color" content="#020617" />
+    
+    <!-- Configurações PWA para iPhone (iOS) -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Titan Premium" />
+
     <meta name="description" content="Ferramenta de análise institucional para Traders de Forex." />
     <title>Titan Premium - Institutional Brain</title>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -51,6 +57,8 @@
         background-color: #020617;
         color: #f1f5f9;
         -webkit-tap-highlight-color: transparent;
+        /* Evitar bounce scroll no iOS */
+        overscroll-behavior-y: none;
       }
       input[type=number]::-webkit-inner-spin-button, 
       input[type=number]::-webkit-outer-spin-button { 
