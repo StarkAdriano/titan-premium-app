@@ -1,13 +1,13 @@
-
 import { Asset, SignalStatus, CourseProduct } from './types';
 
 // Mock Data for Assets - ONLY EURUSD
+// Atualizado para 1.05450 para ser mais próximo da realidade atual do que 1.08/1.17
 export const INITIAL_ASSETS: Asset[] = [
   {
     id: '1',
     symbol: 'EURUSD',
     name: 'Euro vs US Dollar',
-    price: '1.08450', 
+    price: '1.05450', 
     status: SignalStatus.WAIT,
     shortSummary: 'Aguardando input do trader para análise.',
     detailedAnalysis: 'Insira o preço atual da sua corretora para processar a análise institucional.',

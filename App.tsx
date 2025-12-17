@@ -43,14 +43,19 @@ const App: React.FC = () => {
   const [user, setUser] = useState<UserProfile | null>(null);
   
   // --- PERSISTENT STATE FOR DASHBOARD ---
+  // Updated with referencePrice and trendBias
   const [dashboardState, setDashboardState] = useState<{
       userPrice: string;
       isRevealed: boolean;
       analysisSnapshot: AnalysisResult | null;
+      referencePrice: string;
+      trendBias: 'BULLISH' | 'BEARISH';
   }>({
       userPrice: '',
       isRevealed: false,
-      analysisSnapshot: null
+      analysisSnapshot: null,
+      referencePrice: '',
+      trendBias: 'BEARISH'
   });
 
   // Single Source of Truth for Assets
