@@ -16,9 +16,14 @@ interface DashboardProps {
   onUpdateState: (newState: DashboardState) => void;
 }
 
-// --- SCRIPT TRADINGVIEW CORRIGIDO (VERSÃO V5 FINAL) ---
-// Este script usa input.float e cores hex para evitar erros de compilação
-const TRADINGVIEW_SCRIPT = `//@version=5
+// --- GERADOR DINÂMICO DE SCRIPT TRADINGVIEW ---
+// Agora recebe os parâmetros do App para manter o gráfico sincronizado
+const getDynamicPineScript = (currentRef: string, currentBias: 'BULLISH' | 'BEARISH') => {
+    // Normalização dos valores
+    const price = currentRef.replace(',', '.') || '1.05450';
+    const biasPine = currentBias === 'BULLISH' ? 'Bullish' : 'Bearish';
+
+    return `//@version=5
 indicator("Titan Premium - Institutional Setup", overlay=true, shorttitle="TITAN PRO")
 
 // --- CORES INSTITUCIONAIS ---
@@ -26,9 +31,9 @@ var titanGold = color.new(#d4af37, 0)
 var redZone = color.new(#ef4444, 90)   // Vermelho transparente
 var greenZone = color.new(#10b981, 90) // Verde transparente
 
-// --- CONFIGURAÇÃO ---
-refPrice = input.float(1.05450, title="Preço de Referência (Fair Value)")
-trendBias = input.string("Bearish", title="Tendência Macro", options=["Bullish", "Bearish"])
+// --- CONFIGURAÇÃO SINCRONIZADA COM O APP ---
+refPrice = input.float(${price}, title="Preço de Referência (Fair Value)")
+trendBias = input.string("${biasPine}", title="Tendência Macro", options=["Bullish", "Bearish"])
 showZones = input.bool(true, title="Mostrar Zonas Premium/Discount")
 
 // --- LÓGICA ---
@@ -60,6 +65,7 @@ if barstate.islast
     table.cell(panel, 1, 1, trendBias, bgcolor=trendBias == "Bullish" ? color.green : color.red, text_color=color.white)
     table.cell(panel, 0, 2, "Zona Atual:", bgcolor=color.black, text_color=color.white)
     table.cell(panel, 1, 2, isPremium ? "PREMIUM" : "DESCONTO", bgcolor=isPremium ? color.red : color.green, text_color=color.white)`;
+};
 
 // --- LÓGICA TITAN PREMIUM (REFINADA) ---
 const generateTitanAnalysis = (
@@ -241,8 +247,13 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
       setIsEditingRef(true);
   };
 
+  // Botão Inteligente: Gera o script com os valores ATUAIS do Dashboard
   const handleCopyScript = () => {
-      navigator.clipboard.writeText(TRADINGVIEW_SCRIPT);
+      const dynamicScript = getDynamicPineScript(
+          savedState.referencePrice || asset.price,
+          savedState.trendBias
+      );
+      navigator.clipboard.writeText(dynamicScript);
       setScriptCopied(true);
       setTimeout(() => setScriptCopied(false), 3000);
   };
