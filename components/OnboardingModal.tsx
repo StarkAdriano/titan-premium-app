@@ -1,7 +1,9 @@
+
 import React, { useState } from 'react';
-import { UserProfile } from '../types';
+import { UserProfile, Language } from '../types';
 import { INSTAGRAM_HANDLE, INSTAGRAM_LINK } from '../constants';
-import { Check, ArrowRight, Instagram, ShieldAlert, Fingerprint } from 'lucide-react';
+import { translations, languages } from '../i18n';
+import { Check, ArrowRight, Instagram, ShieldAlert, Fingerprint, Globe, ChevronDown } from 'lucide-react';
 
 interface OnboardingModalProps {
   onComplete: (data: Partial<UserProfile>) => void;
@@ -11,21 +13,23 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ onComplete }) => {
   const [name, setName] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
   const [followedInstagram, setFollowedInstagram] = useState(false);
+  const [currentLang, setCurrentLang] = useState<Language>('pt');
+  const [showLangMenu, setShowLangMenu] = useState(false);
+
+  const t = translations[currentLang];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    // ADMIN BACKDOOR / BYPASS
     if (name.trim().toLowerCase() === 'titanmaster') {
         onComplete({ 
             name: 'Desenvolvedor Titan', 
-            whatsapp: 'N/A - Admin Access' 
+            whatsapp: 'N/A - CEO Access',
+            language: currentLang
         });
         return;
     }
-
     if (name && whatsapp && followedInstagram) {
-      onComplete({ name, whatsapp });
+      onComplete({ name, whatsapp, language: currentLang });
     }
   };
 
@@ -35,99 +39,117 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ onComplete }) => {
 
   const isFormValid = (name.length > 2 && whatsapp.length > 8 && followedInstagram);
   const isAdminBypass = name.trim().toLowerCase() === 'titanmaster';
+  const selectedLangData = languages.find(l => l.code === currentLang)!;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-md p-4">
-      <div className="bg-titan-card border border-titan-gold/30 rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/98 backdrop-blur-xl p-4 overflow-y-auto">
+      <div className="bg-titan-card border border-titan-gold/30 rounded-[2.5rem] w-full max-w-sm overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.8)] relative">
         
-        {/* Header */}
-        <div className="bg-gradient-to-r from-titan-dark to-titan-card p-6 border-b border-titan-card relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-4 opacity-10">
-             <ShieldAlert size={60} className="text-titan-gold" />
-          </div>
-          <h2 className="text-2xl font-bold text-titan-gold mb-1">Acesso Restrito</h2>
-          <p className="text-xs text-titan-muted uppercase tracking-wider">
-            Titan Premium Setup
-          </p>
+        {/* Language Selection Bar */}
+        <div className="absolute top-4 right-4 z-50">
+           <button 
+             onClick={() => setShowLangMenu(!showLangMenu)}
+             className="bg-black/40 backdrop-blur-md border border-white/10 px-3 py-2 rounded-xl flex items-center gap-2 text-[10px] font-black text-white uppercase tracking-widest hover:border-titan-gold/50 transition-all"
+           >
+             <Globe size={12} className="text-titan-gold" />
+             {selectedLangData.flag}
+             <ChevronDown size={10} className={`transition-transform ${showLangMenu ? 'rotate-180' : ''}`} />
+           </button>
+           
+           {showLangMenu && (
+             <div className="absolute top-full right-0 mt-2 w-40 bg-titan-dark border border-white/10 rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                <div className="max-h-48 overflow-y-auto custom-scrollbar">
+                  {languages.map(l => (
+                    <button 
+                      key={l.code}
+                      onClick={() => { setCurrentLang(l.code as Language); setShowLangMenu(false); }}
+                      className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/5 transition-colors text-[9px] font-black text-white uppercase border-b border-white/5 last:border-0"
+                    >
+                      <span>{l.name}</span>
+                      <span>{l.flag}</span>
+                    </button>
+                  ))}
+                </div>
+             </div>
+           )}
         </div>
 
-        <div className="p-6">
-          <p className="text-sm text-gray-300 mb-4 leading-relaxed">
-            Para liberar seus <strong className="text-white">30 dias gratuitos</strong>, preencha seus dados reais e siga nosso perfil oficial.
-          </p>
-
-          <div className="bg-red-900/10 border border-red-900/30 p-2 rounded mb-6 flex items-start gap-2">
-            <Fingerprint size={16} className="text-red-400 shrink-0 mt-0.5" />
-            <p className="text-[10px] text-red-300 leading-tight">
-               <strong>Atenção:</strong> Seu dispositivo será vinculado ao seu período de teste. Tentativas de fraude ou múltiplos cadastros bloquearão o acesso permanentemente.
-            </p>
+        <div className="bg-gradient-to-br from-titan-dark to-black p-8 border-b border-white/5 relative overflow-hidden">
+          <div className="absolute -top-10 -right-10 opacity-10">
+             <ShieldAlert size={120} className="text-titan-gold" />
           </div>
+          <h2 className="text-3xl font-black text-titan-gold italic tracking-tighter mb-1 uppercase leading-none">{t.welcome}</h2>
+          <p className="text-[9px] text-titan-muted uppercase tracking-[0.3em] font-bold">Titan Institutional Protocol</p>
+        </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-xs font-semibold uppercase text-titan-gold mb-1">Nome Completo</label>
+        <div className="p-8 space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="space-y-1">
+              <label className="text-[9px] font-black uppercase text-titan-gold tracking-widest ml-1">{t.name_placeholder}</label>
               <input
                 type="text"
                 required
-                className="w-full bg-titan-dark border border-titan-card focus:border-titan-gold rounded-lg p-3 text-white placeholder-gray-600 outline-none transition-colors"
-                placeholder="Nome e Sobrenome"
+                className="w-full bg-black/40 border border-white/5 focus:border-titan-gold/50 rounded-2xl p-4 text-sm text-white placeholder-gray-700 outline-none transition-all shadow-inner font-bold"
+                placeholder="Ex: John Wick"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
               />
             </div>
 
             {!isAdminBypass && (
-                <>
-                <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                  <label className="block text-xs font-semibold uppercase text-titan-gold mb-1">WhatsApp</label>
-                  <input
-                    type="tel"
-                    required
-                    className="w-full bg-titan-dark border border-titan-card focus:border-titan-gold rounded-lg p-3 text-white placeholder-gray-600 outline-none transition-colors"
-                    placeholder="(DDD) 99999-9999"
-                    value={whatsapp}
-                    onChange={(e) => setWhatsapp(e.target.value)}
-                  />
-                </div>
+                <div className="space-y-5 animate-in fade-in slide-in-from-top-4 duration-500">
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-black uppercase text-titan-gold tracking-widest ml-1">{t.whatsapp_placeholder}</label>
+                    <input
+                      type="tel"
+                      required
+                      className="w-full bg-black/40 border border-white/5 focus:border-titan-gold/50 rounded-2xl p-4 text-sm text-white placeholder-gray-700 outline-none transition-all shadow-inner font-bold"
+                      placeholder="+1 234..."
+                      value={whatsapp}
+                      onChange={(e) => setWhatsapp(e.target.value)}
+                    />
+                  </div>
 
-                <div className="pt-2 pb-4 animate-in fade-in slide-in-from-top-4 duration-500">
-                   <label className="block text-xs font-semibold uppercase text-titan-gold mb-2">Validação de Segurança</label>
-                   
-                   <button
-                    type="button"
-                    onClick={handleInstagramClick}
-                    className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-pink-900/40 to-purple-900/40 hover:from-pink-900/60 hover:to-purple-900/60 border border-pink-500/30 text-pink-100 py-3 rounded-lg transition-all mb-3 group shadow-lg"
-                   >
-                     <Instagram size={18} className="group-hover:scale-110 transition-transform" />
-                     <span className="font-semibold">Seguir {INSTAGRAM_HANDLE}</span>
-                   </button>
+                  <div className="space-y-3">
+                     <label className="text-[9px] font-black uppercase text-titan-gold tracking-widest ml-1">{t.security_val}</label>
+                     <button
+                      type="button"
+                      onClick={handleInstagramClick}
+                      className="w-full flex items-center justify-between bg-gradient-to-r from-pink-600/10 to-purple-600/10 border border-pink-500/20 text-white p-4 rounded-2xl hover:border-pink-500/50 transition-all group"
+                     >
+                       <div className="flex items-center gap-3">
+                         <Instagram size={20} className="text-pink-500" />
+                         <span className="text-[10px] font-black uppercase tracking-widest">{t.follow_insta} {INSTAGRAM_HANDLE}</span>
+                       </div>
+                       <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                     </button>
 
-                   <div 
-                     className={`flex items-center gap-3 bg-titan-dark p-3 rounded-lg border cursor-pointer transition-colors ${followedInstagram ? 'border-titan-gold bg-titan-gold/10' : 'border-titan-card hover:border-gray-500'}`} 
-                     onClick={() => setFollowedInstagram(!followedInstagram)}
-                   >
-                     <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${followedInstagram ? 'bg-titan-gold border-titan-gold' : 'border-gray-500 bg-transparent'}`}>
-                        {followedInstagram && <Check size={14} className="text-black" />}
+                     <div 
+                       className={`flex items-center gap-4 bg-black/40 p-4 rounded-2xl border transition-all cursor-pointer ${followedInstagram ? 'border-titan-gold/40' : 'border-white/5'}`} 
+                       onClick={() => setFollowedInstagram(!followedInstagram)}
+                     >
+                       <div className={`w-6 h-6 rounded-lg border flex items-center justify-center transition-all ${followedInstagram ? 'bg-titan-gold border-titan-gold' : 'border-white/10 bg-transparent'}`}>
+                          {followedInstagram && <Check size={16} className="text-black" />}
+                       </div>
+                       <span className={`text-[9px] font-black uppercase tracking-widest leading-tight ${followedInstagram ? 'text-white' : 'text-titan-muted'}`}>
+                          {t.confirm_follow}
+                       </span>
                      </div>
-                     <span className={`text-xs select-none ${followedInstagram ? 'text-titan-gold font-bold' : 'text-gray-400'}`}>
-                        Confirmo que segui o perfil.
-                     </span>
-                   </div>
+                  </div>
                 </div>
-                </>
             )}
 
             <button
               type="submit"
               disabled={!isFormValid && !isAdminBypass}
-              className={`w-full py-4 rounded-lg font-bold text-sm uppercase tracking-wide flex items-center justify-center gap-2 transition-all ${
+              className={`w-full py-5 rounded-2xl font-black text-xs uppercase tracking-[0.3em] flex items-center justify-center gap-3 transition-all ${
                 isFormValid || isAdminBypass
-                  ? 'bg-titan-gold text-black hover:bg-titan-goldLight shadow-[0_0_20px_rgba(212,175,55,0.4)] scale-100' 
-                  : 'bg-titan-card text-gray-600 cursor-not-allowed opacity-50'
+                  ? 'bg-titan-gold text-black shadow-[0_10px_30px_rgba(212,175,55,0.3)] active:scale-95' 
+                  : 'bg-white/5 text-titan-muted cursor-not-allowed grayscale'
               }`}
             >
-              {isAdminBypass ? 'Acesso Admin' : 'Ativar Teste Único'}
-              <ArrowRight size={18} />
+              {t.start_trial}
+              <Fingerprint size={18} />
             </button>
           </form>
         </div>
