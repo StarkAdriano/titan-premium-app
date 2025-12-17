@@ -25,7 +25,6 @@ export interface Asset {
   history: HistoryEntry[];
 }
 
-// New Interface for Persisting Analysis
 export interface AnalysisResult {
     status: SignalStatus;
     shortSummary: string;
@@ -33,11 +32,26 @@ export interface AnalysisResult {
     validationMsg: string;
     validationStatus: 'OK' | 'WARNING';
     referencePrice: string;
-    // New Fields for Trade Parameters
     stopLoss?: string;
     takeProfit?: string;
     rrRatio?: string;
-    commandLine?: string; // The raw copy-paste string
+    zoneContext?: 'PREMIUM' | 'DISCOUNT' | 'EQUILIBRIUM';
+}
+
+export interface Lesson {
+  id: string;
+  title: string;
+  duration: string;
+  videoUrl: string;
+  completed: boolean;
+  pdfUrl?: string;
+}
+
+export interface CourseModule {
+  id: string;
+  title: string;
+  description: string;
+  lessons: Lesson[];
 }
 
 export interface UserProfile {
@@ -47,9 +61,9 @@ export interface UserProfile {
   planType: 'FREE_TRIAL' | 'PRO' | 'EXPIRED';
   trialStartDate: string;
   trialEndDate: string;
-  // New fields for recurring subscription logic
   subscriptionEndDate?: string; 
-  redeemedCodes: string[]; // List of codes already used by this user
+  redeemedCodes: string[];
+  courseProgress?: Record<string, boolean>; // lessonId -> completed
 }
 
 export interface CourseProduct {
@@ -58,8 +72,6 @@ export interface CourseProduct {
   description: string;
   priceDisplay?: string;
   stripeLink: string;
-  tag: string; // e.g. "Assinatura", "Mentoria"
-  priority: number; // For sorting
+  tag: string;
+  priority: number;
 }
-
-export type RiskProfile = 'MODERATE' | 'AGGRESSIVE';
