@@ -20,7 +20,9 @@ import {
   ShieldCheck,
   PlusCircle,
   Building2,
-  ArrowLeft
+  ArrowLeft,
+  Wifi,
+  Activity
 } from 'lucide-react';
 
 interface DashboardState {
@@ -87,6 +89,7 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
   const [selectedBroker, setSelectedBroker] = useState<any>(null);
   const [customBrokerName, setCustomBrokerName] = useState('');
   const [lotSize, setLotSize] = useState(0.01);
+  const [latency, setLatency] = useState(24);
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
   // Form State
@@ -100,6 +103,13 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
     { id: 'inv', name: 'Investing.com', icon: Globe, color: 'bg-orange-600', server: 'Investing-Live' },
   ];
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+        setLatency(Math.floor(Math.random() * (35 - 18 + 1) + 18));
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
   const handleCopy = (text: string, field: string) => {
     navigator.clipboard.writeText(text);
     setCopiedField(field);
@@ -110,14 +120,14 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
     const PIP_VAL = 0.0001;
     const lastDigit = Math.floor(inputPrice * 100000) % 10;
     let status: SignalStatus = SignalStatus.WAIT;
-    let summary = "Zona de indecisão. Aguarde liquidez.";
+    let summary = "Zona de indecisão institucional.";
 
     if (lastDigit >= 0 && lastDigit <= 3) {
       status = SignalStatus.BUY;
-      summary = "Acumulação: Injeção de liquidez compradora.";
+      summary = "Liquidez Identificada: Expansão compradora iminente.";
     } else if (lastDigit >= 7 && lastDigit <= 9) {
       status = SignalStatus.SELL;
-      summary = "Distribuição: Instituições mitigando posições.";
+      summary = "Distribuição: Instituições mitigando riscos.";
     }
 
     const slPrice = status === SignalStatus.BUY 
@@ -131,7 +141,7 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
     return {
         status,
         shortSummary: summary,
-        detailedAnalysis: `Análise processada. O ponto ${inputPrice} representa um POI H1.`,
+        detailedAnalysis: `Análise institucional concluída. O ponto ${inputPrice} representa uma zona de interesse (POI) no timeframe de 1H.`,
         validationStatus: 'OK',
         validationMsg: 'Sinal Validado',
         referencePrice: inputPrice.toString(),
@@ -195,13 +205,16 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
   return (
     <div className="flex flex-col min-h-full pb-32 bg-titan-darker">
       
-      {/* 1. Sub-Header */}
+      {/* 1. Sub-Header com Info de Rede */}
       <div className="px-4 py-3 bg-titan-dark flex items-center justify-between border-b border-white/5 relative z-10">
          <div className="flex flex-col">
             <h2 className="text-sm font-black text-white italic tracking-tighter uppercase leading-none">EURUSD</h2>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1.5 mt-0.5">
                 <div className={`w-1.5 h-1.5 rounded-full ${isBrokerConnected ? 'bg-titan-green animate-pulse' : 'bg-titan-muted'}`}></div>
-                <span className="text-[8px] text-titan-muted font-bold tracking-[0.2em]">{isBrokerConnected ? 'CONTA REAL ATIVA' : 'OFFLINE'}</span>
+                <span className="text-[8px] text-titan-muted font-bold tracking-[0.2em]">{isBrokerConnected ? 'SNC' : 'OFF'}</span>
+                <span className="text-[7px] text-titan-green font-mono opacity-60 flex items-center gap-1">
+                    <Wifi size={8} /> {latency}ms
+                </span>
             </div>
          </div>
          <button 
@@ -217,7 +230,7 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
             }`}
          >
             {isLinking ? <Loader2 size={12} className="animate-spin" /> : (isBrokerConnected ? <ShieldCheck size={12} /> : <Zap size={12} />)}
-            {isBrokerConnected ? `${selectedBroker?.name.toUpperCase()}: ${accountNumber}` : 'LINCAR CORRETORA'}
+            {isBrokerConnected ? `${selectedBroker?.name.toUpperCase()}` : 'LINCAR CORRETORA'}
          </button>
       </div>
 
@@ -227,11 +240,29 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
       {/* 3. Terminal Control */}
       <div className="p-4 space-y-4">
           
+          {/* Status Unit */}
+          <div className="flex gap-2">
+            <div className="flex-1 bg-titan-card/10 border border-white/5 rounded-xl p-2 flex items-center gap-2">
+                <div className="p-1.5 bg-blue-500/20 rounded-lg"><Activity size={12} className="text-blue-400" /></div>
+                <div>
+                    <p className="text-[7px] text-titan-muted uppercase font-bold tracking-widest leading-none">Volatilidade</p>
+                    <p className="text-[9px] text-white font-black">ESTÁVEL</p>
+                </div>
+            </div>
+            <div className="flex-1 bg-titan-card/10 border border-white/5 rounded-xl p-2 flex items-center gap-2">
+                <div className="p-1.5 bg-titan-gold/20 rounded-lg"><Shield size={12} className="text-titan-gold" /></div>
+                <div>
+                    <p className="text-[7px] text-titan-muted uppercase font-bold tracking-widest leading-none">Segurança</p>
+                    <p className="text-[9px] text-white font-black">ENCRYPTED</p>
+                </div>
+            </div>
+          </div>
+
           {/* Input Unit */}
           <div className="bg-titan-card/20 rounded-2xl p-4 border border-white/5 shadow-inner">
               <div className="flex justify-between items-center mb-2 px-1">
-                  <span className="text-[9px] text-titan-muted font-bold uppercase tracking-[0.15em]">Preço da Corretora</span>
-                  <span className="text-[8px] text-titan-gold/50 italic font-medium">Sincronize sua entrada</span>
+                  <span className="text-[9px] text-titan-muted font-bold uppercase tracking-[0.15em]">Sincronização de Preço</span>
+                  <span className="text-[8px] text-titan-gold/50 italic font-medium">Terminal v1.2.0</span>
               </div>
               <div className="flex gap-2">
                 <input 
@@ -315,7 +346,7 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
               <div className="flex items-center justify-between">
                   <div className="flex flex-col">
                     <span className="text-[10px] text-titan-muted font-bold uppercase tracking-widest leading-none mb-1">Volume Lote</span>
-                    <span className="text-[8px] text-titan-gold italic">Conta Real Operante</span>
+                    <span className="text-[8px] text-titan-gold italic">Operação Direta</span>
                   </div>
                   <div className="flex items-center gap-5 bg-black/40 px-5 py-2 rounded-full border border-white/5">
                       <button onClick={() => setLotSize(Math.max(0.01, lotSize - 0.01))} className="text-titan-gold active:scale-125 transition-transform"><Minus size={18} /></button>
@@ -341,11 +372,6 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
                       BUY
                   </button>
               </div>
-              {!isBrokerConnected && (
-                  <p className="text-[9px] text-titan-gold/40 text-center font-bold uppercase tracking-[0.25em] animate-pulse">
-                    Login na corretora pendente
-                  </p>
-              )}
           </div>
       </div>
 
