@@ -1,7 +1,23 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Asset, SignalStatus, AnalysisResult } from '../types';
-import { TrendingUp, TrendingDown, CheckCircle2, Activity, RotateCcw, Shield, Zap, Plus, Minus, Monitor, ChevronRight, Globe, BarChart2, Copy, Loader2 } from 'lucide-react';
+import { 
+  TrendingUp, 
+  TrendingDown, 
+  CheckCircle2, 
+  Activity, 
+  RotateCcw, 
+  Shield, 
+  Zap, 
+  Plus, 
+  Minus, 
+  Monitor, 
+  ChevronRight, 
+  Globe, 
+  BarChart2, 
+  Copy as CopyIcon, 
+  Loader2 
+} from 'lucide-react';
 
 interface DashboardState {
     userPrice: string;
@@ -48,7 +64,7 @@ const TradingViewChart = () => {
   }, []);
 
   return (
-    <div className="w-full h-[360px] bg-black border-b border-titan-card relative z-0" ref={container}>
+    <div className="w-full h-[380px] bg-black border-b border-titan-card relative z-0 overflow-hidden" ref={container}>
       <div id="tradingview_titan" className="h-full w-full"></div>
     </div>
   );
@@ -130,7 +146,7 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
   return (
     <div className="flex flex-col min-h-full pb-32">
       
-      {/* 1. Dashboard Sub-Header (Colado no gráfico) */}
+      {/* 1. Header de Controle (Colado no gráfico) */}
       <div className="px-4 py-3 bg-titan-dark flex items-center justify-between border-b border-white/5 relative z-10">
          <div className="flex items-center gap-2">
             <h2 className="text-xl font-black text-white italic tracking-tighter">EURUSD</h2>
@@ -157,17 +173,17 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
          </button>
       </div>
 
-      {/* 2. TradingView Chart (Sem margens extras) */}
+      {/* 2. TradingView Widget (Alinhado Milimetricamente) */}
       <TradingViewChart />
 
-      {/* 3. Terminal Desk (Só aparece após lincar ou para incentivar o uso) */}
+      {/* 3. Painel de Execução e Validação */}
       <div className="bg-titan-darker p-4 space-y-4">
           
-          {/* Validador de Preço - Essencial para o cálculo */}
+          {/* Campo de Input de Preço Real */}
           <div className="bg-titan-card/40 rounded-xl p-4 border border-white/5">
               <div className="flex justify-between items-center mb-2">
                   <span className="text-[9px] text-titan-gold font-bold uppercase tracking-widest">Preço do seu Gráfico</span>
-                  <span className="text-[9px] text-titan-muted italic">Insira para validar</span>
+                  <span className="text-[9px] text-titan-muted italic">Validar ponto de entrada</span>
               </div>
               <div className="flex gap-2">
                 <input 
@@ -195,39 +211,40 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
               </div>
           </div>
 
-          {/* SINAL EM DESTAQUE (BOX PRINCIPAL) */}
+          {/* SINAL GIGANTE (VISIBILIDADE MÁXIMA) */}
           {savedState.isRevealed && savedState.analysisSnapshot && (
-              <div className="animate-in slide-in-from-top-4 duration-500 space-y-4">
-                  <div className={`p-6 rounded-2xl border-4 text-center shadow-xl bg-black/40 backdrop-blur-md ${
-                      savedState.analysisSnapshot.status === SignalStatus.BUY ? 'border-titan-green shadow-green-900/20' : 
-                      savedState.analysisSnapshot.status === SignalStatus.SELL ? 'border-titan-red shadow-red-900/20' : 'border-titan-gold shadow-gold-900/20'
+              <div className="animate-in zoom-in-95 duration-500 space-y-4">
+                  <div className={`p-8 rounded-2xl border-4 text-center shadow-[0_0_30px_rgba(0,0,0,0.5)] bg-black/60 backdrop-blur-xl ${
+                      savedState.analysisSnapshot.status === SignalStatus.BUY ? 'border-titan-green shadow-green-900/30' : 
+                      savedState.analysisSnapshot.status === SignalStatus.SELL ? 'border-titan-red shadow-red-900/30' : 'border-titan-gold shadow-gold-900/30'
                   }`}>
-                      <h3 className={`text-6xl font-black italic tracking-tighter ${
+                      <span className="text-[10px] text-titan-muted font-bold uppercase tracking-[0.3em] mb-2 block">Análise Titan Concluída</span>
+                      <h3 className={`text-7xl font-black italic tracking-tighter drop-shadow-lg ${
                           savedState.analysisSnapshot.status === SignalStatus.BUY ? 'text-titan-green' : 
                           savedState.analysisSnapshot.status === SignalStatus.SELL ? 'text-titan-red' : 'text-titan-gold'
                       }`}>
                           {savedState.analysisSnapshot.status}
                       </h3>
-                      <p className="text-white font-bold text-xs mt-2 uppercase tracking-tight">{savedState.analysisSnapshot.shortSummary}</p>
+                      <p className="text-white font-bold text-xs mt-3 uppercase tracking-widest opacity-80">{savedState.analysisSnapshot.shortSummary}</p>
                   </div>
 
-                  {/* Parâmetros de Trade */}
+                  {/* Parâmetros Copiáveis */}
                   <div className="grid grid-cols-2 gap-3">
-                      <div className="bg-red-900/20 border border-red-500/30 p-3 rounded-xl flex flex-col items-center">
-                          <span className="text-[8px] text-red-400 font-bold uppercase mb-1">Stop Loss</span>
+                      <div className="bg-red-900/20 border border-red-500/30 p-4 rounded-xl flex flex-col items-center">
+                          <span className="text-[9px] text-red-400 font-bold uppercase mb-1">Stop Loss</span>
                           <div className="flex items-center gap-2">
-                              <span className="text-base font-mono font-bold text-white">{savedState.analysisSnapshot.stopLoss}</span>
-                              <button onClick={() => handleCopy(savedState.analysisSnapshot?.stopLoss || '', 'sl')} className="text-titan-muted">
-                                  <Copy size={12} className={copiedField === 'sl' ? 'text-titan-green' : ''} />
+                              <span className="text-lg font-mono font-bold text-white">{savedState.analysisSnapshot.stopLoss}</span>
+                              <button onClick={() => handleCopy(savedState.analysisSnapshot?.stopLoss || '', 'sl')} className="text-titan-muted hover:text-white">
+                                  <CopyIcon size={14} className={copiedField === 'sl' ? 'text-titan-green' : ''} />
                               </button>
                           </div>
                       </div>
-                      <div className="bg-green-900/20 border border-green-500/30 p-3 rounded-xl flex flex-col items-center">
-                          <span className="text-[8px] text-green-400 font-bold uppercase mb-1">Take Profit</span>
+                      <div className="bg-green-900/20 border border-green-500/30 p-4 rounded-xl flex flex-col items-center">
+                          <span className="text-[9px] text-green-400 font-bold uppercase mb-1">Take Profit</span>
                           <div className="flex items-center gap-2">
-                              <span className="text-base font-mono font-bold text-white">{savedState.analysisSnapshot.takeProfit}</span>
-                              <button onClick={() => handleCopy(savedState.analysisSnapshot?.takeProfit || '', 'tp')} className="text-titan-muted">
-                                  <Copy size={12} className={copiedField === 'tp' ? 'text-titan-green' : ''} />
+                              <span className="text-lg font-mono font-bold text-white">{savedState.analysisSnapshot.takeProfit}</span>
+                              <button onClick={() => handleCopy(savedState.analysisSnapshot?.takeProfit || '', 'tp')} className="text-titan-muted hover:text-white">
+                                  <CopyIcon size={14} className={copiedField === 'tp' ? 'text-titan-green' : ''} />
                               </button>
                           </div>
                       </div>
@@ -235,54 +252,54 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
               </div>
           )}
 
-          {/* Quick Trade Panel (Execução) */}
+          {/* Quick Trade Panel */}
           <div className="bg-titan-card/30 rounded-xl p-4 border border-white/5">
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center justify-between mb-4">
                   <span className="text-[10px] text-titan-muted font-bold uppercase">Volume Lote</span>
-                  <div className="flex items-center gap-4 bg-black/40 px-3 py-1 rounded-full border border-white/5">
-                      <button onClick={() => setLotSize(Math.max(0.01, lotSize - 0.01))} className="text-titan-gold"><Minus size={16} /></button>
-                      <span className="text-sm font-mono font-bold text-white w-10 text-center">{lotSize.toFixed(2)}</span>
-                      <button onClick={() => setLotSize(lotSize + 0.01)} className="text-titan-gold"><Plus size={16} /></button>
+                  <div className="flex items-center gap-4 bg-black/60 px-4 py-1.5 rounded-full border border-white/10">
+                      <button onClick={() => setLotSize(Math.max(0.01, lotSize - 0.01))} className="text-titan-gold hover:scale-110"><Minus size={18} /></button>
+                      <span className="text-lg font-mono font-bold text-white w-12 text-center">{lotSize.toFixed(2)}</span>
+                      <button onClick={() => setLotSize(lotSize + 0.01)} className="text-titan-gold hover:scale-110"><Plus size={18} /></button>
                   </div>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-4">
                   <button 
                     disabled={!isBrokerConnected}
-                    className={`py-4 rounded-xl font-black text-xl italic tracking-tighter transition-all ${
-                        isBrokerConnected ? 'bg-titan-red/80 text-white shadow-lg active:scale-95' : 'bg-titan-card text-titan-muted opacity-50'
+                    className={`py-5 rounded-2xl font-black text-2xl italic tracking-tighter transition-all shadow-xl ${
+                        isBrokerConnected ? 'bg-titan-red text-white active:scale-95 border-b-4 border-red-900' : 'bg-titan-card text-titan-muted opacity-40 cursor-not-allowed'
                     }`}
                   >
                       SELL
                   </button>
                   <button 
                     disabled={!isBrokerConnected}
-                    className={`py-4 rounded-xl font-black text-xl italic tracking-tighter transition-all ${
-                        isBrokerConnected ? 'bg-titan-green/80 text-white shadow-lg active:scale-95' : 'bg-titan-card text-titan-muted opacity-50'
+                    className={`py-5 rounded-2xl font-black text-2xl italic tracking-tighter transition-all shadow-xl ${
+                        isBrokerConnected ? 'bg-titan-green text-white active:scale-95 border-b-4 border-green-900' : 'bg-titan-card text-titan-muted opacity-40 cursor-not-allowed'
                     }`}
                   >
                       BUY
                   </button>
               </div>
               {!isBrokerConnected && (
-                  <p className="text-[9px] text-titan-gold/60 text-center mt-2 font-bold uppercase tracking-widest animate-pulse">
-                      Lincar corretora para liberar execução direta
+                  <p className="text-[10px] text-titan-gold/60 text-center mt-3 font-bold uppercase tracking-widest animate-pulse">
+                    Lincar corretora para executar ordens reais
                   </p>
               )}
           </div>
       </div>
 
-      {/* MODAL DE LINCAGEM (REFINADO) */}
+      {/* MODAL DE LINCAGEM (FIXED CORRECTION) */}
       {showBrokerModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/90 backdrop-blur-sm animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/90 backdrop-blur-md animate-in fade-in duration-300">
             <div className="bg-titan-card border border-titan-gold/30 rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl scale-in-center">
                 <div className="p-6 border-b border-white/10 flex justify-between items-center bg-titan-dark">
                     <div>
-                        <h3 className="text-lg font-bold text-white">Selecione sua Plataforma</h3>
-                        <p className="text-[9px] text-titan-muted uppercase tracking-widest">Conexão via API / Webhook</p>
+                        <h3 className="text-lg font-bold text-white">Lincar Plataforma</h3>
+                        <p className="text-[9px] text-titan-muted uppercase tracking-widest">Sincronia de Execução</p>
                     </div>
-                    <button onClick={() => setShowBrokerModal(false)} className="text-white opacity-40 hover:opacity-100 p-2">✕</button>
+                    <button onClick={() => setShowBrokerModal(false)} className="text-white opacity-40 hover:opacity-100 p-2 text-xl font-bold">✕</button>
                 </div>
-                <div className="p-4 space-y-2.5">
+                <div className="p-5 space-y-3">
                     {brokers.map((b) => (
                         <button 
                             key={b.id}
@@ -291,20 +308,20 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
                             className="w-full flex items-center justify-between p-4 bg-black/40 border border-white/5 rounded-2xl hover:border-titan-gold/40 transition-all active:scale-98"
                         >
                             <div className="flex items-center gap-4">
-                                <div className={`w-10 h-10 ${b.color} rounded-xl flex items-center justify-center shadow-inner`}>
+                                <div className={`w-10 h-10 ${b.color} rounded-xl flex items-center justify-center shadow-lg`}>
                                     <b.icon size={20} className="text-white" />
                                 </div>
                                 <div className="text-left">
                                     <p className="text-sm font-bold text-white">{b.name}</p>
-                                    <p className="text-[9px] text-titan-muted italic">Sincronia Instantânea</p>
+                                    <p className="text-[9px] text-titan-muted italic">Conexão Segura</p>
                                 </div>
                             </div>
                             <ChevronRight size={16} className="text-titan-muted" />
                         </button>
                     ))}
-                    <div className="p-3 bg-titan-gold/5 border border-titan-gold/10 rounded-xl mt-2">
-                        <p className="text-[9px] text-titan-gold/70 leading-relaxed text-center italic">
-                            A lincagem garante que o sinal seja processado com o spread real da sua plataforma de execução.
+                    <div className="p-4 bg-titan-gold/5 border border-titan-gold/10 rounded-2xl mt-4">
+                        <p className="text-[10px] text-titan-gold/70 leading-relaxed text-center italic">
+                          O Titan Premium utiliza servidores de baixa latência para garantir que o sinal de entrada seja idêntico ao da sua corretora.
                         </p>
                     </div>
                 </div>
