@@ -16,16 +16,13 @@ interface DashboardProps {
   onUpdateState: (newState: DashboardState) => void;
 }
 
-// --- GERADOR DINÂMICO DE SCRIPT TRADINGVIEW (V7 - STRICT MODE) ---
-// Garante que o gráfico obedeça cegamente o viés do App
+// --- GERADOR DINÂMICO DE SCRIPT TRADINGVIEW (V8 - HYBRID MODE) ---
+// Adicionamos a opção de DESLIGAR o filtro para ver o passado (Backtest)
 const getDynamicPineScript = (currentRef: string, currentBias: 'BULLISH' | 'BEARISH') => {
     // Normalização dos valores
     const price = currentRef.replace(',', '.') || '1.05450';
     const biasPine = currentBias === 'BULLISH' ? 'Bullish' : 'Bearish';
     
-    // Textos para exibição no painel do TV
-    const modeText = currentBias === 'BULLISH' ? "APENAS COMPRAS (L)" : "APENAS VENDAS (S)";
-
     return `//@version=5
 indicator("Titan Premium - Institutional Setup", overlay=true, shorttitle="TITAN PRO")
 
@@ -34,9 +31,10 @@ var titanGold = color.new(#d4af37, 0)
 var redZone = color.new(#ef4444, 90)   // Vermelho transparente
 var greenZone = color.new(#10b981, 90) // Verde transparente
 
-// --- CONFIGURAÇÃO (TRAVADA NO APP) ---
+// --- CONFIGURAÇÃO ---
 refPrice = input.float(${price}, title="Preço de Referência (Fair Value)")
 trendBias = input.string("${biasPine}", title="Tendência Macro (App)", options=["Bullish", "Bearish"])
+useTrendFilter = input.bool(true, title="Filtrar Sinais pelo Viés Atual?") // OPÇÃO NOVA
 showZones = input.bool(true, title="Mostrar Zonas Premium/Discount")
 
 // --- LÓGICA ---
@@ -48,37 +46,38 @@ bgcolor(showZones and isPremium ? redZone : na, title="Premium Zone")
 bgcolor(showZones and isDiscount ? greenZone : na, title="Discount Zone")
 plot(refPrice, "Equilibrium", color=titanGold, linewidth=2, style=plot.style_linebr)
 
-// --- FILTRO DE DIREÇÃO (HARDCORE) ---
-// O script só permite sinais na direção da tendência do App.
-onlyLongs = (trendBias == "Bullish")
-onlyShorts = (trendBias == "Bearish")
+// --- FILTRO DE DIREÇÃO INTELIGENTE ---
+// Se 'useTrendFilter' for true (Padrão), obedece o App (Segurança).
+// Se 'useTrendFilter' for false, mostra tudo (Estudo/Backtest).
+canBuy = useTrendFilter ? (trendBias == "Bullish") : true
+canSell = useTrendFilter ? (trendBias == "Bearish") : true
 
 // --- GATILHOS ---
-// Venda: Apenas se tendência for BAIXA + Zona Premium + Rejeição
-bearSignal = onlyShorts and isPremium and (high - close) > (close - open) * 2
+// Venda: Premium + Rejeição (+ Filtro de Tendência opcional)
+bearSignal = canSell and isPremium and (high - close) > (close - open) * 2
 plotshape(bearSignal, title="Venda Titan", location=location.abovebar, color=color.red, style=shape.labeldown, text="SELL", textcolor=color.white)
 
-// Compra: Apenas se tendência for ALTA + Zona Desconto + Força
-bullSignal = onlyLongs and isDiscount and close > open
+// Compra: Desconto + Força (+ Filtro de Tendência opcional)
+bullSignal = canBuy and isDiscount and close > open
 plotshape(bullSignal, title="Compra Titan", location=location.belowbar, color=color.green, style=shape.labelup, text="BUY", textcolor=color.black)
 
 // --- PAINEL DE CONTROLE VISUAL ---
 var table panel = table.new(position.top_right, 2, 4, border_width=1)
 if barstate.islast
     // Cabeçalho
-    table.cell(panel, 0, 0, "TITAN SINCRONIZADO", bgcolor=color.black, text_color=titanGold)
+    table.cell(panel, 0, 0, "TITAN MONITOR", bgcolor=color.black, text_color=titanGold)
     
-    // Linha 1: Referência
-    table.cell(panel, 0, 1, "Ref Price:", bgcolor=color.black, text_color=color.white)
-    table.cell(panel, 1, 1, str.tostring(refPrice), bgcolor=color.gray, text_color=color.white)
+    // Linha 1: Viés Atual
+    table.cell(panel, 0, 1, "Viés App:", bgcolor=color.black, text_color=color.white)
+    table.cell(panel, 1, 1, trendBias, bgcolor=trendBias == "Bullish" ? color.green : color.red, text_color=color.white)
     
-    // Linha 2: Viés
-    table.cell(panel, 0, 2, "Viés App:", bgcolor=color.black, text_color=color.white)
-    table.cell(panel, 1, 2, trendBias, bgcolor=onlyLongs ? color.green : color.red, text_color=color.white)
+    // Linha 2: Status do Filtro
+    table.cell(panel, 0, 2, "Filtro:", bgcolor=color.black, text_color=color.white)
+    table.cell(panel, 1, 2, useTrendFilter ? "ATIVADO" : "DESLIGADO", bgcolor=useTrendFilter ? color.blue : color.gray, text_color=color.white)
     
-    // Linha 3: MODO OPERACIONAL (CLAREZA TOTAL)
-    table.cell(panel, 0, 3, "MODO:", bgcolor=color.black, text_color=color.white)
-    table.cell(panel, 1, 3, "${modeText}", bgcolor=onlyLongs ? color.green : color.red, text_color=onlyLongs ? color.black : color.white)`;
+    // Linha 3: Zona Atual
+    table.cell(panel, 0, 3, "Zona:", bgcolor=color.black, text_color=color.white)
+    table.cell(panel, 1, 3, isPremium ? "PREMIUM" : "DESCONTO", bgcolor=isPremium ? color.red : color.green, text_color=color.white)`;
 };
 
 // --- LÓGICA TITAN PREMIUM (REFINADA) ---
