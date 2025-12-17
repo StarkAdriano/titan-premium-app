@@ -1,13 +1,15 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Asset, SignalStatus, AnalysisResult } from '../types';
-import { TrendingUp, TrendingDown, Calculator, CheckCircle2, AlignLeft, Lock, Activity, RotateCcw, Shield, AlertTriangle, Terminal, Settings2, Edit3, Save, BarChart3, ArrowDown, ArrowUp, Monitor, Copy } from 'lucide-react';
+import { TrendingUp, TrendingDown, Calculator, CheckCircle2, AlignLeft, Lock, Activity, RotateCcw, Shield, AlertTriangle, Terminal, Settings2, BarChart3, ArrowDown, ArrowUp, Monitor, Copy, ExternalLink, Zap } from 'lucide-react';
 
+// Fix: Add referencePrice to match the state structure used in App.tsx
 interface DashboardState {
     userPrice: string;
     isRevealed: boolean;
     analysisSnapshot: AnalysisResult | null;
-    referencePrice: string; // Preço Justo / Equilibrium
-    trendBias: 'BULLISH' | 'BEARISH'; // Tendência Macro
+    trendBias: 'BULLISH' | 'BEARISH'; 
+    referencePrice: string;
 }
 
 interface DashboardProps {
@@ -16,605 +18,276 @@ interface DashboardProps {
   onUpdateState: (newState: DashboardState) => void;
 }
 
-// --- GERADOR DINÂMICO DE SCRIPT TRADINGVIEW (V9 - BACKTEST MODE) ---
-// Adicionamos 'useDynamicMode' para corrigir a distorção histórica de preços fixos.
-const getDynamicPineScript = (currentRef: string, currentBias: 'BULLISH' | 'BEARISH') => {
-    // Normalização dos valores
-    const price = currentRef.replace(',', '.') || '1.05450';
-    const biasPine = currentBias === 'BULLISH' ? 'Bullish' : 'Bearish';
-    
-    return `//@version=5
-indicator("Titan Premium - Institutional Setup", overlay=true, shorttitle="TITAN PRO")
+// --- WIDGET DO TRADINGVIEW ---
+const TradingViewChart = () => {
+  const container = useRef<HTMLDivElement>(null);
 
-// --- CORES INSTITUCIONAIS ---
-var titanGold = color.new(#d4af37, 0)
-var redZone = color.new(#ef4444, 90)   // Vermelho transparente
-var greenZone = color.new(#10b981, 90) // Verde transparente
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
+    script.type = "text/javascript";
+    script.async = true;
+    script.innerHTML = JSON.stringify({
+      "autosize": true,
+      "symbol": "FX:EURUSD",
+      "interval": "60",
+      "timezone": "Etc/UTC",
+      "theme": "dark",
+      "style": "1",
+      "locale": "br",
+      "enable_publishing": false,
+      "allow_symbol_change": false,
+      "calendar": false,
+      "support_host": "https://www.tradingview.com"
+    });
+    if (container.current) {
+        container.current.innerHTML = '';
+        container.current.appendChild(script);
+    }
+  }, []);
 
-// --- CONFIGURAÇÃO ---
-group_app = "CONFIGURAÇÃO DO APP (FIXO)"
-refPrice = input.float(${price}, title="Preço de Referência (Fair Value)", group=group_app)
-trendBias = input.string("${biasPine}", title="Viés Macro (App)", options=["Bullish", "Bearish"], group=group_app)
-
-group_backtest = "MODO ESTUDO / BACKTEST"
-useTrendFilter = input.bool(true, title="Filtrar Sinais pelo Viés Atual?", group=group_backtest) 
-useDynamicMode = input.bool(false, title="Modo Backtest (Ref. Dinâmica)?", tooltip="Usa EMA 200 como referência móvel para ver sinais no passado.", group=group_backtest)
-
-showZones = input.bool(true, title="Mostrar Zonas Premium/Discount")
-
-// --- LÓGICA DE REFERÊNCIA ---
-// Para operar HOJE, usamos o preço fixo do App.
-// Para estudar o PASSADO, usamos a média móvel (EMA 200) para o preço justo acompanhar o gráfico.
-effectiveRef = useDynamicMode ? ta.ema(close, 200) : refPrice
-
-// --- CÁLCULO DE ZONAS ---
-isPremium = close > effectiveRef
-isDiscount = close < effectiveRef
-
-// --- VISUALIZAÇÃO ---
-bgcolor(showZones and isPremium ? redZone : na, title="Premium Zone")
-bgcolor(showZones and isDiscount ? greenZone : na, title="Discount Zone")
-plot(effectiveRef, "Equilibrium", color=titanGold, linewidth=2, style=plot.style_linebr)
-
-// --- FILTRO DE DIREÇÃO ---
-// Se 'useTrendFilter' for true:
-//    - Obedece o viés do App (Alta/Baixa).
-// Se 'useTrendFilter' for false:
-//    - Libera Compras e Vendas (Ideal para Backtest).
-canBuy = useTrendFilter ? (trendBias == "Bullish") : true
-canSell = useTrendFilter ? (trendBias == "Bearish") : true
-
-// --- GATILHOS ---
-// Venda: Premium + Rejeição
-bearSignal = canSell and isPremium and (high - close) > (close - open) * 2
-plotshape(bearSignal, title="Venda Titan", location=location.abovebar, color=color.red, style=shape.labeldown, text="SELL", textcolor=color.white)
-
-// Compra: Desconto + Força
-bullSignal = canBuy and isDiscount and close > open
-plotshape(bullSignal, title="Compra Titan", location=location.belowbar, color=color.green, style=shape.labelup, text="BUY", textcolor=color.black)
-
-// --- PAINEL DE CONTROLE VISUAL ---
-var table panel = table.new(position.top_right, 2, 5, border_width=1)
-if barstate.islast
-    // Cabeçalho
-    table.cell(panel, 0, 0, "TITAN MONITOR", bgcolor=color.black, text_color=titanGold)
-    
-    // Linha 1: Modo de Referência
-    table.cell(panel, 0, 1, "Ref Mode:", bgcolor=color.black, text_color=color.white)
-    table.cell(panel, 1, 1, useDynamicMode ? "DINÂMICO (Histórico)" : "FIXO (App)", bgcolor=useDynamicMode ? color.blue : color.gray, text_color=color.white)
-    
-    // Linha 2: Viés
-    table.cell(panel, 0, 2, "Viés:", bgcolor=color.black, text_color=color.white)
-    table.cell(panel, 1, 2, useTrendFilter ? trendBias : "LIVRE (Backtest)", bgcolor=useTrendFilter ? (trendBias == "Bullish" ? color.green : color.red) : color.blue, text_color=color.white)
-    
-    // Linha 3: Zona Atual
-    table.cell(panel, 0, 3, "Zona Atual:", bgcolor=color.black, text_color=color.white)
-    table.cell(panel, 1, 3, isPremium ? "PREMIUM (Venda)" : "DESCONTO (Compra)", bgcolor=isPremium ? color.red : color.green, text_color=color.white)`;
+  return (
+    <div className="w-full h-[350px] bg-black rounded-xl overflow-hidden border border-titan-card mb-6 shadow-2xl" ref={container}>
+      <div className="tradingview-widget-container__widget"></div>
+    </div>
+  );
 };
 
-// --- LÓGICA TITAN PREMIUM (REFINADA) ---
+// --- LÓGICA TITAN PREMIUM (REFINADA COM PREÇO AUTOMÁTICO) ---
 const generateTitanAnalysis = (
     assetSymbol: string, 
     inputPrice: number, 
-    referencePrice: number,
+    marketPrice: number,
     bias: 'BULLISH' | 'BEARISH'
 ): AnalysisResult => {
-    
-    // 1. Calcular Desvio (Premium vs Discount)
-    const deviation = inputPrice - referencePrice;
+    const deviation = inputPrice - marketPrice;
     const pipsDeviation = (Math.abs(deviation) * 10000).toFixed(1); 
     const isPremium = deviation > 0;
-    const isDiscount = deviation < 0;
     
-    // Configurações de Risco
     const PIP_VAL = 0.0001;
-    const STOP_PIPS = 20; // Stop curto institucional
-    const TARGET_PIPS = 60; // Alvo 1:3
+    const STOP_PIPS = 20; 
+    const TARGET_PIPS = 60; 
 
-    // LÓGICA DE DECISÃO HÍBRIDA (TREND + LOCATION)
-
-    // CENÁRIO 1: TENDÊNCIA DE ALTA (Procurar compras no Desconto)
     if (bias === 'BULLISH') {
-        if (isDiscount) {
-            // PERFEITO: Tendência de Alta + Preço Barato
+        if (!isPremium) { // Discount Zone
             const slPrice = (inputPrice - (STOP_PIPS * PIP_VAL)).toFixed(5);
             const tpPrice = (inputPrice + (TARGET_PIPS * PIP_VAL)).toFixed(5);
-            
             return {
                 status: SignalStatus.BUY,
-                shortSummary: `Compra Validada (Discount Zone).`,
-                detailedAnalysis: `**SETUP DE ALTA PROBABILIDADE**\n
-                **1. Tendência:** O viés macro é de ALTA (Bullish).\n
-                **2. Localização:** O preço recuou para a Zona de Desconto (-${pipsDeviation} pips do Ref). Isso é "comprar barato".\n
-                **3. Gatilho:** O preço atingiu suporte institucional abaixo do preço justo.\n
-                **Ação:** Executar COMPRA visando renovação de topo.`,
+                shortSummary: `Execução Autorizada. Preço em Desconto Institucional.`,
+                detailedAnalysis: `**ALVO: LIQUIDEZ COMPRADORA**\nO preço de ${inputPrice} está abaixo do equilíbrio de mercado (${marketPrice.toFixed(5)}). Setup de reversão em Discount validado.`,
                 validationStatus: 'OK',
-                validationMsg: 'Setup Alinhado (Trend + Localização)',
-                referencePrice: referencePrice.toFixed(5),
+                validationMsg: 'Contexto de Alta Confirmado',
+                referencePrice: marketPrice.toFixed(5),
                 stopLoss: slPrice,
                 takeProfit: tpPrice,
-                rrRatio: '1:3',
-                commandLine: `${assetSymbol} BUY LIMIT @ ${inputPrice.toFixed(5)} SL ${slPrice} TP ${tpPrice}`
+                commandLine: `${assetSymbol} BUY @ ${inputPrice.toFixed(5)} SL ${slPrice} TP ${tpPrice}`
             };
-        } else {
-            // PERIGO: Tendência de Alta mas Preço Caro
-             return {
-                status: SignalStatus.WAIT,
-                shortSummary: `Zona Premium. Não compre topo.`,
-                detailedAnalysis: `**ALERTA DE RISCO**\n
-                O viés é de Alta, mas o preço atual (${inputPrice}) está na Zona Premium (Caro).\n
-                Comprar agora reduz drasticamente sua relação Risco/Retorno.\n
-                **Recomendação:** Aguarde um pullback até pelo menos ${referencePrice.toFixed(5)} para comprar.`,
-                validationStatus: 'WARNING',
-                validationMsg: 'Preço Esticado (Aguardar Recuo)',
-                referencePrice: referencePrice.toFixed(5),
-                commandLine: `${assetSymbol} - AGUARDAR PULLBACK`
+        }
+    } else {
+        if (isPremium) { // Premium Zone
+            const slPrice = (inputPrice + (STOP_PIPS * PIP_VAL)).toFixed(5);
+            const tpPrice = (inputPrice - (TARGET_PIPS * PIP_VAL)).toFixed(5);
+            return {
+                status: SignalStatus.SELL,
+                shortSummary: `Execução Autorizada. Preço em Premium Institucional.`,
+                detailedAnalysis: `**ALVO: LIQUIDEZ VENDEDORA**\nO preço de ${inputPrice} está acima do equilíbrio de mercado (${marketPrice.toFixed(5)}). Setup de rejeição em Premium validado.`,
+                validationStatus: 'OK',
+                validationMsg: 'Contexto de Baixa Confirmado',
+                referencePrice: marketPrice.toFixed(5),
+                stopLoss: slPrice,
+                takeProfit: tpPrice,
+                commandLine: `${assetSymbol} SELL @ ${inputPrice.toFixed(5)} SL ${slPrice} TP ${tpPrice}`
             };
         }
     }
 
-    // CENÁRIO 2: TENDÊNCIA DE BAIXA (Procurar vendas no Premium)
-    else {
-        if (isPremium) {
-            // PERFEITO: Tendência de Baixa + Preço Caro
-            const slPrice = (inputPrice + (STOP_PIPS * PIP_VAL)).toFixed(5);
-            const tpPrice = (inputPrice - (TARGET_PIPS * PIP_VAL)).toFixed(5);
-            
-            return {
-                status: SignalStatus.SELL,
-                shortSummary: `Venda Validada (Premium Zone).`,
-                detailedAnalysis: `**SETUP DE ALTA PROBABILIDADE**\n
-                **1. Tendência:** O viés macro é de BAIXA (Bearish).\n
-                **2. Localização:** O preço subiu para a Zona Premium (+${pipsDeviation} pips do Ref). Isso é "vender caro".\n
-                **3. Gatilho:** Rejeição em bloco de ordens acima do preço justo.\n
-                **Ação:** Executar VENDA visando liquidez nos fundos.`,
-                validationStatus: 'OK',
-                validationMsg: 'Setup Alinhado (Trend + Localização)',
-                referencePrice: referencePrice.toFixed(5),
-                stopLoss: slPrice,
-                takeProfit: tpPrice,
-                rrRatio: '1:3',
-                commandLine: `${assetSymbol} SELL LIMIT @ ${inputPrice.toFixed(5)} SL ${slPrice} TP ${tpPrice}`
-            };
-        } else {
-            // PERIGO: Tendência de Baixa mas Preço Barato
-            return {
-                status: SignalStatus.WAIT,
-                shortSummary: `Zona de Desconto. Não venda fundo.`,
-                detailedAnalysis: `**ALERTA DE RISCO**\n
-                O viés é de Baixa, mas o preço já caiu muito e está na Zona de Desconto.\n
-                Vender agora é "vender fundo" e ficar exposto a um Short Squeeze.\n
-                **Recomendação:** Aguarde um repique (Inducement) até ${referencePrice.toFixed(5)} para vender.`,
-                validationStatus: 'WARNING',
-                validationMsg: 'Preço Esticado (Aguardar Repique)',
-                referencePrice: referencePrice.toFixed(5),
-                commandLine: `${assetSymbol} - AGUARDAR REPIQUE`
-            };
-        }
-    }
+    return {
+        status: SignalStatus.WAIT,
+        shortSummary: `Aguarde Localização Melhor.`,
+        detailedAnalysis: `O preço atual não oferece uma relação Risco/Retorno favorável neste exato momento. Aguarde o preço atingir as extremidades de Premium/Discount para agir.`,
+        validationStatus: 'WARNING',
+        validationMsg: 'Preço em Zona de Briga',
+        referencePrice: marketPrice.toFixed(5)
+    };
 };
 
 const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState }) => {
   const [isValidating, setIsValidating] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const [scriptCopied, setScriptCopied] = useState(false);
-  const [isEditingRef, setIsEditingRef] = useState(false);
-  const [tempRefPrice, setTempRefPrice] = useState('');
+  const [copiedField, setCopiedField] = useState<string | null>(null);
   
-  const isMounted = useRef(true);
+  const currentMarketPrice = parseFloat(asset.price);
 
-  useEffect(() => {
-    isMounted.current = true;
-    if (!savedState.referencePrice) {
-        onUpdateState({
-            ...savedState,
-            referencePrice: asset.price,
-            trendBias: 'BEARISH' 
-        });
-    }
-    return () => { isMounted.current = false; };
-  }, []);
-
-  // --- LIVE ZONE CALCULATION (O MONITOR EM TEMPO REAL) ---
-  const currentInput = parseFloat(savedState.userPrice.replace(',', '.') || '0');
-  const refPrice = parseFloat(savedState.referencePrice || asset.price);
-  const diff = currentInput - refPrice;
-  const isPremium = diff > 0;
-  const isDiscount = diff < 0;
-  const isZero = diff === 0 || !savedState.userPrice;
-  
-  // Cores dinâmicas baseadas na posição do preço
-  const zoneColor = isZero ? 'text-gray-500' : isPremium ? 'text-titan-red' : 'text-titan-green';
-  const zoneLabel = isZero ? 'Neutro' : isPremium ? 'PREMIUM (Venda)' : 'DESCONTO (Compra)';
-  const zoneIcon = isZero ? <Activity size={14} /> : isPremium ? <ArrowUp size={14} /> : <ArrowDown size={14} />;
-
-  const getStatusColor = (status: SignalStatus) => {
-    switch (status) {
-      case SignalStatus.BUY: return 'text-titan-green border-titan-green';
-      case SignalStatus.SELL: return 'text-titan-red border-titan-red';
-      case SignalStatus.WAIT: return 'text-titan-gold border-titan-gold';
-    }
-  };
-
-  const getStatusBg = (status: SignalStatus) => {
-    switch (status) {
-      case SignalStatus.BUY: return 'bg-titan-green/10';
-      case SignalStatus.SELL: return 'bg-titan-red/10';
-      case SignalStatus.WAIT: return 'bg-titan-gold/10';
-    }
-  };
-
-  const toggleBias = () => {
-      onUpdateState({
-          ...savedState,
-          trendBias: savedState.trendBias === 'BULLISH' ? 'BEARISH' : 'BULLISH',
-          isRevealed: false,
-          analysisSnapshot: null
-      });
-  };
-
-  const saveRefPrice = () => {
-      if (tempRefPrice && !isNaN(parseFloat(tempRefPrice))) {
-          onUpdateState({
-              ...savedState,
-              referencePrice: tempRefPrice,
-              isRevealed: false, 
-              analysisSnapshot: null
-          });
-          setIsEditingRef(false);
-      } else {
-          setIsEditingRef(false);
-      }
-  };
-
-  const startEditingRef = () => {
-      setTempRefPrice(savedState.referencePrice || asset.price);
-      setIsEditingRef(true);
-  };
-
-  // Botão Inteligente: Gera o script com os valores ATUAIS do Dashboard
-  const handleCopyScript = () => {
-      const dynamicScript = getDynamicPineScript(
-          savedState.referencePrice || asset.price,
-          savedState.trendBias
-      );
-      navigator.clipboard.writeText(dynamicScript);
-      setScriptCopied(true);
-      setTimeout(() => setScriptCopied(false), 3000);
+  const handleCopy = (text: string, field: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedField(field);
+    setTimeout(() => setCopiedField(null), 2000);
   };
 
   const handleReveal = () => {
     const sanitizedPrice = savedState.userPrice.replace(',', '.');
-    
     if (sanitizedPrice.trim().length > 0 && !isNaN(parseFloat(sanitizedPrice))) {
         setIsValidating(true);
-        setCopied(false);
-        
         setTimeout(() => {
-            if (!isMounted.current) return;
             const inputVal = parseFloat(sanitizedPrice);
-            const result = generateTitanAnalysis(asset.symbol, inputVal, refPrice, savedState.trendBias);
-
-            onUpdateState({
-                ...savedState,
-                isRevealed: true,
-                analysisSnapshot: result
+            const result = generateTitanAnalysis(asset.symbol, inputVal, currentMarketPrice, savedState.trendBias);
+            // Fix: Sync the calculated referencePrice to the top-level state
+            onUpdateState({ 
+              ...savedState, 
+              isRevealed: true, 
+              analysisSnapshot: result,
+              referencePrice: result.referencePrice 
             });
             setIsValidating(false);
-        }, 800);
+        }, 600);
     }
   };
 
   const handleReset = () => {
-      setCopied(false);
-      onUpdateState({
-          ...savedState,
-          userPrice: '',
-          isRevealed: false,
-          analysisSnapshot: null
-      });
-  };
-
-  const handleCopyCommand = () => {
-      if (savedState.analysisSnapshot?.commandLine) {
-          navigator.clipboard.writeText(savedState.analysisSnapshot.commandLine);
-          setCopied(true);
-          setTimeout(() => setCopied(false), 3000);
-      }
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const val = e.target.value;
-      if (/^[\d,.]*$/.test(val)) {
-          onUpdateState({
-              ...savedState,
-              userPrice: val
-          });
-      }
+      onUpdateState({ ...savedState, userPrice: '', isRevealed: false, analysisSnapshot: null });
   };
 
   return (
-    <div className="p-4 space-y-6 pb-24">
+    <div className="p-4 space-y-6 pb-28">
       
-      {/* 1. Header & Context Config */}
-      <div className="pt-2">
-         <div className="flex items-center justify-between mb-4">
-            <h2 className="text-3xl font-black text-white tracking-tighter">{asset.symbol}</h2>
-            
-            {/* Trend Toggle */}
-            <button 
-                onClick={toggleBias}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all ${
-                    savedState.trendBias === 'BULLISH' 
-                    ? 'bg-green-900/30 border-green-500/50 text-green-400' 
-                    : 'bg-red-900/30 border-red-500/50 text-red-400'
-                }`}
-            >
-                {savedState.trendBias === 'BULLISH' ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
-                <span className="text-xs font-bold">{savedState.trendBias === 'BULLISH' ? 'ALTA' : 'BAIXA'}</span>
-            </button>
+      {/* 1. Header & Live Price */}
+      <div className="flex items-center justify-between">
+         <div>
+            <h2 className="text-2xl font-black text-white tracking-tighter flex items-center gap-2">
+                {asset.symbol} <span className="text-[10px] bg-titan-gold/20 text-titan-gold px-2 py-0.5 rounded">LIVE</span>
+            </h2>
+            <div className="flex items-center gap-2 mt-1">
+                <div className="w-2 h-2 rounded-full bg-titan-green animate-pulse"></div>
+                <span className="text-xl font-mono font-bold text-white">{asset.price}</span>
+            </div>
          </div>
-
-         {/* Reference Price Config */}
-         <div className="bg-titan-card rounded-lg p-3 border border-titan-card flex flex-col justify-between">
-             
-             {/* Label Header com Botão Script */}
-             <div className="flex items-center justify-between mb-2 w-full">
-                <span className="text-[10px] text-titan-muted uppercase tracking-wider flex items-center gap-1">
-                    <Settings2 size={10} /> PREÇO DE REFERÊNCIA (FAIR VALUE)
-                </span>
-                
-                <button 
-                    onClick={handleCopyScript} 
-                    className={`flex items-center gap-1 text-[9px] font-bold px-3 py-1.5 rounded border transition-all ${
-                        scriptCopied 
-                        ? 'bg-green-500/20 text-green-400 border-green-500/50 shadow-[0_0_10px_rgba(34,197,94,0.3)]' 
-                        : 'bg-titan-dark text-titan-gold border-titan-gold/30 hover:bg-titan-gold/10 hover:border-titan-gold/60'
-                    }`}
-                >
-                    {scriptCopied ? <CheckCircle2 size={12} /> : <Monitor size={12} />}
-                    {scriptCopied ? 'COPIADO!' : 'SCRIPT TRADINGVIEW'}
-                </button>
-             </div>
-                
-            {/* Input / Display */}
-            {isEditingRef ? (
-                <div className="flex items-center gap-2">
-                    <input 
-                        autoFocus
-                        type="text"
-                        inputMode="decimal"
-                        className="bg-black/50 text-white font-mono text-sm p-1 rounded w-full border border-titan-gold focus:outline-none"
-                        value={tempRefPrice}
-                        onChange={(e) => setTempRefPrice(e.target.value)}
-                    />
-                    <button onClick={saveRefPrice} className="text-green-400"><Save size={16} /></button>
-                </div>
-            ) : (
-                <div className="flex items-center gap-2 cursor-pointer group" onClick={startEditingRef}>
-                    <span className="text-sm font-mono font-bold text-white group-hover:text-titan-gold transition-colors border-b border-dashed border-gray-600">
-                        {savedState.referencePrice || asset.price}
-                    </span>
-                    <Edit3 size={12} className="text-titan-muted opacity-50 group-hover:opacity-100" />
-                </div>
-            )}
-         </div>
+         
+         <button 
+            onClick={() => onUpdateState({...savedState, trendBias: savedState.trendBias === 'BULLISH' ? 'BEARISH' : 'BULLISH', isRevealed: false})}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-all ${
+                savedState.trendBias === 'BULLISH' ? 'bg-green-900/30 border-green-500/50 text-green-400' : 'bg-red-900/30 border-red-500/50 text-red-400'
+            }`}
+         >
+            {savedState.trendBias === 'BULLISH' ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
+            <span className="text-xs font-black">{savedState.trendBias === 'BULLISH' ? 'BUY ONLY' : 'SELL ONLY'}</span>
+         </button>
       </div>
 
-      {/* 2. Input Section */}
-      <div className={`bg-titan-card/40 backdrop-blur-sm rounded-xl p-6 border transition-all duration-500 ${savedState.isRevealed ? 'border-titan-card' : 'border-titan-gold shadow-[0_0_20px_rgba(212,175,55,0.1)]'}`}>
-        <div className="flex flex-col items-center gap-4">
-            
+      {/* 2. TradingView Widget */}
+      <TradingViewChart />
+
+      {/* 3. Execution Input */}
+      <div className="bg-titan-card/50 backdrop-blur-md rounded-2xl p-6 border border-white/5 shadow-xl">
+        <div className="flex flex-col items-center gap-5">
             <div className="w-full">
-                <div className="flex items-center justify-center gap-2 mb-3">
-                    <Calculator size={16} className="text-titan-gold" />
-                    <label className="text-xs text-titan-gold uppercase font-bold tracking-wider">
-                    Sua Entrada (Preço Atual)
-                    </label>
+                <div className="flex items-center justify-between mb-3 px-2">
+                    <span className="text-[10px] text-titan-gold font-bold uppercase tracking-widest flex items-center gap-1">
+                        <Zap size={12} /> Preço de Entrada (MT4/MT5)
+                    </span>
+                    <span className="text-[10px] text-titan-muted">Insira o preço da sua corretora</span>
                 </div>
-                <div className="relative flex items-center max-w-[240px] mx-auto">
-                    <input 
+                <input 
                     type="text" 
                     inputMode="decimal"
                     value={savedState.userPrice}
-                    onChange={handleInputChange}
+                    onChange={(e) => onUpdateState({...savedState, userPrice: e.target.value})}
                     placeholder="0.00000"
                     disabled={savedState.isRevealed}
-                    className={`w-full bg-titan-darker border-b-2 ${savedState.isRevealed ? 'border-titan-muted text-gray-500' : 'border-titan-card focus:border-titan-gold text-white'} font-mono text-3xl py-3 text-center focus:outline-none transition-all placeholder-gray-700 rounded-t-lg`}
-                    />
-                </div>
-                
-                {/* --- MONITOR DE ZONA EM TEMPO REAL --- */}
-                {/* Isso garante que você saiba onde está antes de gerar o sinal */}
-                {!savedState.isRevealed && savedState.userPrice && (
-                    <div className="flex items-center justify-center gap-2 mt-3 animate-in fade-in slide-in-from-top-1">
-                        <span className={`text-xs font-bold uppercase flex items-center gap-1 ${zoneColor}`}>
-                            {zoneIcon} {zoneLabel}
-                        </span>
-                    </div>
-                )}
+                    className="w-full bg-black/40 border-2 border-titan-card focus:border-titan-gold text-white font-mono text-4xl py-4 text-center outline-none transition-all rounded-xl placeholder-gray-800"
+                />
             </div>
 
-            <button 
-                onClick={handleReveal}
-                disabled={isValidating || !savedState.userPrice || savedState.isRevealed}
-                className={`mt-2 w-full font-bold uppercase tracking-wider py-4 rounded-lg shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-80 disabled:cursor-wait ${
-                    savedState.isRevealed 
-                    ? 'hidden' 
-                    : 'bg-titan-gold text-black hover:bg-titan-goldLight hover:scale-[1.02]'
-                }`}
-            >
-                {isValidating ? (
-                    <>
-                        <Activity size={18} className="animate-spin" />
-                        Validando Setup...
-                    </>
-                ) : (
-                    <>
-                        <Lock size={18} />
-                        Analisar Entrada
-                    </>
-                )}
-            </button>
-
-            {savedState.isRevealed && (
-                 <button 
-                 onClick={handleReset}
-                 className="mt-1 flex items-center gap-2 text-xs text-titan-muted hover:text-white uppercase tracking-wider border border-titan-card px-4 py-2 rounded-full hover:bg-titan-card transition-colors"
+            {!savedState.isRevealed ? (
+                <button 
+                    onClick={handleReveal}
+                    disabled={isValidating || !savedState.userPrice}
+                    className="w-full bg-titan-gold text-black font-black uppercase tracking-widest py-5 rounded-xl shadow-2xl flex items-center justify-center gap-3 active:scale-95 transition-transform"
                 >
-                 <RotateCcw size={14} /> Nova Análise
+                    {isValidating ? <Activity className="animate-spin" /> : <Shield size={20} />}
+                    {isValidating ? "Processando..." : "Validar Operação"}
+                </button>
+            ) : (
+                <button onClick={handleReset} className="text-xs text-titan-muted hover:text-white flex items-center gap-2 uppercase tracking-tighter">
+                    <RotateCcw size={14} /> Limpar e Nova Análise
                 </button>
             )}
         </div>
       </div>
 
-      {/* 3. Analysis Result (Conditional) */}
-      {savedState.isRevealed && savedState.analysisSnapshot ? (
-          <div className="animate-in slide-in-from-bottom-8 fade-in duration-700 space-y-6">
+      {/* 4. Analysis & Fast Execution Panel */}
+      {savedState.isRevealed && savedState.analysisSnapshot && (
+        <div className="animate-in slide-in-from-bottom-6 fade-in duration-500 space-y-4">
             
-            {/* Main Signal Card */}
-            <div className="relative group overflow-hidden rounded-2xl">
-                <div className="absolute inset-0 bg-gradient-to-br from-titan-card via-titan-dark to-black border border-titan-gold/30 rounded-2xl"></div>
-                
-                <div className="relative p-8 text-center z-10">
-                    <p className="text-[10px] text-titan-muted uppercase mb-4 tracking-[0.2em] font-bold animate-pulse">Sinal Institucional</p>
-
-                    <div className={`inline-block px-8 py-3 rounded-lg border ${getStatusColor(savedState.analysisSnapshot.status)} ${getStatusBg(savedState.analysisSnapshot.status)} backdrop-blur-md mb-6 shadow-2xl`}>
-                        <span className="text-4xl font-black tracking-widest uppercase drop-shadow-lg flex items-center justify-center gap-3">
-                            {savedState.analysisSnapshot.status}
-                        </span>
-                    </div>
-
-                    <p className="text-sm text-gray-300 leading-snug max-w-[90%] mx-auto font-medium">
-                        {savedState.analysisSnapshot.shortSummary}
-                    </p>
-                </div>
-            </div>
-
-            {/* Validation Feedback */}
-            <div className={`px-4 py-3 rounded-lg border flex items-center justify-between gap-3 ${
-                savedState.analysisSnapshot.validationStatus === 'OK' 
-                ? 'bg-titan-green/5 border-titan-green/20' 
-                : 'bg-titan-gold/5 border-titan-gold/20'
+            {/* Status Header */}
+            <div className={`p-6 rounded-2xl border-2 text-center shadow-2xl bg-black/40 ${
+                savedState.analysisSnapshot.status === SignalStatus.BUY ? 'border-titan-green shadow-green-900/20' : 
+                savedState.analysisSnapshot.status === SignalStatus.SELL ? 'border-titan-red shadow-red-900/20' : 'border-titan-gold'
             }`}>
-                <div className="flex items-center gap-2">
-                    {savedState.analysisSnapshot.validationStatus === 'OK' ? (
-                        <CheckCircle2 size={16} className="text-titan-green" />
-                    ) : (
-                        <AlertTriangle size={16} className="text-titan-gold" />
-                    )}
-                    <span className={`text-[10px] font-bold uppercase ${
-                        savedState.analysisSnapshot.validationStatus === 'OK' ? 'text-titan-green' : 'text-titan-gold'
-                    }`}>
-                        {savedState.analysisSnapshot.validationMsg}
-                    </span>
-                </div>
+                <span className={`text-5xl font-black italic tracking-tighter ${
+                    savedState.analysisSnapshot.status === SignalStatus.BUY ? 'text-titan-green' : 
+                    savedState.analysisSnapshot.status === SignalStatus.SELL ? 'text-titan-red' : 'text-titan-gold'
+                }`}>
+                    {savedState.analysisSnapshot.status}
+                </span>
+                <p className="text-xs text-gray-400 mt-2 font-medium">{savedState.analysisSnapshot.shortSummary}</p>
             </div>
 
-            {/* --- TRADE PARAMETERS (SL/TP - VISUAL) --- */}
-            {savedState.analysisSnapshot.status !== SignalStatus.WAIT && savedState.analysisSnapshot.stopLoss && (
-                <div className="animate-in fade-in slide-in-from-bottom-3 duration-500">
-                    <div className="grid grid-cols-3 gap-2">
-                        {/* STOP LOSS */}
-                        <div className="bg-red-900/10 border border-red-900/30 rounded-lg p-3 text-center flex flex-col items-center justify-center relative overflow-hidden">
-                            <span className="text-[9px] text-red-400 font-bold uppercase tracking-wider mb-1">Stop Loss</span>
-                            <span className="text-sm font-mono font-bold text-white">{savedState.analysisSnapshot.stopLoss}</span>
-                            <span className="text-[8px] text-red-500/70 mt-1">20 pips</span>
-                        </div>
+            {/* Quick Copy Panel (The Real Tool) */}
+            {savedState.analysisSnapshot.status !== SignalStatus.WAIT && (
+                <div className="grid grid-cols-2 gap-3">
+                    <button 
+                        onClick={() => handleCopy(savedState.analysisSnapshot?.stopLoss || '', 'sl')}
+                        className="bg-red-900/20 border border-red-500/30 p-4 rounded-xl flex flex-col items-center gap-1 active:bg-red-900/40 transition-colors"
+                    >
+                        <span className="text-[10px] text-red-400 font-bold uppercase">STOP LOSS</span>
+                        <span className="text-xl font-mono font-bold text-white">{savedState.analysisSnapshot.stopLoss}</span>
+                        <span className="text-[8px] text-red-500/50">{copiedField === 'sl' ? 'COPIADO!' : 'CLIQUE PARA COPIAR'}</span>
+                    </button>
 
-                        {/* ENTRY */}
-                        <div className="bg-titan-card border border-titan-gold/20 rounded-lg p-3 text-center flex flex-col items-center justify-center">
-                            <span className="text-[9px] text-titan-gold font-bold uppercase tracking-wider mb-1">Entrada</span>
-                            <span className="text-sm font-mono font-bold text-white">{savedState.userPrice}</span>
-                        </div>
-
-                        {/* TAKE PROFIT */}
-                        <div className="bg-green-900/10 border border-green-900/30 rounded-lg p-3 text-center flex flex-col items-center justify-center relative overflow-hidden">
-                            <span className="text-[9px] text-green-400 font-bold uppercase tracking-wider mb-1">Take Profit</span>
-                            <span className="text-sm font-mono font-bold text-white">{savedState.analysisSnapshot.takeProfit}</span>
-                            <span className="text-[8px] text-green-500/70 mt-1">60 pips</span>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* --- COMMAND LINE --- */}
-            {savedState.analysisSnapshot.commandLine && (
-                <div className="animate-in fade-in slide-in-from-bottom-3 duration-500">
-                    <div className="bg-black/40 border border-titan-gold/30 rounded-lg p-3 relative group">
-                        <div className="flex items-center gap-2 mb-1">
-                            <Terminal size={12} className="text-titan-muted" />
-                            <span className="text-[10px] text-titan-muted uppercase">Comando Operacional</span>
-                        </div>
-                        <code className="text-[11px] font-mono text-green-400 break-all block leading-relaxed pr-8">
-                            {savedState.analysisSnapshot.commandLine}
-                        </code>
-                        <button 
-                            onClick={handleCopyCommand}
-                            className={`absolute top-2 right-2 p-1.5 rounded transition-all ${copied ? 'bg-green-500 text-black' : 'bg-titan-card text-titan-muted hover:text-white'}`}
-                        >
-                            {copied ? <CheckCircle2 size={14} /> : <Terminal size={14} />}
-                        </button>
-                    </div>
+                    <button 
+                        onClick={() => handleCopy(savedState.analysisSnapshot?.takeProfit || '', 'tp')}
+                        className="bg-green-900/20 border border-green-500/30 p-4 rounded-xl flex flex-col items-center gap-1 active:bg-green-900/40 transition-colors"
+                    >
+                        <span className="text-[10px] text-green-400 font-bold uppercase">TAKE PROFIT</span>
+                        <span className="text-xl font-mono font-bold text-white">{savedState.analysisSnapshot.takeProfit}</span>
+                        <span className="text-[8px] text-green-500/50">{copiedField === 'tp' ? 'COPIADO!' : 'CLIQUE PARA COPIAR'}</span>
+                    </button>
                 </div>
             )}
 
             {/* Detailed Rationale */}
-            <div className="space-y-3 delay-150 animate-in slide-in-from-bottom-4 duration-700 fill-mode-backwards">
-                <div className="flex items-center gap-2 px-1">
-                    <AlignLeft size={16} className="text-titan-gold" />
-                    <h3 className="text-xs font-bold text-white uppercase tracking-wider">
-                        Racional Institucional
-                    </h3>
+            <div className="bg-titan-card/30 p-5 rounded-xl border border-white/5">
+                <div className="flex items-center gap-2 mb-3 border-b border-white/5 pb-2">
+                    <AlignLeft size={14} className="text-titan-gold" />
+                    <span className="text-[10px] font-bold text-white uppercase tracking-widest">Racional de Entrada</span>
                 </div>
-                
-                <div className="bg-titan-card/30 rounded-xl p-5 border border-titan-card hover:border-titan-gold/10 transition-colors">
-                    <div className="flex justify-between items-center mb-4 border-b border-white/5 pb-2">
-                        <span className="text-[10px] text-titan-muted uppercase">Viés: <span className={savedState.trendBias === 'BULLISH' ? 'text-green-400' : 'text-red-400'}>{savedState.trendBias === 'BULLISH' ? 'Alta (Bull)' : 'Baixa (Bear)'}</span></span>
-                        <div className="flex items-center gap-1">
-                            <BarChart3 size={12} className="text-titan-gold" />
-                            <span className="text-xs font-mono text-titan-gold">Ref: {savedState.analysisSnapshot.referencePrice}</span>
-                        </div>
-                    </div>
-                    <div className="text-gray-300 leading-7 text-sm text-justify font-sans whitespace-pre-line">
-                        {savedState.analysisSnapshot.detailedAnalysis.split('\n').map((line, i) => (
-                            <span key={i} className="block mb-2">
-                                {line.includes('**') ? (
-                                    <strong className="text-white">{line.replace(/\*\*/g, '')}</strong>
-                                ) : (
-                                    line
-                                )}
-                            </span>
-                        ))}
-                    </div>
-                </div>
+                <p className="text-sm text-gray-300 leading-relaxed text-justify whitespace-pre-line">
+                    {savedState.analysisSnapshot.detailedAnalysis.replace(/\*\*/g, '')}
+                </p>
             </div>
 
-            {/* Risk Management (Footer) */}
-            <div className="pt-4 delay-200 animate-in slide-in-from-bottom-4 duration-700">
-                <div className="bg-titan-card rounded-xl border border-titan-card overflow-hidden">
-                    <div className="p-4 flex items-center justify-between">
-                         <div className="flex items-center gap-2">
-                            <Shield size={14} className="text-titan-gold" />
-                            <span className="text-[10px] font-bold text-white uppercase">Gestão Titan</span>
-                         </div>
-                         <span className="text-[10px] text-titan-muted">Risco Sugerido: 0.5% - 1%</span>
+            {/* Global Command */}
+            {savedState.analysisSnapshot.commandLine && (
+                <div 
+                    onClick={() => handleCopy(savedState.analysisSnapshot?.commandLine || '', 'cmd')}
+                    className="bg-black border border-titan-gold/30 p-4 rounded-xl cursor-pointer hover:bg-titan-gold/5 transition-colors group"
+                >
+                    <div className="flex justify-between items-center mb-2">
+                        <span className="text-[9px] text-titan-muted font-bold uppercase">Comando de Execução Rápida</span>
+                        {copiedField === 'cmd' ? <CheckCircle2 size={12} className="text-titan-green" /> : <Copy size={12} className="text-titan-gold" />}
                     </div>
+                    <code className="text-[11px] font-mono text-titan-gold group-hover:text-white transition-colors">
+                        {savedState.analysisSnapshot.commandLine}
+                    </code>
                 </div>
-            </div>
-
-          </div>
-      ) : (
-          /* Empty State */
-          <div className="flex flex-col items-center justify-center py-12 opacity-40 space-y-4 animate-pulse">
-              <div className="w-16 h-16 rounded-full bg-titan-card border-2 border-titan-card flex items-center justify-center mb-4">
-                  <Calculator size={24} className="text-titan-muted" />
-              </div>
-              <p className="text-xs text-titan-muted uppercase tracking-wider text-center max-w-[200px]">
-                  Insira o preço e valide o contexto institucional.
-              </p>
-          </div>
+            )}
+        </div>
       )}
+
+      {/* Manual Broker Link */}
+      <div className="pt-4 opacity-50 text-center">
+         <p className="text-[9px] text-titan-muted uppercase tracking-[0.3em]">Titan Institutional Trading Engine</p>
+      </div>
 
     </div>
   );
