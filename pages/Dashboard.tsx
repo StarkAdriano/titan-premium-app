@@ -16,8 +16,8 @@ interface DashboardProps {
   onUpdateState: (newState: DashboardState) => void;
 }
 
-// --- GERADOR DINÂMICO DE SCRIPT TRADINGVIEW (V8 - HYBRID MODE) ---
-// Adicionamos a opção de DESLIGAR o filtro para ver o passado (Backtest)
+// --- GERADOR DINÂMICO DE SCRIPT TRADINGVIEW (V9 - BACKTEST MODE) ---
+// Adicionamos 'useDynamicMode' para corrigir a distorção histórica de preços fixos.
 const getDynamicPineScript = (currentRef: string, currentBias: 'BULLISH' | 'BEARISH') => {
     // Normalização dos valores
     const price = currentRef.replace(',', '.') || '1.05450';
@@ -32,52 +32,64 @@ var redZone = color.new(#ef4444, 90)   // Vermelho transparente
 var greenZone = color.new(#10b981, 90) // Verde transparente
 
 // --- CONFIGURAÇÃO ---
-refPrice = input.float(${price}, title="Preço de Referência (Fair Value)")
-trendBias = input.string("${biasPine}", title="Tendência Macro (App)", options=["Bullish", "Bearish"])
-useTrendFilter = input.bool(true, title="Filtrar Sinais pelo Viés Atual?") // OPÇÃO NOVA
+group_app = "CONFIGURAÇÃO DO APP (FIXO)"
+refPrice = input.float(${price}, title="Preço de Referência (Fair Value)", group=group_app)
+trendBias = input.string("${biasPine}", title="Viés Macro (App)", options=["Bullish", "Bearish"], group=group_app)
+
+group_backtest = "MODO ESTUDO / BACKTEST"
+useTrendFilter = input.bool(true, title="Filtrar Sinais pelo Viés Atual?", group=group_backtest) 
+useDynamicMode = input.bool(false, title="Modo Backtest (Ref. Dinâmica)?", tooltip="Usa EMA 200 como referência móvel para ver sinais no passado.", group=group_backtest)
+
 showZones = input.bool(true, title="Mostrar Zonas Premium/Discount")
 
-// --- LÓGICA ---
-isPremium = close > refPrice
-isDiscount = close < refPrice
+// --- LÓGICA DE REFERÊNCIA ---
+// Para operar HOJE, usamos o preço fixo do App.
+// Para estudar o PASSADO, usamos a média móvel (EMA 200) para o preço justo acompanhar o gráfico.
+effectiveRef = useDynamicMode ? ta.ema(close, 200) : refPrice
+
+// --- CÁLCULO DE ZONAS ---
+isPremium = close > effectiveRef
+isDiscount = close < effectiveRef
 
 // --- VISUALIZAÇÃO ---
 bgcolor(showZones and isPremium ? redZone : na, title="Premium Zone")
 bgcolor(showZones and isDiscount ? greenZone : na, title="Discount Zone")
-plot(refPrice, "Equilibrium", color=titanGold, linewidth=2, style=plot.style_linebr)
+plot(effectiveRef, "Equilibrium", color=titanGold, linewidth=2, style=plot.style_linebr)
 
-// --- FILTRO DE DIREÇÃO INTELIGENTE ---
-// Se 'useTrendFilter' for true (Padrão), obedece o App (Segurança).
-// Se 'useTrendFilter' for false, mostra tudo (Estudo/Backtest).
+// --- FILTRO DE DIREÇÃO ---
+// Se 'useTrendFilter' for true:
+//    - Obedece o viés do App (Alta/Baixa).
+// Se 'useTrendFilter' for false:
+//    - Libera Compras e Vendas (Ideal para Backtest).
 canBuy = useTrendFilter ? (trendBias == "Bullish") : true
 canSell = useTrendFilter ? (trendBias == "Bearish") : true
 
 // --- GATILHOS ---
-// Venda: Premium + Rejeição (+ Filtro de Tendência opcional)
+// Venda: Premium + Rejeição
 bearSignal = canSell and isPremium and (high - close) > (close - open) * 2
 plotshape(bearSignal, title="Venda Titan", location=location.abovebar, color=color.red, style=shape.labeldown, text="SELL", textcolor=color.white)
 
-// Compra: Desconto + Força (+ Filtro de Tendência opcional)
+// Compra: Desconto + Força
 bullSignal = canBuy and isDiscount and close > open
 plotshape(bullSignal, title="Compra Titan", location=location.belowbar, color=color.green, style=shape.labelup, text="BUY", textcolor=color.black)
 
 // --- PAINEL DE CONTROLE VISUAL ---
-var table panel = table.new(position.top_right, 2, 4, border_width=1)
+var table panel = table.new(position.top_right, 2, 5, border_width=1)
 if barstate.islast
     // Cabeçalho
     table.cell(panel, 0, 0, "TITAN MONITOR", bgcolor=color.black, text_color=titanGold)
     
-    // Linha 1: Viés Atual
-    table.cell(panel, 0, 1, "Viés App:", bgcolor=color.black, text_color=color.white)
-    table.cell(panel, 1, 1, trendBias, bgcolor=trendBias == "Bullish" ? color.green : color.red, text_color=color.white)
+    // Linha 1: Modo de Referência
+    table.cell(panel, 0, 1, "Ref Mode:", bgcolor=color.black, text_color=color.white)
+    table.cell(panel, 1, 1, useDynamicMode ? "DINÂMICO (Histórico)" : "FIXO (App)", bgcolor=useDynamicMode ? color.blue : color.gray, text_color=color.white)
     
-    // Linha 2: Status do Filtro
-    table.cell(panel, 0, 2, "Filtro:", bgcolor=color.black, text_color=color.white)
-    table.cell(panel, 1, 2, useTrendFilter ? "ATIVADO" : "DESLIGADO", bgcolor=useTrendFilter ? color.blue : color.gray, text_color=color.white)
+    // Linha 2: Viés
+    table.cell(panel, 0, 2, "Viés:", bgcolor=color.black, text_color=color.white)
+    table.cell(panel, 1, 2, useTrendFilter ? trendBias : "LIVRE (Backtest)", bgcolor=useTrendFilter ? (trendBias == "Bullish" ? color.green : color.red) : color.blue, text_color=color.white)
     
     // Linha 3: Zona Atual
-    table.cell(panel, 0, 3, "Zona:", bgcolor=color.black, text_color=color.white)
-    table.cell(panel, 1, 3, isPremium ? "PREMIUM" : "DESCONTO", bgcolor=isPremium ? color.red : color.green, text_color=color.white)`;
+    table.cell(panel, 0, 3, "Zona Atual:", bgcolor=color.black, text_color=color.white)
+    table.cell(panel, 1, 3, isPremium ? "PREMIUM (Venda)" : "DESCONTO (Compra)", bgcolor=isPremium ? color.red : color.green, text_color=color.white)`;
 };
 
 // --- LÓGICA TITAN PREMIUM (REFINADA) ---
