@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Asset, SignalStatus, AnalysisResult } from '../types';
-import { TrendingUp, TrendingDown, Calculator, CheckCircle2, Clock, AlignLeft, Lock, Activity, RotateCcw, Shield, AlertTriangle, Terminal, Settings2, Edit3, Save } from 'lucide-react';
+import { TrendingUp, TrendingDown, Calculator, CheckCircle2, AlignLeft, Lock, Activity, RotateCcw, Shield, AlertTriangle, Terminal, Settings2, Edit3, Save, BarChart3, ArrowDown, ArrowUp } from 'lucide-react';
 
 interface DashboardState {
     userPrice: string;
@@ -16,7 +16,7 @@ interface DashboardProps {
   onUpdateState: (newState: DashboardState) => void;
 }
 
-// --- LÓGICA TITAN PREMIUM (CORRIGIDA E SINCRONIZADA) ---
+// --- LÓGICA TITAN PREMIUM (REFINADA) ---
 const generateTitanAnalysis = (
     assetSymbol: string, 
     inputPrice: number, 
@@ -30,92 +30,89 @@ const generateTitanAnalysis = (
     const isPremium = deviation > 0;
     const isDiscount = deviation < 0;
     
-    const currentTime = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-    
-    // Configurações de Risco (Stop Técnico vs Financeiro)
-    // Padrão EURUSD: Stop 20 pips, Alvo 60 pips (1:3)
+    // Configurações de Risco
     const PIP_VAL = 0.0001;
-    const STOP_PIPS = 20;
-    const TARGET_PIPS = 60;
+    const STOP_PIPS = 20; // Stop curto institucional
+    const TARGET_PIPS = 60; // Alvo 1:3
 
-    // --- CENÁRIO 1: TENDÊNCIA DE ALTA (BULLISH) ---
+    // LÓGICA DE DECISÃO HÍBRIDA (TREND + LOCATION)
+
+    // CENÁRIO 1: TENDÊNCIA DE ALTA (Procurar compras no Desconto)
     if (bias === 'BULLISH') {
-        // Se estamos em ALTA, queremos comprar BARATO (Desconto)
         if (isDiscount) {
+            // PERFEITO: Tendência de Alta + Preço Barato
             const slPrice = (inputPrice - (STOP_PIPS * PIP_VAL)).toFixed(5);
             const tpPrice = (inputPrice + (TARGET_PIPS * PIP_VAL)).toFixed(5);
-            const command = `${assetSymbol} BUY @ ${inputPrice.toFixed(5)} | SL: ${slPrice} | TP: ${tpPrice}`;
-
+            
             return {
                 status: SignalStatus.BUY,
-                shortSummary: `Oportunidade de Compra a Favor da Tendência.`,
-                detailedAnalysis: `**ANÁLISE INSTITUCIONAL (BULLISH)**\n
-                **Contexto:** O mercado tem fluxo comprador. O preço recuou para a zona de **Desconto** (-${pipsDeviation} pips do Ref).\n
-                **Ação:** Compra validada. Estamos comprando barato para seguir o fluxo principal.\n
-                **Alvo:** Liquidez nos topos anteriores (Buy Side Liquidity).`,
+                shortSummary: `Compra Validada (Discount Zone).`,
+                detailedAnalysis: `**SETUP DE ALTA PROBABILIDADE**\n
+                **1. Tendência:** O viés macro é de ALTA (Bullish).\n
+                **2. Localização:** O preço recuou para a Zona de Desconto (-${pipsDeviation} pips do Ref). Isso é "comprar barato".\n
+                **3. Gatilho:** O preço atingiu suporte institucional abaixo do preço justo.\n
+                **Ação:** Executar COMPRA visando renovação de topo.`,
                 validationStatus: 'OK',
-                validationMsg: 'Setup Aprovado (Trend + Discount)',
+                validationMsg: 'Setup Alinhado (Trend + Localização)',
                 referencePrice: referencePrice.toFixed(5),
                 stopLoss: slPrice,
                 takeProfit: tpPrice,
                 rrRatio: '1:3',
-                commandLine: command
+                commandLine: `${assetSymbol} BUY LIMIT @ ${inputPrice.toFixed(5)} SL ${slPrice} TP ${tpPrice}`
             };
-        } 
-        // Se estamos em ALTA mas o preço está CARO (Premium)
-        else {
+        } else {
+            // PERIGO: Tendência de Alta mas Preço Caro
              return {
                 status: SignalStatus.WAIT,
-                shortSummary: `Preço esticado (Premium). Aguarde retração.`,
-                detailedAnalysis: `**MODO DE ESPERA**\n
-                **Contexto:** A tendência é de Alta, mas o preço já subiu muito (+${pipsDeviation} pips acima do Ref).\n
-                **Risco:** Comprar agora é comprar topo. Vender é contra a tendência.\n
-                **Ação:** Aguarde o preço retornar ao Preço Justo (${referencePrice.toFixed(5)}) ou formar um novo bloco de suporte.`,
+                shortSummary: `Zona Premium. Não compre topo.`,
+                detailedAnalysis: `**ALERTA DE RISCO**\n
+                O viés é de Alta, mas o preço atual (${inputPrice}) está na Zona Premium (Caro).\n
+                Comprar agora reduz drasticamente sua relação Risco/Retorno.\n
+                **Recomendação:** Aguarde um pullback até pelo menos ${referencePrice.toFixed(5)} para comprar.`,
                 validationStatus: 'WARNING',
-                validationMsg: 'Aguardar Retração (Pullback)',
+                validationMsg: 'Preço Esticado (Aguardar Recuo)',
                 referencePrice: referencePrice.toFixed(5),
-                commandLine: `${assetSymbol} - AGUARDAR RETRAÇÃO`
+                commandLine: `${assetSymbol} - AGUARDAR PULLBACK`
             };
         }
     }
 
-    // --- CENÁRIO 2: TENDÊNCIA DE BAIXA (BEARISH) ---
+    // CENÁRIO 2: TENDÊNCIA DE BAIXA (Procurar vendas no Premium)
     else {
-        // Se estamos em BAIXA, queremos vender CARO (Premium)
         if (isPremium) {
+            // PERFEITO: Tendência de Baixa + Preço Caro
             const slPrice = (inputPrice + (STOP_PIPS * PIP_VAL)).toFixed(5);
             const tpPrice = (inputPrice - (TARGET_PIPS * PIP_VAL)).toFixed(5);
-            const command = `${assetSymbol} SELL @ ${inputPrice.toFixed(5)} | SL: ${slPrice} | TP: ${tpPrice}`;
-
+            
             return {
                 status: SignalStatus.SELL,
-                shortSummary: `Oportunidade de Venda a Favor da Tendência.`,
-                detailedAnalysis: `**ANÁLISE INSTITUCIONAL (BEARISH)**\n
-                **Contexto:** O mercado tem fluxo vendedor. O preço subiu para a zona **Premium** (+${pipsDeviation} pips do Ref).\n
-                **Ação:** Venda validada. Estamos vendendo caro para capturar a liquidez nos fundos.\n
-                **Alvo:** Liquidez nos fundos anteriores (Sell Side Liquidity).`,
+                shortSummary: `Venda Validada (Premium Zone).`,
+                detailedAnalysis: `**SETUP DE ALTA PROBABILIDADE**\n
+                **1. Tendência:** O viés macro é de BAIXA (Bearish).\n
+                **2. Localização:** O preço subiu para a Zona Premium (+${pipsDeviation} pips do Ref). Isso é "vender caro".\n
+                **3. Gatilho:** Rejeição em bloco de ordens acima do preço justo.\n
+                **Ação:** Executar VENDA visando liquidez nos fundos.`,
                 validationStatus: 'OK',
-                validationMsg: 'Setup Aprovado (Trend + Premium)',
+                validationMsg: 'Setup Alinhado (Trend + Localização)',
                 referencePrice: referencePrice.toFixed(5),
                 stopLoss: slPrice,
                 takeProfit: tpPrice,
                 rrRatio: '1:3',
-                commandLine: command
+                commandLine: `${assetSymbol} SELL LIMIT @ ${inputPrice.toFixed(5)} SL ${slPrice} TP ${tpPrice}`
             };
-        }
-        // Se estamos em BAIXA mas o preço está BARATO (Desconto)
-        else {
+        } else {
+            // PERIGO: Tendência de Baixa mas Preço Barato
             return {
                 status: SignalStatus.WAIT,
-                shortSummary: `Preço muito baixo. Perigoso vender fundo.`,
-                detailedAnalysis: `**MODO DE ESPERA**\n
-                **Contexto:** A tendência é de Baixa, mas o preço já caiu demais (-${pipsDeviation} pips abaixo do Ref).\n
-                **Risco:** Vender agora é "Vender Fundo". Comprar é contra a tendência.\n
-                **Ação:** Aguarde o preço corrigir (subir) até o Preço Justo (${referencePrice.toFixed(5)}) para buscar novas vendas.`,
+                shortSummary: `Zona de Desconto. Não venda fundo.`,
+                detailedAnalysis: `**ALERTA DE RISCO**\n
+                O viés é de Baixa, mas o preço já caiu muito e está na Zona de Desconto.\n
+                Vender agora é "vender fundo" e ficar exposto a um Short Squeeze.\n
+                **Recomendação:** Aguarde um repique (Inducement) até ${referencePrice.toFixed(5)} para vender.`,
                 validationStatus: 'WARNING',
-                validationMsg: 'Aguardar Correção (Inducement)',
+                validationMsg: 'Preço Esticado (Aguardar Repique)',
                 referencePrice: referencePrice.toFixed(5),
-                commandLine: `${assetSymbol} - AGUARDAR CORREÇÃO`
+                commandLine: `${assetSymbol} - AGUARDAR REPIQUE`
             };
         }
     }
@@ -129,18 +126,29 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
   
   const isMounted = useRef(true);
 
-  // Initialize defaults if missing
   useEffect(() => {
     isMounted.current = true;
     if (!savedState.referencePrice) {
         onUpdateState({
             ...savedState,
             referencePrice: asset.price,
-            trendBias: 'BEARISH' // Default conservador
+            trendBias: 'BEARISH' 
         });
     }
     return () => { isMounted.current = false; };
   }, []);
+
+  // --- LIVE ZONE CALCULATION ---
+  const currentInput = parseFloat(savedState.userPrice.replace(',', '.') || '0');
+  const refPrice = parseFloat(savedState.referencePrice || asset.price);
+  const diff = currentInput - refPrice;
+  const isPremium = diff > 0;
+  const isDiscount = diff < 0;
+  const isZero = diff === 0 || !savedState.userPrice;
+  
+  const zoneColor = isZero ? 'text-gray-500' : isPremium ? 'text-titan-red' : 'text-titan-green';
+  const zoneLabel = isZero ? 'Neutro' : isPremium ? 'PREMIUM (Venda)' : 'DESCONTO (Compra)';
+  const zoneIcon = isZero ? <Activity size={14} /> : isPremium ? <ArrowUp size={14} /> : <ArrowDown size={14} />;
 
   const getStatusColor = (status: SignalStatus) => {
     switch (status) {
@@ -162,7 +170,6 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
       onUpdateState({
           ...savedState,
           trendBias: savedState.trendBias === 'BULLISH' ? 'BEARISH' : 'BULLISH',
-          // Reset analysis if context changes
           isRevealed: false,
           analysisSnapshot: null
       });
@@ -189,7 +196,6 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
 
   const handleReveal = () => {
     const sanitizedPrice = savedState.userPrice.replace(',', '.');
-    const refPrice = parseFloat(savedState.referencePrice || asset.price);
     
     if (sanitizedPrice.trim().length > 0 && !isNaN(parseFloat(sanitizedPrice))) {
         setIsValidating(true);
@@ -197,10 +203,7 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
         
         setTimeout(() => {
             if (!isMounted.current) return;
-
             const inputVal = parseFloat(sanitizedPrice);
-            
-            // Core Logic Call
             const result = generateTitanAnalysis(asset.symbol, inputVal, refPrice, savedState.trendBias);
 
             onUpdateState({
@@ -208,9 +211,8 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
                 isRevealed: true,
                 analysisSnapshot: result
             });
-
             setIsValidating(false);
-        }, 1000);
+        }, 800);
     }
   };
 
@@ -268,7 +270,7 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
          <div className="bg-titan-card rounded-lg p-3 border border-titan-card flex items-center justify-between">
             <div className="flex flex-col">
                 <span className="text-[10px] text-titan-muted uppercase tracking-wider flex items-center gap-1">
-                    <Settings2 size={10} /> Ref. Institucional (Equilibrium)
+                    <Settings2 size={10} /> PREÇO DE REFERÊNCIA (FAIR VALUE)
                 </span>
                 
                 {isEditingRef ? (
@@ -285,16 +287,12 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
                     </div>
                 ) : (
                     <div className="flex items-center gap-2 mt-1 cursor-pointer group" onClick={startEditingRef}>
-                        <span className="text-sm font-mono font-bold text-white group-hover:text-titan-gold transition-colors">
+                        <span className="text-sm font-mono font-bold text-white group-hover:text-titan-gold transition-colors border-b border-dashed border-gray-600">
                             {savedState.referencePrice || asset.price}
                         </span>
                         <Edit3 size={12} className="text-titan-muted opacity-50 group-hover:opacity-100" />
                     </div>
                 )}
-            </div>
-            <div className="text-right">
-                <span className="text-[9px] text-gray-500 block">Preço Atual (Simulado)</span>
-                <span className="text-xs font-mono text-gray-300">{asset.price}</span>
             </div>
          </div>
       </div>
@@ -321,6 +319,15 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
                     className={`w-full bg-titan-darker border-b-2 ${savedState.isRevealed ? 'border-titan-muted text-gray-500' : 'border-titan-card focus:border-titan-gold text-white'} font-mono text-3xl py-3 text-center focus:outline-none transition-all placeholder-gray-700 rounded-t-lg`}
                     />
                 </div>
+                
+                {/* LIVE ZONE INDICATOR - NOVO! */}
+                {!savedState.isRevealed && savedState.userPrice && (
+                    <div className="flex items-center justify-center gap-2 mt-3 animate-in fade-in slide-in-from-top-1">
+                        <span className={`text-xs font-bold uppercase flex items-center gap-1 ${zoneColor}`}>
+                            {zoneIcon} {zoneLabel}
+                        </span>
+                    </div>
+                )}
             </div>
 
             <button 
@@ -335,12 +342,12 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
                 {isValidating ? (
                     <>
                         <Activity size={18} className="animate-spin" />
-                        Calculando Setup...
+                        Validando Setup...
                     </>
                 ) : (
                     <>
                         <Lock size={18} />
-                        Gerar Sinal
+                        Analisar Entrada
                     </>
                 )}
             </button>
@@ -365,7 +372,7 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
                 <div className="absolute inset-0 bg-gradient-to-br from-titan-card via-titan-dark to-black border border-titan-gold/30 rounded-2xl"></div>
                 
                 <div className="relative p-8 text-center z-10">
-                    <p className="text-[10px] text-titan-muted uppercase mb-4 tracking-[0.2em] font-bold animate-pulse">Setup Confirmado</p>
+                    <p className="text-[10px] text-titan-muted uppercase mb-4 tracking-[0.2em] font-bold animate-pulse">Sinal Institucional</p>
 
                     <div className={`inline-block px-8 py-3 rounded-lg border ${getStatusColor(savedState.analysisSnapshot.status)} ${getStatusBg(savedState.analysisSnapshot.status)} backdrop-blur-md mb-6 shadow-2xl`}>
                         <span className="text-4xl font-black tracking-widest uppercase drop-shadow-lg flex items-center justify-center gap-3">
@@ -459,7 +466,10 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
                 <div className="bg-titan-card/30 rounded-xl p-5 border border-titan-card hover:border-titan-gold/10 transition-colors">
                     <div className="flex justify-between items-center mb-4 border-b border-white/5 pb-2">
                         <span className="text-[10px] text-titan-muted uppercase">Viés: <span className={savedState.trendBias === 'BULLISH' ? 'text-green-400' : 'text-red-400'}>{savedState.trendBias === 'BULLISH' ? 'Alta (Bull)' : 'Baixa (Bear)'}</span></span>
-                        <span className="text-xs font-mono text-titan-gold">Ref: {savedState.analysisSnapshot.referencePrice}</span>
+                        <div className="flex items-center gap-1">
+                            <BarChart3 size={12} className="text-titan-gold" />
+                            <span className="text-xs font-mono text-titan-gold">Ref: {savedState.analysisSnapshot.referencePrice}</span>
+                        </div>
                     </div>
                     <div className="text-gray-300 leading-7 text-sm text-justify font-sans whitespace-pre-line">
                         {savedState.analysisSnapshot.detailedAnalysis.split('\n').map((line, i) => (
