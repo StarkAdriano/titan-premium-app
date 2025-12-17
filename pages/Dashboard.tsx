@@ -48,7 +48,7 @@ interface DashboardProps {
   onUpdateState: (newState: DashboardState) => void;
   activeAccountType?: 'DEMO' | 'REAL';
   onAccountTypeChange: (type: 'DEMO' | 'REAL') => void;
-  translations: any; // Nova prop
+  translations: any;
 }
 
 const InstitutionalChart = () => {
@@ -90,52 +90,18 @@ const InstitutionalChart = () => {
 
 const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState, activeAccountType = 'REAL', onAccountTypeChange, translations: t }) => {
   const [isValidating, setIsValidating] = useState(false);
-  const [isLinking, setIsLinking] = useState(false);
   const [isBrokerConnected, setIsBrokerConnected] = useState(false);
   const [showBrokerModal, setShowBrokerModal] = useState(false);
-  const [modalStep, setModalStep] = useState<'select' | 'login' | 'health' | 'success'>('select');
   const [selectedBroker, setSelectedBroker] = useState<any>(null);
-  const [latency, setLatency] = useState(24);
-  const [isPanicMode, setIsPanicMode] = useState(false);
-  
   const [showTradeTicket, setShowTradeTicket] = useState(false);
   const [pendingSide, setPendingSide] = useState<'BUY' | 'SELL' | null>(null);
 
-  const [balance, setBalance] = useState(activeAccountType === 'DEMO' ? 50000 : 10000);
-  const [riskPercent, setRiskPercent] = useState(1);
-  const [calculatedLot, setCalculatedLot] = useState(0.01);
-  
-  const [accountNumber, setAccountNumber] = useState('');
-  const [accountPass, setAccountPass] = useState('');
-
   const brokers = [
-    { id: 'pepperstone', name: 'Pepperstone', icon: Zap, color: 'bg-red-600', server: 'Pepperstone-Razor' },
-    { id: 'oanda', name: 'OANDA', icon: Globe, color: 'bg-blue-700', server: 'OANDA-v20-Live' },
-    { id: 'forex', name: 'FOREX.com', icon: Landmark, color: 'bg-slate-800', server: 'ForexCom-Real' },
-    { id: 'ibkr', name: 'Interactive Brokers', icon: Briefcase, color: 'bg-red-800', server: 'IBKR-Direct-Feed' },
-    { id: 'saxo', name: 'Saxo Bank', icon: Shield, color: 'bg-blue-900', server: 'Saxo-Institutional' },
-    { id: 'ic', name: 'IC Markets', icon: Activity, color: 'bg-emerald-600', server: 'ICMarkets-SC-Live' },
-    { id: 'blackbull', name: 'BlackBull Markets', icon: TrendingUp, color: 'bg-black', server: 'BlackBull-Prime' },
-    { id: 'capital', name: 'Capital.com', icon: Monitor, color: 'bg-slate-700', server: 'Capital-Trade-API' },
-    { id: 'eightcap', name: 'Eightcap', icon: BarChart2, color: 'bg-pink-700', server: 'Eightcap-Real-2' },
-    { id: 'vantage', name: 'Vantage', icon: Landmark, color: 'bg-blue-500', server: 'Vantage-Global-Live' },
+    { id: 'pepperstone', name: 'Pepperstone', icon: Zap, color: 'bg-red-600' },
+    { id: 'oanda', name: 'OANDA', icon: Globe, color: 'bg-blue-700' },
+    { id: 'forex', name: 'FOREX.com', icon: Landmark, color: 'bg-slate-800' },
+    { id: 'ic', name: 'IC Markets', icon: Activity, color: 'bg-emerald-600' }
   ];
-
-  const PIP_VALUE = 10;
-
-  useEffect(() => {
-    if (savedState.analysisSnapshot?.stopLoss && savedState.userPrice) {
-        const entry = parseFloat(savedState.userPrice.replace(',', '.'));
-        const sl = parseFloat(savedState.analysisSnapshot.stopLoss);
-        const distPips = Math.abs(entry - sl) * 10000;
-        
-        if (distPips > 0) {
-            const riskAmount = balance * (riskPercent / 100);
-            const lot = riskAmount / (distPips * PIP_VALUE);
-            setCalculatedLot(Math.max(0.01, parseFloat(lot.toFixed(2))));
-        }
-    }
-  }, [balance, riskPercent, savedState.analysisSnapshot, savedState.userPrice]);
 
   const handleReveal = () => {
     const sanitizedPrice = savedState.userPrice.replace(',', '.');
@@ -148,17 +114,14 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState,
             const zone = priceNum > equilibrium + 0.0010 ? 'PREMIUM' : priceNum < equilibrium - 0.0010 ? 'DISCOUNT' : 'EQUILIBRIUM';
             
             let status = SignalStatus.WAIT;
-            let rationale = "";
+            let rationaleKey = "rationale_wait";
 
             if (lastDigit <= 3 && zone === 'DISCOUNT') {
                 status = SignalStatus.BUY;
-                rationale = "Liquidez de sell-side capturada. Ordem institucional detectada em OB H1. Risco de mitigação baixo.";
+                rationaleKey = "rationale_buy";
             } else if (lastDigit >= 7 && zone === 'PREMIUM') {
                 status = SignalStatus.SELL;
-                rationale = "Rejeição em FVG Premium Zone. Fluxo de ordens interbancário aponta para liquidez inferior.";
-            } else {
-                status = SignalStatus.WAIT;
-                rationale = "Mercado em equilíbrio de preço (Fair Value). Sem vantagem matemática para exposição imediata.";
+                rationaleKey = "rationale_sell";
             }
 
             const sl = status === SignalStatus.BUY ? (priceNum - 0.0012).toFixed(5) : (priceNum + 0.0012).toFixed(5);
@@ -171,7 +134,7 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState,
                     status,
                     shortSummary: status === SignalStatus.WAIT ? "EQUILÍBRIO" : "SMC SETUP VALIDADO",
                     detailedAnalysis: "",
-                    rationale,
+                    rationale: t[rationaleKey], // Tradução dinâmica aqui
                     validationStatus: zone === 'EQUILIBRIUM' ? 'WARNING' : 'OK',
                     validationMsg: 'Protocolo Processado',
                     referencePrice: sanitizedPrice,
@@ -190,7 +153,7 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState,
       <div className="px-4 py-1.5 bg-black/80 text-[7px] flex justify-between items-center border-b border-white/5 font-mono tracking-widest opacity-70">
          <div className="flex gap-4">
              <span className="flex items-center gap-1"><Server size={8} /> CLUSTER: EUR-LDN-05</span>
-             <span className="flex items-center gap-1 text-titan-green"><Wifi size={8} /> {latency}ms</span>
+             <span className="flex items-center gap-1 text-titan-green"><Wifi size={8} /> 24ms</span>
          </div>
          <div className="flex gap-4 uppercase">
              <span className="text-titan-gold flex items-center gap-1"><Fingerprint size={8} /> SECURE BRIDGE</span>
@@ -211,19 +174,13 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState,
                 </span>
             </div>
          </div>
-         <button onClick={() => { if(!isBrokerConnected) { setModalStep('select'); setShowBrokerModal(true); } }} className={`px-4 py-2 rounded-xl text-[8px] font-black border transition-all active:scale-95 ${isBrokerConnected ? 'bg-titan-green/5 border-titan-green/30 text-titan-green' : 'bg-titan-gold text-black border-titan-gold shadow-lg'}`}>
+         <button onClick={() => { if(!isBrokerConnected) setShowBrokerModal(true); }} className={`px-4 py-2 rounded-xl text-[8px] font-black border transition-all active:scale-95 ${isBrokerConnected ? 'bg-titan-green/5 border-titan-green/30 text-titan-green' : 'bg-titan-gold text-black border-titan-gold shadow-lg'}`}>
             {isBrokerConnected ? 'BRIDGE ON' : t.connect}
          </button>
       </div>
 
-      {isBrokerConnected && (
-          <div className="p-4 animate-in fade-in zoom-in duration-700">
-              <InstitutionalChart />
-          </div>
-      )}
-
       <div className="px-4 py-2">
-          <div className="bg-titan-card/40 rounded-[2.5rem] p-8 border border-white/5 shadow-2xl relative overflow-hidden">
+          <div className="bg-titan-card/40 rounded-[2.5rem] p-8 border border-white/5 shadow-2xl relative overflow-hidden mt-4">
                 <input 
                     type="text" 
                     inputMode="decimal" 
@@ -299,22 +256,6 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState,
           </div>
       )}
 
-      {showTradeTicket && (
-          <div className="fixed inset-0 z-[110] flex items-end justify-center bg-black/90 backdrop-blur-sm animate-in fade-in">
-              <div className="bg-titan-dark w-full max-w-md rounded-t-[3.5rem] border-t border-titan-gold/30 p-10 shadow-2xl animate-in slide-in-from-bottom-full duration-400">
-                  <div className="flex justify-between items-start mb-8">
-                      <div>
-                          <h3 className="text-3xl font-black text-white italic tracking-tighter uppercase leading-none mb-1">{t.execute_order}</h3>
-                      </div>
-                      <button onClick={() => setShowTradeTicket(false)} className="text-white/40 hover:text-white p-3 bg-white/5 rounded-full">✕</button>
-                  </div>
-                  <button onClick={() => { setIsLinking(true); setTimeout(() => { setIsLinking(false); setShowTradeTicket(false); alert("Success"); }, 1200); }} className={`w-full py-7 rounded-[2rem] font-black text-sm uppercase tracking-[0.4em] shadow-2xl flex items-center justify-center gap-4 active:scale-95 transition-all ${pendingSide === 'BUY' ? 'bg-titan-green text-black' : 'bg-red-600 text-white'}`}>
-                      {isLinking ? <Loader2 className="animate-spin" /> : <ShieldCheck size={24} />} {t.authorization}
-                  </button>
-              </div>
-          </div>
-      )}
-
       {showBrokerModal && (
         <div className="fixed inset-0 z-[120] flex items-center justify-center p-6 bg-black/95 backdrop-blur-md animate-in fade-in">
             <div className="bg-titan-card border border-white/10 rounded-[3.5rem] w-full max-w-sm overflow-hidden shadow-2xl">
@@ -322,7 +263,7 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState,
                     <h3 className="text-xl font-black text-white tracking-tight uppercase leading-none">Bridge Gateway</h3>
                     <button onClick={() => setShowBrokerModal(false)} className="text-white/40 hover:text-white transition-colors p-2 bg-white/5 rounded-full">✕</button>
                 </div>
-                <div className="p-10 max-h-[500px] overflow-y-auto custom-scrollbar">
+                <div className="p-10 max-h-[500px] overflow-y-auto">
                     {brokers.map((b) => (
                         <button key={b.id} onClick={() => { setSelectedBroker(b); setIsBrokerConnected(true); setShowBrokerModal(false); }} className="w-full flex items-center justify-between p-5 bg-black/40 border border-white/5 rounded-3xl mb-3 hover:border-titan-gold/40 transition-all group">
                             <div className="flex items-center gap-4">

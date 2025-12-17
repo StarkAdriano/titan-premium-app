@@ -12,7 +12,11 @@ export const translations: Record<Language, any> = {
     lots: 'LOTES', authorization: 'AUTORIZAR SINAL',
     welcome: 'Acesso Restrito', start_trial: 'Ativar Teste Único', follow_insta: 'Seguir',
     security_val: 'Validação de Segurança', name_placeholder: 'Nome Completo',
-    whatsapp_placeholder: 'WhatsApp (com DDD)', confirm_follow: 'Confirmo que segui o perfil.'
+    whatsapp_placeholder: 'WhatsApp (com DDD)', confirm_follow: 'Confirmo que segui o perfil.',
+    rationale_buy: 'Liquidez de sell-side capturada. Ordem institucional detectada em OB H1. Risco de mitigação baixo.',
+    rationale_sell: 'Rejeição em FVG Premium Zone. Fluxo de ordens interbancário aponta para liquidez inferior.',
+    rationale_wait: 'Mercado em equilíbrio de preço (Fair Value). Sem vantagem matemática para exposição imediata.',
+    full_resolution: 'Resolução Total', high_impact: 'Alta Performance'
   },
   en: {
     terminal: 'Terminal', academy: 'Academy', access: 'Access', network: 'Network',
@@ -24,7 +28,11 @@ export const translations: Record<Language, any> = {
     lots: 'LOTS', authorization: 'AUTHORIZE SIGNAL',
     welcome: 'Restricted Access', start_trial: 'Start Free Trial', follow_insta: 'Follow',
     security_val: 'Security Validation', name_placeholder: 'Full Name',
-    whatsapp_placeholder: 'WhatsApp Number', confirm_follow: 'I confirm I followed the profile.'
+    whatsapp_placeholder: 'WhatsApp Number', confirm_follow: 'I confirm I followed the profile.',
+    rationale_buy: 'Sell-side liquidity captured. Institutional order detected in H1 OB. Low mitigation risk.',
+    rationale_sell: 'Rejection in FVG Premium Zone. Interbank order flow points to lower liquidity.',
+    rationale_wait: 'Market in price equilibrium (Fair Value). No mathematical advantage for immediate exposure.',
+    full_resolution: 'Full Resolution', high_impact: 'High Performance'
   },
   es: {
     terminal: 'Terminal', academy: 'Academia', access: 'Acceso', network: 'Red',
@@ -36,7 +44,11 @@ export const translations: Record<Language, any> = {
     lots: 'LOTES', authorization: 'AUTORIZAR SEÑAL',
     welcome: 'Acceso Restringido', start_trial: 'Activar Prueba Gratuita', follow_insta: 'Seguir',
     security_val: 'Validación de Seguridad', name_placeholder: 'Nombre Completo',
-    whatsapp_placeholder: 'WhatsApp', confirm_follow: 'Confirmo que seguí el perfil.'
+    whatsapp_placeholder: 'WhatsApp', confirm_follow: 'Confirmo que seguí el perfil.',
+    rationale_buy: 'Liquidez de sell-side capturada. Orden institucional detectada en OB H1. Bajo riesgo de mitigación.',
+    rationale_sell: 'Rechazo en FVG Premium Zone. El flujo de órdenes interbancarias apunta a una menor liquidez.',
+    rationale_wait: 'Mercado en equilibrio de precios (Fair Value). Sin ventaja matemática para la exposición inmediata.',
+    full_resolution: 'Resolución Total', high_impact: 'Alto Rendimiento'
   },
   it: {
     terminal: 'Terminale', academy: 'Accademia', access: 'Accesso', network: 'Rete',
@@ -48,7 +60,11 @@ export const translations: Record<Language, any> = {
     lots: 'LOTTI', authorization: 'AUTORIZZA SEGNALE',
     welcome: 'Accesso Limitato', start_trial: 'Attiva Prova Gratuita', follow_insta: 'Segui',
     security_val: 'Validazione di Sicurezza', name_placeholder: 'Nome Completo',
-    whatsapp_placeholder: 'WhatsApp', confirm_follow: 'Confermo di aver seguito il profilo.'
+    whatsapp_placeholder: 'WhatsApp', confirm_follow: 'Confermo di aver seguito il profilo.',
+    rationale_buy: 'Liquidità sell-side catturata. Ordine istituzionale rilevato in OB H1. Basso rischio di mitigazione.',
+    rationale_sell: 'Rifiuto in FVG Premium Zone. Il flusso di ordini interbancari punta a una liquidità inferiore.',
+    rationale_wait: 'Mercato in equilibrio di prezzo (Fair Value). Nessun vantaggio matematico per l\'esposizione immediata.',
+    full_resolution: 'Risoluzione Totale', high_impact: 'Alte Prestazioni'
   },
   ja: {
     terminal: 'ターミナル', academy: 'アカデミー', access: 'アクセス', network: 'ネットワーク',
@@ -60,7 +76,11 @@ export const translations: Record<Language, any> = {
     lots: 'ロット', authorization: 'シグナルを承認',
     welcome: '制限付きアクセス', start_trial: '無料トライアルを開始', follow_insta: 'フォロー',
     security_val: 'セキュリティ検証', name_placeholder: 'フルネーム',
-    whatsapp_placeholder: '電話番号', confirm_follow: 'プロフィールをフォローしたことを確認します。'
+    whatsapp_placeholder: '電話番号', confirm_follow: 'プロフィールをフォローしたことを確認します。',
+    rationale_buy: 'セルサイドの流動性を確保。H1 OBで機関投資家の注文を検出。軽減リスクは低い。',
+    rationale_sell: 'FVGプレミアムゾーンでの拒絶。インターバンクの注文フローはより低い流動性を示唆。',
+    rationale_wait: '市場は価格均衡（フェアバリュー）状態。即時のエクスポージャーに数学的利点なし。',
+    full_resolution: 'フル解像度', high_impact: 'ハイパフォーマンス'
   },
   zh: {
     terminal: '终端', academy: '学院', access: '访问', network: '网络',
@@ -72,7 +92,11 @@ export const translations: Record<Language, any> = {
     lots: '手数', authorization: '授权信号',
     welcome: '受限访问', start_trial: '开始免费试用', follow_insta: '跟随',
     security_val: '安全验证', name_placeholder: '全名',
-    whatsapp_placeholder: 'WhatsApp 号码', confirm_follow: '我确认我关注了该个人资料。'
+    whatsapp_placeholder: 'WhatsApp 号码', confirm_follow: '我确认我关注了该个人资料。',
+    rationale_buy: '卖方流动性已被捕捉。H1 OB 检测到机构订单。缓解风险较低。',
+    rationale_sell: 'FVG 溢价区遭到拒绝。银行间订单流指向更低的流动性。',
+    rationale_wait: '市场处于价格平衡（公允价值）。立即入场没有数学优势。',
+    full_resolution: '全分辨率', high_impact: '高性能'
   },
   he: {
     terminal: 'מסוף', academy: 'אקדמיה', access: 'גישה', network: 'רשת',
@@ -84,7 +108,11 @@ export const translations: Record<Language, any> = {
     lots: 'לוטים', authorization: 'אשר אות',
     welcome: 'גישה מוגבלת', start_trial: 'התחל ניסיון חינם', follow_insta: 'עקוב',
     security_val: 'אימות אבטחה', name_placeholder: 'שם מלא',
-    whatsapp_placeholder: 'מספר וואטסאפ', confirm_follow: 'אני מאשר שעקבתי אחרי הפרופיל.'
+    whatsapp_placeholder: 'מספר וואטסאפ', confirm_follow: 'אני מאשר שעקבתי אחרי הפרופיל.',
+    rationale_buy: 'נזילות צד המכירה נלכדה. זוהתה פקודה מוסדית ב-OB H1. סיכון נמוך.',
+    rationale_sell: 'דחייה באזור פרימיום FVG. זרימת הפקודות הבין-בנקאית מצביעה על נזילות נמוכה יותר.',
+    rationale_wait: 'שוק בשיווי משקל מחירים (Fair Value). אין יתרון מתמטי לחשיפה מיידית.',
+    full_resolution: 'רזולוציה מלאה', high_impact: 'ביצועים גבוהים'
   },
   ru: {
     terminal: 'Терминал', academy: 'Академия', access: 'Доступ', network: 'Сеть',
@@ -96,7 +124,11 @@ export const translations: Record<Language, any> = {
     lots: 'ЛОТЫ', authorization: 'АВТОРИЗОВАТЬ СИГНАЛ',
     welcome: 'Ограниченный доступ', start_trial: 'Начать пробный период', follow_insta: 'Подписаться',
     security_val: 'Проверка безопасности', name_placeholder: 'Полное имя',
-    whatsapp_placeholder: 'Номер WhatsApp', confirm_follow: 'Я подтверждаю, что подписался на профиль.'
+    whatsapp_placeholder: 'Номер WhatsApp', confirm_follow: 'Я подтверждаю, что подписался на профиль.',
+    rationale_buy: 'Ликвидность на стороне продажи захвачена. Институциональный ордер обнаружен в H1 OB. Низкий риск.',
+    rationale_sell: 'Отказ в зоне премиум FVG. Межбанковский поток ордеров указывает на более низкую ликвидность.',
+    rationale_wait: 'Рынок в ценовом равновесии (Fair Value). Нет математического преимущества для немедленного входа.',
+    full_resolution: 'Полное разрешение', high_impact: 'Высокая производительность'
   }
 };
 
