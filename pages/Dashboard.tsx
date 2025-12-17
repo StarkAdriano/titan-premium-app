@@ -22,8 +22,8 @@ import {
   Skull,
   TrendingUp,
   Wallet,
-  // Added RotateCcw to fix the "Cannot find name 'RotateCcw'" error
-  RotateCcw
+  RotateCcw,
+  ChevronRight
 } from 'lucide-react';
 
 interface DashboardState {
@@ -57,6 +57,13 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
   
   const [accountNumber, setAccountNumber] = useState('');
   const [accountPass, setAccountPass] = useState('');
+  const [brokerServer, setBrokerServer] = useState('');
+
+  const brokers = [
+    { id: 'tv', name: 'TradingView', icon: BarChart2, color: 'bg-blue-600', server: 'TradingView-Internal' },
+    { id: 'mt5', name: 'MetaTrader 5', icon: Monitor, color: 'bg-slate-700', server: 'ICMarkets-Real15' },
+    { id: 'inv', name: 'Exness Terminal', icon: Shield, color: 'bg-orange-600', server: 'Exness-Real10' },
+  ];
 
   const PIP_VALUE = 10; // Standard for EURUSD 1.0 lot
 
@@ -131,7 +138,6 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
 
   const handlePanic = () => {
     setIsPanicMode(true);
-    // Simula encerramento de ordens via Bridge
     setTimeout(() => {
         setIsPanicMode(false);
         onUpdateState({ ...savedState, isRevealed: false, analysisSnapshot: null });
@@ -139,10 +145,33 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
     }, 2000);
   };
 
+  const handleConnectClick = () => {
+    if (!isBrokerConnected) {
+      setModalStep('select');
+      setShowBrokerModal(true);
+    }
+  };
+
+  const startLogin = (broker: any) => {
+    setSelectedBroker(broker);
+    setBrokerServer(broker.server);
+    setModalStep('login');
+  };
+
+  const processAuth = () => {
+    setIsLinking(true);
+    setTimeout(() => {
+      setIsBrokerConnected(true);
+      setIsLinking(false);
+      setModalStep('success');
+      setTimeout(() => setShowBrokerModal(false), 1500);
+    }, 2000);
+  };
+
   return (
     <div className="flex flex-col min-h-full pb-32 bg-titan-darker">
       {/* Network & Status Header */}
-      <div className="px-4 py-3 bg-titan-dark flex items-center justify-between border-b border-white/5">
+      <div className="px-4 py-3 bg-titan-dark flex items-center justify-between border-b border-white/5 sticky top-0 z-20">
          <div className="flex flex-col">
             <h2 className="text-sm font-black text-white italic tracking-tighter leading-none">EURUSD <span className="text-titan-gold text-[10px] ml-1">INSTITUTIONAL</span></h2>
             <div className="flex items-center gap-1.5 mt-0.5">
@@ -162,12 +191,14 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
                 {isPanicMode ? <Loader2 size={16} className="animate-spin" /> : <Skull size={16} />}
             </button>
             <button 
-                onClick={() => {!isBrokerConnected && setShowBrokerModal(true)}}
-                className={`px-3 py-1.5 rounded-lg text-[9px] font-black border transition-all ${
-                    isBrokerConnected ? 'bg-titan-green/10 border-titan-green text-titan-green' : 'bg-titan-gold text-black border-titan-gold'
+                onClick={handleConnectClick}
+                className={`px-3 py-1.5 rounded-lg text-[9px] font-black border transition-all active:scale-95 shadow-lg ${
+                    isBrokerConnected 
+                      ? 'bg-titan-green/10 border-titan-green text-titan-green' 
+                      : 'bg-titan-gold text-black border-titan-gold shadow-gold-500/20'
                 }`}
             >
-                {isBrokerConnected ? 'CONECTADO' : 'CONECTAR BRIDGE'}
+                {isBrokerConnected ? 'SINC. ATIVA' : 'CONECTAR BRIDGE'}
             </button>
          </div>
       </div>
@@ -245,20 +276,20 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
                     </button>
                 ) : (
                     <div className="space-y-4">
-                        <div className={`p-8 rounded-3xl border-4 text-center relative overflow-hidden bg-black/80 ${
+                        <div className={`flex flex-col items-center justify-center p-8 rounded-3xl border-4 text-center relative overflow-hidden bg-black/80 min-h-[220px] transition-all duration-500 ${
                             savedState.analysisSnapshot?.status === SignalStatus.BUY ? 'border-titan-green shadow-[0_0_30px_rgba(16,185,129,0.2)]' : 
-                            savedState.analysisSnapshot?.status === SignalStatus.SELL ? 'border-titan-red shadow-[0_0_30px_rgba(239,68,68,0.2)]' : 'border-titan-gold'
+                            savedState.analysisSnapshot?.status === SignalStatus.SELL ? 'border-titan-red shadow-[0_0_30px_rgba(239,68,68,0.2)]' : 'border-titan-gold shadow-[0_0_30px_rgba(212,175,55,0.1)]'
                         }`}>
                             <span className="text-[10px] text-titan-gold font-bold uppercase tracking-[0.4em] mb-4 block">Análise Titan SMC</span>
-                            <h3 className={`text-7xl font-black italic tracking-tighter mb-4 ${
-                                savedState.analysisSnapshot?.status === SignalStatus.BUY ? 'text-titan-green' : 
-                                savedState.analysisSnapshot?.status === SignalStatus.SELL ? 'text-titan-red' : 'text-titan-gold'
+                            <h3 className={`font-black italic tracking-tighter mb-4 leading-none transition-all ${
+                                savedState.analysisSnapshot?.status === SignalStatus.BUY ? 'text-titan-green text-7xl' : 
+                                savedState.analysisSnapshot?.status === SignalStatus.SELL ? 'text-titan-red text-7xl' : 'text-titan-gold text-5xl'
                             }`}>
                                 {savedState.analysisSnapshot?.status}
                             </h3>
-                            <p className="text-white font-bold text-xs uppercase opacity-80">{savedState.analysisSnapshot?.shortSummary}</p>
+                            <p className="text-white font-bold text-xs uppercase opacity-80 mt-2">{savedState.analysisSnapshot?.shortSummary}</p>
                         </div>
-                        <button onClick={() => onUpdateState({...savedState, isRevealed: false})} className="w-full py-3 text-titan-muted text-xs uppercase font-bold flex items-center justify-center gap-2">
+                        <button onClick={() => onUpdateState({...savedState, isRevealed: false})} className="w-full py-3 text-titan-muted text-xs uppercase font-bold flex items-center justify-center gap-2 hover:text-white transition-colors">
                             <RotateCcw size={14} /> Novo Input
                         </button>
                     </div>
@@ -268,7 +299,7 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
 
       {/* Execution Box with Risk Engine */}
       <div className="p-4 space-y-4">
-          <div className="bg-titan-card/50 rounded-3xl p-6 border border-white/5">
+          <div className="bg-titan-card/50 rounded-3xl p-6 border border-white/5 shadow-inner">
               <div className="flex justify-between items-center mb-6">
                   <div>
                     <span className="text-[10px] text-titan-muted font-bold uppercase tracking-widest block mb-1">Calculadora Institucional</span>
@@ -285,26 +316,37 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
               <div className="grid grid-cols-2 gap-4">
                   <button 
                     disabled={!isBrokerConnected || !savedState.analysisSnapshot?.stopLoss}
-                    className={`py-6 rounded-2xl font-black text-3xl italic tracking-tighter border-b-4 transition-all ${
-                        isBrokerConnected && savedState.analysisSnapshot?.stopLoss ? 'bg-titan-red border-red-900 active:scale-95 shadow-xl' : 'bg-white/5 text-titan-muted opacity-20'
+                    className={`py-6 rounded-2xl font-black text-3xl italic tracking-tighter border-b-4 transition-all shadow-xl ${
+                        isBrokerConnected && savedState.analysisSnapshot?.stopLoss 
+                          ? 'bg-titan-red border-red-900 text-white active:scale-95' 
+                          : 'bg-white/5 text-titan-muted opacity-20 border-transparent'
                     }`}
                   >
                       SELL
                   </button>
                   <button 
                     disabled={!isBrokerConnected || !savedState.analysisSnapshot?.stopLoss}
-                    className={`py-6 rounded-2xl font-black text-3xl italic tracking-tighter border-b-4 transition-all ${
-                        isBrokerConnected && savedState.analysisSnapshot?.stopLoss ? 'bg-titan-green border-green-900 active:scale-95 shadow-xl' : 'bg-white/5 text-titan-muted opacity-20'
+                    className={`py-6 rounded-2xl font-black text-3xl italic tracking-tighter border-b-4 transition-all shadow-xl ${
+                        isBrokerConnected && savedState.analysisSnapshot?.stopLoss 
+                          ? 'bg-titan-green border-green-900 text-white active:scale-95' 
+                          : 'bg-white/5 text-titan-muted opacity-20 border-transparent'
                     }`}
                   >
                       BUY
                   </button>
               </div>
               
-              {!savedState.analysisSnapshot?.stopLoss && (
-                  <div className="mt-4 flex items-center justify-center gap-2 text-red-500 animate-pulse">
+              {!isBrokerConnected && (
+                  <div className="mt-4 flex items-center justify-center gap-2 text-titan-gold/60 animate-pulse">
                       <Lock size={12} />
-                      <span className="text-[10px] font-bold uppercase">Execução Bloqueada: Defina o Stop Loss</span>
+                      <span className="text-[9px] font-bold uppercase">Conecte a Bridge para operar</span>
+                  </div>
+              )}
+              
+              {isBrokerConnected && !savedState.analysisSnapshot?.stopLoss && (
+                  <div className="mt-4 flex items-center justify-center gap-2 text-red-500 animate-pulse">
+                      <AlertTriangle size={12} />
+                      <span className="text-[9px] font-bold uppercase">Aguardando definição de entrada (Sinal)</span>
                   </div>
               )}
           </div>
@@ -315,6 +357,124 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
           <Shield size={10} className="text-titan-gold" />
           <span className="text-[8px] font-mono text-white tracking-widest uppercase">Encryption Status: AES-256 Military Grade Active</span>
       </div>
+
+      {/* MODAL DE CONEXÃO BRIDGE */}
+      {showBrokerModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/90 backdrop-blur-md animate-in fade-in duration-300">
+            <div className="bg-titan-card border border-white/10 rounded-[2.5rem] w-full max-w-sm overflow-hidden shadow-2xl animate-in zoom-in-95">
+                
+                <div className="p-6 border-b border-white/5 flex justify-between items-center bg-titan-dark">
+                    <div className="flex flex-col">
+                        <h3 className="text-xl font-bold text-white tracking-tight leading-none mb-1">
+                            {modalStep === 'select' ? 'Bridge Sync' : modalStep === 'login' ? 'Autenticação' : 'Conectado'}
+                        </h3>
+                        <p className="text-[8px] text-titan-muted uppercase tracking-[0.2em]">Institutional API Bridge</p>
+                    </div>
+                    <button 
+                        onClick={() => { if(!isLinking) setShowBrokerModal(false); }} 
+                        className="text-white/40 hover:text-white transition-colors p-2"
+                    >
+                        ✕
+                    </button>
+                </div>
+
+                <div className="p-6">
+                    {modalStep === 'select' && (
+                        <div className="space-y-3">
+                            {brokers.map((b) => (
+                                <button 
+                                    key={b.id}
+                                    onClick={() => startLogin(b)}
+                                    className="w-full flex items-center justify-between p-4 bg-black/40 border border-white/5 rounded-2xl hover:border-titan-gold/40 transition-all active:scale-98 group"
+                                >
+                                    <div className="flex items-center gap-4">
+                                        <div className={`w-12 h-12 ${b.color} rounded-xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform`}>
+                                            <b.icon size={22} className="text-white" />
+                                        </div>
+                                        <div className="text-left">
+                                            <p className="text-base font-bold text-white group-hover:text-titan-gold transition-colors">{b.name}</p>
+                                            <p className="text-[9px] text-titan-muted uppercase tracking-tighter">Conexão via Bridge API</p>
+                                        </div>
+                                    </div>
+                                    <ChevronRight size={18} className="text-titan-muted" />
+                                </button>
+                            ))}
+                        </div>
+                    )}
+
+                    {modalStep === 'login' && selectedBroker && (
+                        <div className="space-y-4 animate-in slide-in-from-right-4 duration-300">
+                            <div className="flex items-center gap-3 bg-titan-gold/5 p-4 rounded-2xl border border-titan-gold/10 mb-2">
+                                <div className={`w-10 h-10 ${selectedBroker.color} rounded-lg flex items-center justify-center`}>
+                                    <selectedBroker.icon size={18} className="text-white" />
+                                </div>
+                                <div>
+                                    <p className="text-xs font-bold text-white uppercase">{selectedBroker.name}</p>
+                                    <p className="text-[9px] text-titan-gold uppercase tracking-tighter font-bold">Protocolo Seguro Ativo</p>
+                                </div>
+                            </div>
+
+                            <div className="space-y-3">
+                                <div className="space-y-1">
+                                    <label className="text-[9px] text-titan-muted font-bold uppercase ml-1">Account ID</label>
+                                    <div className="relative">
+                                        <UserIcon size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-titan-muted" />
+                                        <input 
+                                            type="text"
+                                            value={accountNumber}
+                                            onChange={(e) => setAccountNumber(e.target.value)}
+                                            placeholder="Ex: 5849302"
+                                            className="w-full bg-black/50 border border-white/10 p-3.5 pl-10 rounded-xl text-white outline-none focus:border-titan-gold transition-all font-mono"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-1">
+                                    <label className="text-[9px] text-titan-muted font-bold uppercase ml-1">Terminal Key (Senha)</label>
+                                    <div className="relative">
+                                        <Lock size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-titan-muted" />
+                                        <input 
+                                            type="password"
+                                            value={accountPass}
+                                            onChange={(e) => setAccountPass(e.target.value)}
+                                            placeholder="••••••••"
+                                            className="w-full bg-black/50 border border-white/10 p-3.5 pl-10 rounded-xl text-white outline-none focus:border-titan-gold transition-all"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button 
+                                onClick={processAuth}
+                                disabled={isLinking || !accountNumber || !accountPass}
+                                className="w-full bg-titan-gold text-black py-4 rounded-2xl font-black uppercase tracking-widest text-xs mt-4 shadow-xl active:scale-95 disabled:opacity-40"
+                            >
+                                {isLinking ? <Loader2 className="animate-spin mx-auto" size={20} /> : 'INICIAR SINCRONIZAÇÃO'}
+                            </button>
+                            
+                            <button 
+                                onClick={() => setModalStep('select')}
+                                disabled={isLinking}
+                                className="w-full text-[10px] text-titan-muted hover:text-white transition-colors py-2 flex items-center justify-center gap-2"
+                            >
+                                <ArrowLeft size={10} /> Voltar
+                            </button>
+                        </div>
+                    )}
+
+                    {modalStep === 'success' && (
+                        <div className="py-10 text-center animate-in zoom-in-95 duration-500">
+                            <div className="w-20 h-20 bg-titan-green/20 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-titan-green shadow-[0_0_30px_rgba(16,185,129,0.3)]">
+                                <ShieldCheck size={40} className="text-titan-green" />
+                            </div>
+                            <h4 className="text-2xl font-black text-white italic mb-2 tracking-tighter uppercase leading-none">TERMINAL ONLINE</h4>
+                            <p className="text-[10px] text-titan-muted uppercase tracking-widest font-bold">Execução Bridge Ativada</p>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+      )}
     </div>
   );
 };
