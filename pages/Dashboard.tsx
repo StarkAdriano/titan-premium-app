@@ -138,7 +138,7 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
     return () => { isMounted.current = false; };
   }, []);
 
-  // --- LIVE ZONE CALCULATION ---
+  // --- LIVE ZONE CALCULATION (O MONITOR EM TEMPO REAL) ---
   const currentInput = parseFloat(savedState.userPrice.replace(',', '.') || '0');
   const refPrice = parseFloat(savedState.referencePrice || asset.price);
   const diff = currentInput - refPrice;
@@ -146,6 +146,7 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
   const isDiscount = diff < 0;
   const isZero = diff === 0 || !savedState.userPrice;
   
+  // Cores dinâmicas baseadas na posição do preço
   const zoneColor = isZero ? 'text-gray-500' : isPremium ? 'text-titan-red' : 'text-titan-green';
   const zoneLabel = isZero ? 'Neutro' : isPremium ? 'PREMIUM (Venda)' : 'DESCONTO (Compra)';
   const zoneIcon = isZero ? <Activity size={14} /> : isPremium ? <ArrowUp size={14} /> : <ArrowDown size={14} />;
@@ -320,7 +321,8 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
                     />
                 </div>
                 
-                {/* LIVE ZONE INDICATOR - NOVO! */}
+                {/* --- MONITOR DE ZONA EM TEMPO REAL --- */}
+                {/* Isso garante que você saiba onde está antes de gerar o sinal */}
                 {!savedState.isRevealed && savedState.userPrice && (
                     <div className="flex items-center justify-center gap-2 mt-3 animate-in fade-in slide-in-from-top-1">
                         <span className={`text-xs font-bold uppercase flex items-center gap-1 ${zoneColor}`}>
