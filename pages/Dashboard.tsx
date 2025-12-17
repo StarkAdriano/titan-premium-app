@@ -17,7 +17,10 @@ import {
   Lock,
   Server,
   User as UserIcon,
-  ShieldCheck
+  ShieldCheck,
+  PlusCircle,
+  Building2,
+  ArrowLeft
 } from 'lucide-react';
 
 interface DashboardState {
@@ -80,14 +83,16 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
   const [isLinking, setIsLinking] = useState(false);
   const [isBrokerConnected, setIsBrokerConnected] = useState(false);
   const [showBrokerModal, setShowBrokerModal] = useState(false);
-  const [modalStep, setModalStep] = useState<'select' | 'login' | 'success'>('select');
+  const [modalStep, setModalStep] = useState<'select' | 'custom_name' | 'login' | 'success'>('select');
   const [selectedBroker, setSelectedBroker] = useState<any>(null);
+  const [customBrokerName, setCustomBrokerName] = useState('');
   const [lotSize, setLotSize] = useState(0.01);
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
   // Form State
   const [accountNumber, setAccountNumber] = useState('');
   const [accountPass, setAccountPass] = useState('');
+  const [brokerServer, setBrokerServer] = useState('');
 
   const brokers = [
     { id: 'tv', name: 'TradingView', icon: BarChart2, color: 'bg-blue-600', server: 'TradingView-Internal' },
@@ -152,7 +157,25 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
   };
 
   const startLogin = (broker: any) => {
-      setSelectedBroker(broker);
+      if (broker.id === 'custom') {
+          setModalStep('custom_name');
+      } else {
+          setSelectedBroker(broker);
+          setBrokerServer(broker.server);
+          setModalStep('login');
+      }
+  };
+
+  const confirmCustomBroker = () => {
+      if (!customBrokerName) return;
+      setSelectedBroker({
+          id: 'custom',
+          name: customBrokerName,
+          icon: Building2,
+          color: 'bg-titan-gold',
+          server: 'Auto-Sync Detect'
+      });
+      setBrokerServer('');
       setModalStep('login');
   };
 
@@ -194,7 +217,7 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
             }`}
          >
             {isLinking ? <Loader2 size={12} className="animate-spin" /> : (isBrokerConnected ? <ShieldCheck size={12} /> : <Zap size={12} />)}
-            {isBrokerConnected ? `LOGIN: ${accountNumber}` : 'LINCAR CORRETORA'}
+            {isBrokerConnected ? `${selectedBroker?.name.toUpperCase()}: ${accountNumber}` : 'LINCAR CORRETORA'}
          </button>
       </div>
 
@@ -236,7 +259,7 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
               </div>
           </div>
 
-          {/* SINAL REVELADO - ALINHAMENTO ABSOLUTO */}
+          {/* SINAL REVELADO */}
           {savedState.isRevealed && savedState.analysisSnapshot && (
               <div className="animate-in zoom-in-95 duration-500 space-y-4">
                   <div className={`flex flex-col items-center justify-center min-h-[180px] p-6 rounded-[2.5rem] border-[3px] text-center shadow-2xl bg-black/50 backdrop-blur-xl relative overflow-hidden transition-all ${
@@ -326,7 +349,7 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
           </div>
       </div>
 
-      {/* MODAL DE LINCAGEM COM LOGIN REAL */}
+      {/* MODAL DE CONEXÃO MULTI-PASSO */}
       {showBrokerModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/95 backdrop-blur-md animate-in fade-in duration-300">
             <div className="bg-titan-card border border-white/10 rounded-[2.5rem] w-full max-w-sm overflow-hidden shadow-2xl scale-in-center">
@@ -334,10 +357,10 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
                 {/* Header Modal */}
                 <div className="p-6 border-b border-white/5 flex justify-between items-center bg-titan-dark">
                     <div className="flex flex-col">
-                        <h3 className="text-xl font-bold text-white tracking-tight">
-                            {modalStep === 'select' ? 'Conectar' : modalStep === 'login' ? 'Autenticação' : 'Sucesso'}
+                        <h3 className="text-xl font-bold text-white tracking-tight leading-none mb-1">
+                            {modalStep === 'select' ? 'Conectar' : modalStep === 'custom_name' ? 'Personalizar' : modalStep === 'login' ? 'Autenticação' : 'Sucesso'}
                         </h3>
-                        <p className="text-[9px] text-titan-muted uppercase tracking-[0.2em]">Institutional API V2</p>
+                        <p className="text-[8px] text-titan-muted uppercase tracking-[0.2em]">Institutional API V2</p>
                     </div>
                     <button 
                         onClick={() => { if(!isLinking) setShowBrokerModal(false); }} 
@@ -348,6 +371,7 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
                 </div>
 
                 <div className="p-6">
+                    {/* PASSO 1: SELEÇÃO */}
                     {modalStep === 'select' && (
                         <div className="space-y-3">
                             {brokers.map((b) => (
@@ -362,44 +386,95 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
                                         </div>
                                         <div className="text-left">
                                             <p className="text-base font-bold text-white group-hover:text-titan-gold transition-colors">{b.name}</p>
-                                            <p className="text-[9px] text-titan-muted">Conexão via Bridge</p>
+                                            <p className="text-[9px] text-titan-muted uppercase tracking-tighter">Conexão via Bridge</p>
                                         </div>
                                     </div>
                                     <ChevronRight size={18} className="text-titan-muted" />
                                 </button>
                             ))}
+                            
+                            {/* OPÇÃO PERSONALIZADA */}
+                            <button 
+                                onClick={() => setModalStep('custom_name')}
+                                className="w-full flex items-center justify-between p-4 bg-titan-gold/5 border border-titan-gold/10 rounded-2xl hover:bg-titan-gold/10 transition-all active:scale-98 group mt-4"
+                            >
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 bg-titan-gold rounded-xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
+                                        <PlusCircle size={22} className="text-black" />
+                                    </div>
+                                    <div className="text-left">
+                                        <p className="text-base font-bold text-titan-gold">OUTRA CORRETORA</p>
+                                        <p className="text-[9px] text-titan-muted uppercase tracking-tighter italic">Adicionar plataforma</p>
+                                    </div>
+                                </div>
+                                <ChevronRight size={18} className="text-titan-gold" />
+                            </button>
                         </div>
                     )}
 
+                    {/* PASSO ADICIONAL: NOME PERSONALIZADO */}
+                    {modalStep === 'custom_name' && (
+                        <div className="space-y-4 animate-in slide-in-from-right-4 duration-300">
+                             <div className="space-y-2">
+                                <label className="text-[10px] text-titan-gold font-bold uppercase ml-1">Nome da Corretora</label>
+                                <div className="relative">
+                                    <Building2 size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-titan-gold" />
+                                    <input 
+                                        type="text"
+                                        autoFocus
+                                        value={customBrokerName}
+                                        onChange={(e) => setCustomBrokerName(e.target.value)}
+                                        placeholder="EX: EXNESS, IQ OPTION..."
+                                        className="w-full bg-black/50 border border-titan-gold/30 p-4 pl-12 rounded-xl text-white outline-none focus:border-titan-gold transition-all font-bold"
+                                    />
+                                </div>
+                            </div>
+                            <button 
+                                onClick={confirmCustomBroker}
+                                disabled={!customBrokerName}
+                                className="w-full bg-titan-gold text-black py-4 rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl disabled:opacity-30 active:scale-95 transition-transform"
+                            >
+                                PRÓXIMO PASSO
+                            </button>
+                            <button 
+                                onClick={() => setModalStep('select')}
+                                className="w-full text-[10px] text-titan-muted hover:text-white transition-colors flex items-center justify-center gap-2"
+                            >
+                                <ArrowLeft size={12} /> Voltar
+                            </button>
+                        </div>
+                    )}
+
+                    {/* PASSO 2: CREDENCIAIS */}
                     {modalStep === 'login' && selectedBroker && (
                         <div className="space-y-4 animate-in slide-in-from-right-4 duration-300">
                             <div className="flex items-center gap-3 bg-titan-gold/5 p-4 rounded-2xl border border-titan-gold/10 mb-2">
                                 <div className={`w-10 h-10 ${selectedBroker.color} rounded-lg flex items-center justify-center`}>
-                                    <selectedBroker.icon size={18} className="text-white" />
+                                    <selectedBroker.icon size={18} className={selectedBroker.id === 'custom' ? 'text-black' : 'text-white'} />
                                 </div>
                                 <div>
-                                    <p className="text-xs font-bold text-white">{selectedBroker.name} Live</p>
-                                    <p className="text-[9px] text-titan-gold uppercase tracking-tighter">Conta Real Solicitada</p>
+                                    <p className="text-xs font-bold text-white uppercase">{selectedBroker.name}</p>
+                                    <p className="text-[9px] text-titan-gold uppercase tracking-tighter font-bold">Protocolo Seguro Ativo</p>
                                 </div>
                             </div>
 
                             <div className="space-y-3">
                                 <div className="space-y-1">
-                                    <label className="text-[10px] text-titan-muted font-bold uppercase ml-1">Número da Conta</label>
+                                    <label className="text-[9px] text-titan-muted font-bold uppercase ml-1">Login / Número da Conta</label>
                                     <div className="relative">
                                         <UserIcon size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-titan-muted" />
                                         <input 
                                             type="text"
                                             value={accountNumber}
                                             onChange={(e) => setAccountNumber(e.target.value)}
-                                            placeholder="12345678"
-                                            className="w-full bg-black/50 border border-white/10 p-3 pl-10 rounded-xl text-white outline-none focus:border-titan-gold transition-all"
+                                            placeholder="Ex: 5849302"
+                                            className="w-full bg-black/50 border border-white/10 p-3.5 pl-10 rounded-xl text-white outline-none focus:border-titan-gold transition-all font-mono"
                                         />
                                     </div>
                                 </div>
 
                                 <div className="space-y-1">
-                                    <label className="text-[10px] text-titan-muted font-bold uppercase ml-1">Senha de Operação</label>
+                                    <label className="text-[9px] text-titan-muted font-bold uppercase ml-1">Senha de Operação</label>
                                     <div className="relative">
                                         <Lock size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-titan-muted" />
                                         <input 
@@ -407,20 +482,22 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
                                             value={accountPass}
                                             onChange={(e) => setAccountPass(e.target.value)}
                                             placeholder="••••••••"
-                                            className="w-full bg-black/50 border border-white/10 p-3 pl-10 rounded-xl text-white outline-none focus:border-titan-gold transition-all"
+                                            className="w-full bg-black/50 border border-white/10 p-3.5 pl-10 rounded-xl text-white outline-none focus:border-titan-gold transition-all"
                                         />
                                     </div>
                                 </div>
 
                                 <div className="space-y-1">
-                                    <label className="text-[10px] text-titan-muted font-bold uppercase ml-1">Servidor (Real)</label>
+                                    <label className="text-[9px] text-titan-muted font-bold uppercase ml-1">Servidor Institucional</label>
                                     <div className="relative">
                                         <Server size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-titan-muted" />
                                         <input 
                                             type="text"
-                                            readOnly
-                                            value={selectedBroker.server}
-                                            className="w-full bg-black/30 border border-white/5 p-3 pl-10 rounded-xl text-titan-muted cursor-not-allowed text-xs"
+                                            value={brokerServer}
+                                            onChange={(e) => setBrokerServer(e.target.value)}
+                                            placeholder={selectedBroker.id === 'custom' ? 'Ex: Broker-Real-01' : ''}
+                                            readOnly={selectedBroker.id !== 'custom'}
+                                            className={`w-full bg-black/50 border border-white/10 p-3.5 pl-10 rounded-xl text-white outline-none transition-all text-xs ${selectedBroker.id !== 'custom' ? 'text-titan-muted cursor-not-allowed bg-black/30' : 'focus:border-titan-gold'}`}
                                         />
                                     </div>
                                 </div>
@@ -431,33 +508,34 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
                                 disabled={isLinking || !accountNumber || !accountPass}
                                 className="w-full bg-titan-gold text-black py-4 rounded-2xl font-black uppercase tracking-widest text-xs mt-4 shadow-xl hover:bg-titan-goldLight transition-all active:scale-95 disabled:opacity-40"
                             >
-                                {isLinking ? <Loader2 className="animate-spin mx-auto" size={20} /> : 'ENTRAR EM CONTA REAL'}
+                                {isLinking ? <Loader2 className="animate-spin mx-auto" size={20} /> : 'INICIAR SINCRO REAL'}
                             </button>
                             
                             <button 
                                 onClick={() => setModalStep('select')}
                                 disabled={isLinking}
-                                className="w-full text-[10px] text-titan-muted hover:text-white transition-colors py-2"
+                                className="w-full text-[10px] text-titan-muted hover:text-white transition-colors py-2 flex items-center justify-center gap-2"
                             >
-                                Voltar para seleção
+                                <ArrowLeft size={10} /> Voltar para seleção
                             </button>
                         </div>
                     )}
 
+                    {/* PASSO FINAL: SUCESSO */}
                     {modalStep === 'success' && (
                         <div className="py-10 text-center animate-in zoom-in-95 duration-500">
-                            <div className="w-20 h-20 bg-titan-green/20 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-titan-green shadow-[0_0_30px_rgba(16,185,129,0.2)]">
+                            <div className="w-20 h-20 bg-titan-green/20 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-titan-green shadow-[0_0_30px_rgba(16,185,129,0.3)]">
                                 <ShieldCheck size={40} className="text-titan-green" />
                             </div>
-                            <h4 className="text-2xl font-black text-white italic mb-2 tracking-tighter">LOGIN BEM-SUCEDIDO</h4>
-                            <p className="text-xs text-titan-muted uppercase tracking-widest">Aguardando Sincronização...</p>
+                            <h4 className="text-2xl font-black text-white italic mb-2 tracking-tighter uppercase leading-none">CONEXÃO ESTABELECIDA</h4>
+                            <p className="text-[10px] text-titan-muted uppercase tracking-widest font-bold">Terminal {selectedBroker?.name} Sincronizado</p>
                         </div>
                     )}
                 </div>
 
                 <div className="px-6 pb-8">
-                    <p className="text-[9px] text-titan-muted/40 text-center italic">
-                        Suas credenciais são enviadas via Bridge SSL diretamente para a corretora. O Titan não armazena senhas de terceiros.
+                    <p className="text-[8px] text-titan-muted/30 text-center italic leading-tight">
+                        A tecnologia Titan Bridge atua como uma camada de execução de latência zero. Suas credenciais são encriptadas de ponta a ponta via AES-256.
                     </p>
                 </div>
             </div>
