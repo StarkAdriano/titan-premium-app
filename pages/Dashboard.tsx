@@ -16,39 +16,43 @@ interface DashboardProps {
   onUpdateState: (newState: DashboardState) => void;
 }
 
-// --- SCRIPT TRADINGVIEW CORRIGIDO (CONSTANTE) ---
+// --- SCRIPT TRADINGVIEW CORRIGIDO (VERSÃO V5 FINAL) ---
+// Este script usa input.float e cores hex para evitar erros de compilação
 const TRADINGVIEW_SCRIPT = `//@version=5
 indicator("Titan Premium - Institutional Setup", overlay=true, shorttitle="TITAN PRO")
 
-// CORES TITAN
-titanGold = color.new(#d4af37, 0)
-titanRed = color.new(#ef4444, 10)
-titanGreen = color.new(#10b981, 10)
+// --- CORES INSTITUCIONAIS ---
+var titanGold = color.new(#d4af37, 0)
+var redZone = color.new(#ef4444, 90)   // Vermelho transparente
+var greenZone = color.new(#10b981, 90) // Verde transparente
 
-// CONFIGURAÇÃO
+// --- CONFIGURAÇÃO ---
 refPrice = input.float(1.05450, title="Preço de Referência (Fair Value)")
 trendBias = input.string("Bearish", title="Tendência Macro", options=["Bullish", "Bearish"])
 showZones = input.bool(true, title="Mostrar Zonas Premium/Discount")
 
-// LÓGICA
+// --- LÓGICA ---
 isPremium = close > refPrice
 isDiscount = close < refPrice
 
-// ZONAS
-bgcolor(showZones and isPremium ? color.new(color.red, 90) : na, title="Premium Zone")
-bgcolor(showZones and isDiscount ? color.new(color.green, 90) : na, title="Discount Zone")
+// --- VISUALIZAÇÃO ---
+// Zonas de Fundo
+bgcolor(showZones and isPremium ? redZone : na, title="Premium Zone")
+bgcolor(showZones and isDiscount ? greenZone : na, title="Discount Zone")
 
-// REF
+// Linha de Referência (Equilibrium)
 plot(refPrice, "Equilibrium", color=titanGold, linewidth=2, style=plot.style_linebr)
 
-// SINAIS SIMPLES
+// --- SINAIS VISUAIS NO GRÁFICO ---
+// Venda: Tendência Baixa + Premium + Candle de Rejeição
 bearSignal = (trendBias == "Bearish") and isPremium and (high - close) > (close - open) * 2
 plotshape(bearSignal, title="Venda Titan", location=location.abovebar, color=color.red, style=shape.labeldown, text="SELL", textcolor=color.white)
 
+// Compra: Tendência Alta + Desconto + Força Compradora
 bullSignal = (trendBias == "Bullish") and isDiscount and close > open
 plotshape(bullSignal, title="Compra Titan", location=location.belowbar, color=color.green, style=shape.labelup, text="BUY", textcolor=color.black)
 
-// PAINEL
+// --- PAINEL DE MONITORAMENTO ---
 var table panel = table.new(position.top_right, 2, 4, border_width=1)
 if barstate.islast
     table.cell(panel, 0, 0, "TITAN MONITOR", bgcolor=color.black, text_color=titanGold)
@@ -326,14 +330,14 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
                 
                 <button 
                     onClick={handleCopyScript} 
-                    className={`flex items-center gap-1 text-[9px] font-bold px-2 py-1 rounded border transition-colors ${
+                    className={`flex items-center gap-1 text-[9px] font-bold px-3 py-1.5 rounded border transition-all ${
                         scriptCopied 
-                        ? 'bg-green-500/20 text-green-400 border-green-500/50' 
-                        : 'bg-titan-dark text-titan-gold border-titan-gold/30 hover:bg-titan-gold/10'
+                        ? 'bg-green-500/20 text-green-400 border-green-500/50 shadow-[0_0_10px_rgba(34,197,94,0.3)]' 
+                        : 'bg-titan-dark text-titan-gold border-titan-gold/30 hover:bg-titan-gold/10 hover:border-titan-gold/60'
                     }`}
                 >
-                    {scriptCopied ? <CheckCircle2 size={10} /> : <Monitor size={10} />}
-                    {scriptCopied ? 'COPIADO' : 'SCRIPT TV'}
+                    {scriptCopied ? <CheckCircle2 size={12} /> : <Monitor size={12} />}
+                    {scriptCopied ? 'COPIADO!' : 'SCRIPT TRADINGVIEW'}
                 </button>
              </div>
                 
