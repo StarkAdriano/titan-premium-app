@@ -5,6 +5,8 @@ export enum SignalStatus {
   WAIT = 'ESPERAR'
 }
 
+export type Language = 'pt' | 'en' | 'es' | 'it' | 'ja' | 'zh' | 'he' | 'ru';
+
 export interface HistoryEntry {
   id: string;
   date: string;
@@ -29,7 +31,7 @@ export interface AnalysisResult {
     status: SignalStatus;
     shortSummary: string;
     detailedAnalysis: string;
-    rationale: string; // Institutional rationale for the move
+    rationale: string;
     validationMsg: string;
     validationStatus: 'OK' | 'WARNING';
     referencePrice: string;
@@ -44,7 +46,7 @@ export interface Lesson {
   id: string;
   title: string;
   duration: string;
-  videoUrl: string;
+  imageUrl: string; // Alterado de videoUrl para imageUrl
   completed: boolean;
   pdfUrl?: string;
 }
@@ -68,6 +70,7 @@ export interface UserProfile {
   redeemedCodes: string[];
   courseProgress?: Record<string, boolean>;
   activeAccountType?: 'DEMO' | 'REAL';
+  language: Language; // Novo campo
 }
 
 export interface CourseProduct {

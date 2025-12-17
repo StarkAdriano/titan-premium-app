@@ -2,32 +2,30 @@
 import React, { useState } from 'react';
 import { CourseModule, Lesson } from '../types';
 import { 
-  Play, 
   CheckCircle2, 
   ChevronRight, 
   FileText, 
   Lock, 
   ArrowLeft,
-  CircleDashed,
   Download,
-  MonitorPlay,
   Zap,
   Star,
   ShieldCheck,
   Cpu,
   Layers,
-  BarChart3
+  BarChart3,
+  Image as ImageIcon,
+  Maximize2
 } from 'lucide-react';
 
-// Vídeos educacionais de alta qualidade focados em SMC (Placeholders de alta autoridade)
 const ACADEMY_DATA: CourseModule[] = [
   {
     id: 'm1',
     title: 'Arquitetura IPDA & SMC',
     description: 'Como os bancos manipulam o EURUSD através do algoritmo.',
     lessons: [
-      { id: 'l1', title: 'O Código do IPDA', duration: '12:45', videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4', completed: true },
-      { id: 'l2', title: 'Liquidez vs Volume', duration: '15:20', videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4', completed: true, pdfUrl: '#' }
+      { id: 'l1', title: 'O Código do IPDA', duration: 'Insight Técnico', imageUrl: 'https://images.unsplash.com/photo-1611974717535-7c446a05e8ad?auto=format&fit=crop&q=80&w=1200', completed: true },
+      { id: 'l2', title: 'Liquidez vs Volume', duration: 'Deep Dive', imageUrl: 'https://images.unsplash.com/photo-1640341719942-d696196bc6da?auto=format&fit=crop&q=80&w=1200', completed: true, pdfUrl: '#' }
     ]
   },
   {
@@ -35,8 +33,8 @@ const ACADEMY_DATA: CourseModule[] = [
     title: 'Estrutura de Mercado Elite',
     description: 'Identificando BOS, CHoCH e Inducement com precisão.',
     lessons: [
-      { id: 'l3', title: 'Mapeamento de Range', duration: '22:10', videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4', completed: false },
-      { id: 'l4', title: 'CHoCH: A Virada de Fluxo', duration: '18:55', videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4', completed: false, pdfUrl: '#' }
+      { id: 'l3', title: 'Mapeamento de Range', duration: 'Advanced', imageUrl: 'https://images.unsplash.com/photo-1642388691919-616949989632?auto=format&fit=crop&q=80&w=1200', completed: false },
+      { id: 'l4', title: 'CHoCH: A Virada de Fluxo', duration: 'SMC Core', imageUrl: 'https://images.unsplash.com/photo-1611974717535-7c446a05e8ad?auto=format&fit=crop&q=80&w=1200', completed: false, pdfUrl: '#' }
     ]
   },
   {
@@ -44,17 +42,8 @@ const ACADEMY_DATA: CourseModule[] = [
     title: 'Supply & Demand (Advanced)',
     description: 'Order Blocks, Fair Value Gaps e zonas de mitigação.',
     lessons: [
-      { id: 'l5', title: 'Anatomia do Order Block', duration: '25:30', videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4', completed: false },
-      { id: 'l6', title: 'Engenharia de Liquidez', duration: '14:15', videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4', completed: false }
-    ]
-  },
-  {
-    id: 'm4',
-    title: 'Titan Execution Protocol',
-    description: 'O checklist final para operar o par EURUSD.',
-    lessons: [
-      { id: 'l7', title: 'Confluência Titan Premium', duration: '32:00', videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4', completed: false, pdfUrl: '#' },
-      { id: 'l8', title: 'Psicologia de Alta Performance', duration: '45:10', videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4', completed: false }
+      { id: 'l5', title: 'Anatomia do Order Block', duration: 'High Impact', imageUrl: 'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?auto=format&fit=crop&q=80&w=1200', completed: false },
+      { id: 'l6', title: 'Engenharia de Liquidez', duration: 'Technical', imageUrl: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&q=80&w=1200', completed: false }
     ]
   }
 ];
@@ -85,59 +74,53 @@ const Academy: React.FC = () => {
   if (selectedLesson) {
     return (
       <div className="flex flex-col min-h-full bg-titan-darker animate-in slide-in-from-right-4">
-        {/* Header da Aula */}
         <div className="p-5 flex items-center gap-4 border-b border-white/5 bg-titan-dark">
           <button onClick={() => setSelectedLesson(null)} className="p-2 text-titan-muted hover:text-white transition-colors bg-white/5 rounded-full">
             <ArrowLeft size={18} />
           </button>
           <div className="flex flex-col">
-            <span className="text-[8px] text-titan-gold font-black uppercase tracking-[0.3em]">Módulo em Progresso</span>
+            <span className="text-[8px] text-titan-gold font-black uppercase tracking-[0.3em]">Módulo High-Impact</span>
             <h2 className="text-sm font-bold text-white tracking-tight">{selectedLesson.title}</h2>
           </div>
         </div>
         
-        {/* Professional Video Player with AI Overlay */}
+        {/* High Resolution Dynamic Image Player */}
         <div className="aspect-video bg-black relative group overflow-hidden border-b border-titan-gold/10">
-          <video 
-            className="w-full h-full object-cover opacity-60" 
-            controls={false}
-            autoPlay
-            muted
-            loop
-            src={selectedLesson.videoUrl}
+          <img 
+            className="w-full h-full object-cover opacity-70 group-hover:scale-105 transition-transform duration-[10s]" 
+            src={selectedLesson.imageUrl}
+            alt={selectedLesson.title}
           />
           
-          {/* AI Interface Overlay */}
-          <div className="absolute inset-0 pointer-events-none p-4 flex flex-col justify-between">
+          <div className="absolute inset-0 bg-gradient-to-t from-titan-darker via-transparent to-transparent opacity-60"></div>
+
+          {/* AI Static Scan Overlay */}
+          <div className="absolute inset-0 pointer-events-none p-6 flex flex-col justify-between">
             <div className="flex justify-between items-start">
-               <div className="bg-black/60 backdrop-blur-md border border-titan-gold/30 px-3 py-1.5 rounded-lg flex items-center gap-2">
+               <div className="bg-titan-gold/10 backdrop-blur-xl border border-titan-gold/40 px-3 py-1.5 rounded-lg flex items-center gap-2">
                   <Cpu size={12} className="text-titan-gold animate-pulse" />
-                  <span className="text-[8px] text-titan-gold font-black tracking-widest uppercase">Titan AI Analysis Active</span>
+                  <span className="text-[8px] text-titan-gold font-black tracking-widest uppercase">Titan Scan: {Math.random().toString(36).substr(2, 5).toUpperCase()}</span>
                </div>
-               <div className="bg-black/40 p-2 rounded-lg border border-white/10">
-                  <Layers size={12} className="text-white/40" />
+               <div className="bg-black/60 p-2 rounded-lg border border-white/10">
+                  <Maximize2 size={12} className="text-titan-gold" />
                </div>
             </div>
             
-            <div className="flex justify-between items-end">
-               <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                     <div className="w-1 h-1 rounded-full bg-titan-green animate-ping"></div>
-                     <span className="text-[7px] text-white/40 font-mono">ENCODING: SMC_PROTOCOL_V4</span>
+            <div className="flex flex-col gap-2">
+               <div className="flex items-center gap-3">
+                  <div className="h-0.5 flex-1 bg-titan-gold/20">
+                     <div className="h-full bg-titan-gold animate-shimmer w-1/4"></div>
                   </div>
-                  <div className="text-[7px] text-white/20 font-mono">FRAME_BUFFER: 1080P_STABLE</div>
+                  <span className="text-[7px] text-titan-gold font-mono">X-AXIS_LOCK</span>
                </div>
-               <div className="w-24 h-1 bg-white/10 rounded-full overflow-hidden">
-                  <div className="w-1/3 h-full bg-titan-gold animate-shimmer"></div>
+               <div className="flex justify-between items-end">
+                  <div className="text-[7px] text-white/40 font-mono leading-none">
+                     <p>RES_INSTITUTIONAL: 4K_HDR</p>
+                     <p>METADATA: SMC_LIQUIDITY_MAP</p>
+                  </div>
+                  <BarChart3 size={32} className="text-titan-gold opacity-20" />
                </div>
             </div>
-          </div>
-
-          {/* Central Play Button Overlay */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <button className="w-20 h-20 rounded-full bg-titan-gold/10 backdrop-blur-sm flex items-center justify-center border border-titan-gold/40 group-hover:scale-110 transition-transform active:scale-95 shadow-2xl">
-              <Play size={28} className="text-titan-gold fill-current ml-1" />
-            </button>
           </div>
         </div>
 
@@ -146,46 +129,34 @@ const Academy: React.FC = () => {
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <ShieldCheck size={14} className="text-titan-gold" />
-                <span className="text-[10px] text-titan-gold font-black uppercase tracking-[0.3em]">Contéudo Verificado</span>
+                <span className="text-[10px] text-titan-gold font-black uppercase tracking-[0.3em]">Masterclass Elite</span>
               </div>
               <h1 className="text-3xl font-black text-white italic tracking-tighter uppercase leading-none">{selectedLesson.title}</h1>
             </div>
             <div className="flex flex-col items-end">
-               <span className="text-[8px] text-titan-muted uppercase font-bold tracking-widest mb-1">Duração</span>
-               <span className="text-sm font-mono font-bold text-white">{selectedLesson.duration}</span>
+               <span className="text-[8px] text-titan-muted uppercase font-bold tracking-widest mb-1">Status</span>
+               <span className="text-[10px] font-mono font-bold text-titan-green bg-titan-green/10 px-2 py-0.5 rounded border border-titan-green/20">VALIDADO</span>
             </div>
           </div>
 
-          {/* AI Briefing */}
           <div className="bg-titan-card/30 rounded-3xl p-6 border border-white/5 space-y-5 relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-4 opacity-5">
-               <BarChart3 size={80} />
-            </div>
-            
             <h3 className="text-[10px] font-black text-white uppercase tracking-widest flex items-center gap-2">
-              <Zap size={14} className="text-titan-gold" /> AI Lesson Insights
+              <Zap size={14} className="text-titan-gold" /> AI Technical Intelligence
             </h3>
             <p className="text-xs text-titan-muted leading-relaxed font-medium italic">
-                "Este módulo foca no comportamento do preço em relação ao tempo (Time & Price). Identificar onde os bancos acumulam ordens é o primeiro passo para não se tornar a liquidez deles."
+                "Esta visualização de alta resolução permite identificar micro-manipulações de preço. O setup Titan baseia-se na clareza dessas formações em zonas de prêmio e desconto."
             </p>
             
             <div className="grid grid-cols-2 gap-4 pt-2">
-              <button className="flex items-center justify-center gap-2 p-4 bg-black/40 rounded-2xl border border-white/5 text-[9px] font-black text-titan-muted hover:text-white transition-all uppercase tracking-widest active:scale-95">
-                <FileText size={14} /> Technical Notes
+              <button className="flex items-center justify-center gap-2 p-4 bg-black/40 rounded-2xl border border-white/5 text-[9px] font-black text-titan-muted uppercase tracking-widest active:scale-95">
+                <ImageIcon size={14} /> Full Map
               </button>
               {selectedLesson.pdfUrl && (
-                <button className="flex items-center justify-center gap-2 p-4 bg-titan-gold/10 rounded-2xl border border-titan-gold/20 text-[9px] font-black text-titan-gold hover:bg-titan-gold hover:text-black transition-all uppercase tracking-widest active:scale-95 shadow-lg">
-                  <Download size={14} /> SMC Blueprint
+                <button className="flex items-center justify-center gap-2 p-4 bg-titan-gold/10 rounded-2xl border border-titan-gold/20 text-[9px] font-black text-titan-gold uppercase tracking-widest active:scale-95 shadow-lg">
+                  <Download size={14} /> PDF Blueprint
                 </button>
               )}
             </div>
-          </div>
-
-          <div className="py-4 border-t border-white/5">
-             <div className="flex items-center gap-3 opacity-30">
-                <CheckCircle2 size={16} className="text-titan-green" />
-                <p className="text-[10px] text-white uppercase font-black tracking-widest">Protocolo de Conclusão Automática</p>
-             </div>
           </div>
         </div>
       </div>
@@ -194,24 +165,21 @@ const Academy: React.FC = () => {
 
   return (
     <div className="p-6 space-y-8 pb-32">
-      {/* Header Academy */}
       <div className="bg-titan-card/50 rounded-[2.5rem] p-8 border border-titan-gold/20 relative overflow-hidden flex items-center justify-between shadow-2xl">
         <div className="relative z-10">
           <div className="flex items-center gap-2 mb-3">
             <Star size={12} className="text-titan-gold fill-current" />
-            <span className="text-[10px] text-titan-gold font-black uppercase tracking-[0.4em]">Titan Academy Elite</span>
+            <span className="text-[10px] text-titan-gold font-black uppercase tracking-[0.4em]">Academy Institutional</span>
           </div>
-          <h2 className="text-3xl font-black text-white italic tracking-tighter mb-2 leading-none">FORMAÇÃO<br/>INSTITUCIONAL</h2>
-          <p className="text-[9px] text-titan-muted uppercase font-bold tracking-[0.2em]">O Caminho para a Consistência</p>
+          <h2 className="text-3xl font-black text-white italic tracking-tighter mb-2 leading-none">HIGH-IMPACT<br/>KNOWLEDGE</h2>
+          <p className="text-[9px] text-titan-muted uppercase font-bold tracking-[0.2em]">Visual Intelligence Training</p>
         </div>
         <ProgressRing progress={progress} />
-        <div className="absolute top-0 right-0 w-48 h-48 bg-titan-gold/5 rounded-full -mr-24 -mt-24 blur-[80px]"></div>
       </div>
 
-      {/* Listagem de Módulos */}
       <div className="space-y-8">
         {ACADEMY_DATA.map((module, mIdx) => (
-          <div key={module.id} className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500" style={{ animationDelay: `${mIdx * 100}ms` }}>
+          <div key={module.id} className="space-y-4">
              <div className="flex items-center gap-4 px-2">
                 <div className="w-10 h-10 rounded-2xl bg-titan-dark border border-white/5 flex items-center justify-center font-black text-titan-gold text-sm shadow-lg">
                     {mIdx + 1}
@@ -222,42 +190,28 @@ const Academy: React.FC = () => {
                 </div>
              </div>
              
-             <div className="bg-titan-card/30 border border-white/5 rounded-[2rem] overflow-hidden shadow-xl">
+             <div className="bg-titan-card/30 border border-white/5 rounded-[2rem] overflow-hidden">
                 {module.lessons.map((lesson) => (
                   <button 
                     key={lesson.id}
                     onClick={() => setSelectedLesson(lesson)}
-                    className="w-full flex items-center justify-between p-6 border-b border-white/5 last:border-0 hover:bg-white/5 transition-all group active:bg-white/10"
+                    className="w-full flex items-center justify-between p-6 border-b border-white/5 last:border-0 hover:bg-white/5 transition-all group"
                   >
                     <div className="flex items-center gap-5">
-                        <div className={`p-3 rounded-2xl transition-all ${lesson.completed ? 'bg-titan-green/10 text-titan-green shadow-inner' : 'bg-black/40 text-titan-muted group-hover:text-titan-gold group-hover:scale-110 shadow-lg'}`}>
-                            {lesson.completed ? <CheckCircle2 size={18} /> : <MonitorPlay size={18} />}
+                        <div className={`p-3 rounded-2xl transition-all ${lesson.completed ? 'bg-titan-green/10 text-titan-green' : 'bg-black/40 text-titan-muted group-hover:text-titan-gold'}`}>
+                            {lesson.completed ? <CheckCircle2 size={18} /> : <ImageIcon size={18} />}
                         </div>
                         <div className="text-left">
-                            <p className={`text-xs font-black uppercase tracking-tight ${lesson.completed ? 'text-white/40' : 'text-white group-hover:text-titan-gold transition-colors'}`}>{lesson.title}</p>
-                            <div className="flex items-center gap-2 mt-1">
-                                <span className="text-[9px] text-titan-muted uppercase font-bold tracking-widest">{lesson.duration}</span>
-                                <span className="w-1 h-1 rounded-full bg-white/10"></span>
-                                <span className="text-[8px] text-titan-gold font-black uppercase tracking-[0.2em]">HD Ready</span>
-                            </div>
+                            <p className="text-xs font-black uppercase tracking-tight text-white">{lesson.title}</p>
+                            <span className="text-[8px] text-titan-muted uppercase font-bold">{lesson.duration}</span>
                         </div>
                     </div>
-                    <ChevronRight size={16} className="text-titan-muted group-hover:text-titan-gold transition-all group-hover:translate-x-1" />
+                    <ChevronRight size={16} className="text-titan-muted" />
                   </button>
                 ))}
              </div>
           </div>
         ))}
-      </div>
-
-      {/* Lock Status Bar */}
-      <div className="bg-blue-900/10 border border-blue-500/20 p-6 rounded-[2rem] flex items-center gap-4 shadow-inner">
-          <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center shrink-0">
-             <Lock size={20} className="text-blue-400" />
-          </div>
-          <p className="text-[10px] text-blue-200/60 italic leading-relaxed font-medium">
-            Módulos avançados de **Alta Liquidez** e **Entradas Snipers** são desbloqueados automaticamente conforme seu tempo de tela no Terminal aumenta.
-          </p>
       </div>
     </div>
   );

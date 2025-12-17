@@ -7,8 +7,9 @@ import Dashboard from './pages/Dashboard';
 import Courses from './pages/Courses';
 import Profile from './pages/Profile';
 import Contact from './pages/Contact';
-import { UserProfile, Asset, AnalysisResult } from './types';
+import { UserProfile, Asset, AnalysisResult, Language } from './types';
 import { INITIAL_ASSETS, ACTIVATION_CODES } from './constants';
+import { translations } from './i18n';
 
 const getTodayFormatted = () => {
     const today = new Date();
@@ -59,6 +60,8 @@ const App: React.FC = () => {
     if (storedUser) {
       try {
           const parsedUser: UserProfile = JSON.parse(storedUser);
+          if (!parsedUser.language) parsedUser.language = 'pt'; // Fallback
+          
           let isExpired = false;
           const today = new Date();
           today.setHours(0, 0, 0, 0);
@@ -95,7 +98,8 @@ const App: React.FC = () => {
       trialStartDate: getTodayFormatted(),
       trialEndDate: addDaysToDate(now, 30),
       redeemedCodes: [],
-      activeAccountType: 'DEMO' // Começa em demo por padrão
+      activeAccountType: 'DEMO',
+      language: 'pt'
     };
     setUser(newUser);
     localStorage.setItem('titan_user', JSON.stringify(newUser));
@@ -119,11 +123,13 @@ const App: React.FC = () => {
           subscriptionEndDate: newEndDate,
           redeemedCodes: [...(user.redeemedCodes || []), code]
       });
-      alert(`Assinatura renovada com sucesso por ${daysToAdd} dias!`);
+      alert(`Success! Renewed for ${daysToAdd} days!`);
   };
 
   if (user?.planType === 'EXPIRED') return <ExpiredLockScreen onUnlock={handleManualUnlock} />;
   if (!user || !user.isOnboarded) return <OnboardingModal onComplete={handleOnboardingComplete} />;
+
+  const t = translations[user.language] || translations['en'];
 
   const renderContent = () => {
     switch (activeTab) {
@@ -144,6 +150,7 @@ const App: React.FC = () => {
           onUpgradeClick={() => setActiveTab('courses')} 
           onUpdateLogo={(url) => updateUserState({ logoUrl: url })}
           onUpdateName={(name) => updateUserState({ name })}
+          onUpdateLanguage={(lang) => updateUserState({ language: lang })}
         />
       );
       case 'contact': return <Contact />;
@@ -152,7 +159,17 @@ const App: React.FC = () => {
   };
 
   return (
-    <Layout activeTab={activeTab} onTabChange={(tab) => setActiveTab(tab)} userLogo={user.logoUrl}>
+    <Layout 
+        activeTab={activeTab} 
+        onTabChange={(tab) => setActiveTab(tab)} 
+        userLogo={user.logoUrl}
+        labels={{
+            terminal: t.terminal,
+            academy: t.academy,
+            access: t.access,
+            network: t.network
+        }}
+    >
       {renderContent()}
     </Layout>
   );

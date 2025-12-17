@@ -7,19 +7,24 @@ interface LayoutProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
   userLogo?: string;
+  labels: {
+    terminal: string;
+    academy: string;
+    access: string;
+    network: string;
+  };
 }
 
-const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange, userLogo }) => {
+const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange, userLogo, labels }) => {
   const navItems = [
-    { id: 'dashboard', label: 'Terminal', icon: LayoutDashboard },
-    { id: 'courses', label: 'Academy', icon: ShoppingBag },
-    { id: 'profile', label: 'Access', icon: User },
-    { id: 'contact', label: 'Network', icon: Phone },
+    { id: 'dashboard', label: labels.terminal, icon: LayoutDashboard },
+    { id: 'courses', label: labels.academy, icon: ShoppingBag },
+    { id: 'profile', label: labels.access, icon: User },
+    { id: 'contact', label: labels.network, icon: Phone },
   ];
 
   return (
     <div className="min-h-screen bg-titan-darker text-titan-text flex flex-col font-sans max-w-md mx-auto shadow-2xl shadow-black border-x border-white/5">
-      {/* Institutional Header */}
       <header className="px-6 py-5 bg-titan-dark border-b border-white/5 flex justify-between items-center sticky top-0 z-20 shadow-lg">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-titan-gold/10 rounded-lg border border-titan-gold/20">
@@ -39,12 +44,10 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange, userL
         </div>
       </header>
 
-      {/* Main Content Area */}
       <main className="flex-1 overflow-y-auto pb-24 scroll-smooth">
         {children}
       </main>
 
-      {/* Modern Navigation Bar */}
       <nav className="fixed bottom-0 w-full max-w-md bg-titan-dark/95 backdrop-blur-xl border-t border-white/5 flex justify-around py-4 pb-6 z-30 shadow-[0_-10px_30px_rgba(0,0,0,0.5)]">
         {navItems.map((item) => {
           const isActive = activeTab === item.id;
