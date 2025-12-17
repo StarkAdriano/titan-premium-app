@@ -1,13 +1,15 @@
+
 import React from 'react';
-import { LayoutDashboard, ShoppingBag, User, Phone, CheckCircle2 } from 'lucide-react';
+import { LayoutDashboard, ShoppingBag, User, Phone } from 'lucide-react';
 
 interface LayoutProps {
   children: React.ReactNode;
   activeTab: string;
   onTabChange: (tab: string) => void;
+  userLogo?: string;
 }
 
-const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange }) => {
+const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange, userLogo }) => {
   const navItems = [
     { id: 'dashboard', label: 'Setup', icon: LayoutDashboard },
     { id: 'courses', label: 'Cursos', icon: ShoppingBag },
@@ -21,10 +23,14 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange }) => 
       <header className="px-6 py-4 bg-titan-dark border-b border-titan-card flex justify-between items-center sticky top-0 z-20">
         <div>
           <h1 className="text-xl font-bold tracking-wider text-titan-gold uppercase">Titan<span className="text-white">Premium</span></h1>
-          <p className="text-xs text-titan-muted">Institutional Setup</p>
+          <p className="text-xs text-titan-muted">Institutional Terminal</p>
         </div>
-        <div className="w-8 h-8 rounded-full bg-titan-card border border-titan-gold flex items-center justify-center">
-           <User size={16} className="text-titan-gold" />
+        <div className="w-10 h-10 rounded-xl bg-titan-card border border-titan-gold/30 flex items-center justify-center overflow-hidden shadow-inner">
+           {userLogo ? (
+             <img src={userLogo} alt="User Logo" className="w-full h-full object-cover" />
+           ) : (
+             <User size={20} className="text-titan-gold" />
+           )}
         </div>
       </header>
 

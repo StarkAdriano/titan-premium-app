@@ -32,15 +32,12 @@ const parseDate = (dateStr: string): Date | null => {
     try {
         const [day, month, year] = dateStr.split('/').map(Number);
         return new Date(year, month - 1, day);
-    } catch (e) {
-        return null;
-    }
+    } catch (e) { return null; }
 };
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [user, setUser] = useState<UserProfile | null>(null);
-  
   const [dashboardState, setDashboardState] = useState<{
       userPrice: string;
       isRevealed: boolean;
@@ -57,7 +54,6 @@ const App: React.FC = () => {
 
   const [assets] = useState<Asset[]>(INITIAL_ASSETS);
 
-  // Auth & Expiration Logic
   useEffect(() => {
     const storedUser = localStorage.getItem('titan_user');
     if (storedUser) {
@@ -72,14 +68,6 @@ const App: React.FC = () => {
               if (expiryDate) {
                   expiryDate.setHours(23, 59, 59, 999);
                   if (today > expiryDate) isExpired = true;
-              }
-          }
-
-          if (parsedUser.planType === 'PRO' && parsedUser.subscriptionEndDate) {
-              const subExpiryDate = parseDate(parsedUser.subscriptionEndDate);
-              if (subExpiryDate) {
-                  subExpiryDate.setHours(23, 59, 59, 999);
-                  if (today > subExpiryDate) isExpired = true;
               }
           }
 
@@ -106,41 +94,36 @@ const App: React.FC = () => {
       planType: 'FREE_TRIAL',
       trialStartDate: getTodayFormatted(),
       trialEndDate: addDaysToDate(now, 30),
-      redeemedCodes: [] 
+      redeemedCodes: [],
+      activeAccountType: 'DEMO' // Começa em demo por padrão
     };
     setUser(newUser);
     localStorage.setItem('titan_user', JSON.stringify(newUser));
+  };
+
+  const updateUserState = (updates: Partial<UserProfile>) => {
+    if (!user) return;
+    const updatedUser = { ...user, ...updates };
+    setUser(updatedUser);
+    localStorage.setItem('titan_user', JSON.stringify(updatedUser));
   };
 
   const handleManualUnlock = (code: string) => {
       if (!user) return;
       const daysToAdd = ACTIVATION_CODES[code];
       if (!daysToAdd) { alert("Código inválido."); return; }
-      if (user.redeemedCodes && user.redeemedCodes.includes(code)) {
-          alert("Este código já foi utilizado anteriormente."); return;
-      }
       const now = new Date();
       const newEndDate = addDaysToDate(now, daysToAdd);
-      const upgradedUser: UserProfile = {
-          ...user,
+      updateUserState({
           planType: 'PRO',
           subscriptionEndDate: newEndDate,
-          redeemedCodes: [...(user.redeemedCodes || []), code] 
-      };
-      setUser(upgradedUser);
-      localStorage.setItem('titan_user', JSON.stringify(upgradedUser));
+          redeemedCodes: [...(user.redeemedCodes || []), code]
+      });
       alert(`Assinatura renovada com sucesso por ${daysToAdd} dias!`);
   };
 
   if (user?.planType === 'EXPIRED') return <ExpiredLockScreen onUnlock={handleManualUnlock} />;
-
-  if (!user || !user.isOnboarded) {
-    return (
-      <div className="min-h-screen bg-titan-darker flex items-center justify-center">
-        <OnboardingModal onComplete={handleOnboardingComplete} />
-      </div>
-    );
-  }
+  if (!user || !user.isOnboarded) return <OnboardingModal onComplete={handleOnboardingComplete} />;
 
   const renderContent = () => {
     switch (activeTab) {
@@ -149,20 +132,27 @@ const App: React.FC = () => {
             <Dashboard 
                 asset={assets[0]} 
                 savedState={dashboardState}
-                // Fix: Wrapped setDashboardState in a function to correctly match the expected (newState: DashboardState) => void type
                 onUpdateState={(newState) => setDashboardState(newState)}
+                activeAccountType={user.activeAccountType}
+                onAccountTypeChange={(type) => updateUserState({ activeAccountType: type })}
             />
         );
       case 'courses': return <Courses />;
-      case 'profile': return <Profile user={user} onUpgradeClick={() => setActiveTab('courses')} />;
+      case 'profile': return (
+        <Profile 
+          user={user} 
+          onUpgradeClick={() => setActiveTab('courses')} 
+          onUpdateLogo={(url) => updateUserState({ logoUrl: url })}
+          onUpdateName={(name) => updateUserState({ name })}
+        />
+      );
       case 'contact': return <Contact />;
-      // Fix: Wrapped setDashboardState in default case to ensure type safety
-      default: return <Dashboard asset={assets[0]} savedState={dashboardState} onUpdateState={(newState) => setDashboardState(newState)} />;
+      default: return <Dashboard asset={assets[0]} savedState={dashboardState} onUpdateState={(newState) => setDashboardState(newState)} onAccountTypeChange={(type) => updateUserState({ activeAccountType: type })} />;
     }
   };
 
   return (
-    <Layout activeTab={activeTab} onTabChange={(tab) => setActiveTab(tab)}>
+    <Layout activeTab={activeTab} onTabChange={(tab) => setActiveTab(tab)} userLogo={user.logoUrl}>
       {renderContent()}
     </Layout>
   );

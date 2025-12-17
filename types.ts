@@ -57,13 +57,15 @@ export interface CourseModule {
 export interface UserProfile {
   name: string;
   whatsapp: string;
+  logoUrl?: string; // Nova propriedade para personalização
   isOnboarded: boolean;
   planType: 'FREE_TRIAL' | 'PRO' | 'EXPIRED';
   trialStartDate: string;
   trialEndDate: string;
   subscriptionEndDate?: string; 
   redeemedCodes: string[];
-  courseProgress?: Record<string, boolean>; // lessonId -> completed
+  courseProgress?: Record<string, boolean>;
+  activeAccountType?: 'DEMO' | 'REAL'; // Tipo de conta ativa na bridge
 }
 
 export interface CourseProduct {
