@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import Layout from './components/Layout';
 import OnboardingModal from './components/OnboardingModal';
@@ -148,13 +149,15 @@ const App: React.FC = () => {
             <Dashboard 
                 asset={assets[0]} 
                 savedState={dashboardState}
-                onUpdateState={setDashboardState}
+                // Fix: Wrapped setDashboardState in a function to correctly match the expected (newState: DashboardState) => void type
+                onUpdateState={(newState) => setDashboardState(newState)}
             />
         );
       case 'courses': return <Courses />;
       case 'profile': return <Profile user={user} onUpgradeClick={() => setActiveTab('courses')} />;
       case 'contact': return <Contact />;
-      default: return <Dashboard asset={assets[0]} savedState={dashboardState} onUpdateState={setDashboardState} />;
+      // Fix: Wrapped setDashboardState in default case to ensure type safety
+      default: return <Dashboard asset={assets[0]} savedState={dashboardState} onUpdateState={(newState) => setDashboardState(newState)} />;
     }
   };
 
