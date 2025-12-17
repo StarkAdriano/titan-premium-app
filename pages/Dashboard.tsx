@@ -16,7 +16,6 @@ import {
   Loader2 
 } from 'lucide-react';
 
-// Fix: Updated DashboardState to include trendBias property required by App.tsx
 interface DashboardState {
     userPrice: string;
     isRevealed: boolean;
@@ -95,17 +94,16 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
 
   const generateTitanAnalysis = (inputPrice: number): AnalysisResult => {
     const PIP_VAL = 0.0001;
-    // Lógica determinística baseada no preço para simular inteligência
     const lastDigit = Math.floor(inputPrice * 100000) % 10;
     let status: SignalStatus = SignalStatus.WAIT;
-    let summary = "Mercado em zona de indecisão institucional.";
+    let summary = "Zona de indecisão. Aguarde liquidez.";
 
     if (lastDigit >= 0 && lastDigit <= 3) {
       status = SignalStatus.BUY;
-      summary = "Acumulação identificada. Injeção de liquidez compradora.";
+      summary = "Acumulação: Injeção de liquidez compradora.";
     } else if (lastDigit >= 7 && lastDigit <= 9) {
       status = SignalStatus.SELL;
-      summary = "Distribuição confirmada. Instituições mitigando posições.";
+      summary = "Distribuição: Instituições mitigando posições.";
     }
 
     const slPrice = status === SignalStatus.BUY 
@@ -119,7 +117,7 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
     return {
         status,
         shortSummary: summary,
-        detailedAnalysis: `Análise processada via servidor ${selectedBroker || 'Titan Core'}. O ponto ${inputPrice} representa um POI (Point of Interest) H1.`,
+        detailedAnalysis: `Análise processada. O ponto ${inputPrice} representa um POI H1.`,
         validationStatus: 'OK',
         validationMsg: 'Sinal Validado',
         referencePrice: inputPrice.toString(),
@@ -157,7 +155,7 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
   return (
     <div className="flex flex-col min-h-full pb-32 bg-titan-darker">
       
-      {/* 1. Sub-Header Minimalista */}
+      {/* 1. Sub-Header */}
       <div className="px-4 py-3 bg-titan-dark flex items-center justify-between border-b border-white/5 relative z-10">
          <div className="flex flex-col">
             <h2 className="text-sm font-black text-white italic tracking-tighter uppercase leading-none">EURUSD</h2>
@@ -175,16 +173,16 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
          </button>
       </div>
 
-      {/* 2. TradingView Widget (Alinhado Milimetricamente) */}
+      {/* 2. Chart */}
       <TradingViewChart />
 
-      {/* 3. Painel de Controle */}
+      {/* 3. Terminal Control */}
       <div className="p-4 space-y-4">
           
-          {/* Input de Preço */}
+          {/* Input Unit */}
           <div className="bg-titan-card/20 rounded-2xl p-4 border border-white/5 shadow-inner">
               <div className="flex justify-between items-center mb-2 px-1">
-                  <span className="text-[9px] text-titan-muted font-bold uppercase tracking-[0.15em]">Preço do Gráfico</span>
+                  <span className="text-[9px] text-titan-muted font-bold uppercase tracking-[0.15em]">Preço da Corretora</span>
                   <span className="text-[8px] text-titan-gold/50 italic font-medium">Sincronize sua entrada</span>
               </div>
               <div className="flex gap-2">
@@ -201,61 +199,61 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
                     <button 
                         onClick={handleReveal}
                         disabled={isValidating || !savedState.userPrice}
-                        className="bg-titan-gold text-black px-6 rounded-2xl font-black flex items-center justify-center active:scale-95 transition-transform shadow-xl disabled:opacity-30 disabled:grayscale"
+                        className="bg-titan-gold text-black px-6 rounded-2xl font-black flex items-center justify-center active:scale-95 transition-transform shadow-xl disabled:opacity-30"
                     >
                         {isValidating ? <Loader2 className="animate-spin" size={24} /> : <Shield size={24} />}
                     </button>
                 ) : (
-                    <button onClick={handleReset} className="bg-titan-card text-titan-muted px-6 rounded-2xl border border-white/5">
+                    <button onClick={handleReset} className="bg-titan-card text-titan-muted px-6 rounded-2xl border border-white/5 active:scale-95 transition-transform">
                         <RotateCcw size={20} />
                     </button>
                 )}
               </div>
           </div>
 
-          {/* SINAL REVELADO PELO TITAN AI */}
+          {/* SINAL REVELADO (CENTRALIZADO E ALINHADO) */}
           {savedState.isRevealed && savedState.analysisSnapshot && (
               <div className="animate-in zoom-in-95 duration-500 space-y-4">
-                  <div className={`p-8 rounded-[2.5rem] border-[4px] text-center shadow-[0_0_50px_rgba(0,0,0,0.4)] bg-black/40 backdrop-blur-xl relative overflow-hidden transition-colors ${
-                      savedState.analysisSnapshot.status === SignalStatus.BUY ? 'border-titan-green/50' : 
-                      savedState.analysisSnapshot.status === SignalStatus.SELL ? 'border-titan-red/50' : 'border-titan-gold/50'
+                  <div className={`flex flex-col items-center justify-center p-8 rounded-[2rem] border-[3px] text-center shadow-[0_0_40px_rgba(0,0,0,0.6)] bg-black/50 backdrop-blur-xl relative overflow-hidden transition-all ${
+                      savedState.analysisSnapshot.status === SignalStatus.BUY ? 'border-titan-green/40 shadow-titan-green/10' : 
+                      savedState.analysisSnapshot.status === SignalStatus.SELL ? 'border-titan-red/40 shadow-titan-red/10' : 'border-titan-gold/40 shadow-titan-gold/10'
                   }`}>
-                      <div className={`absolute inset-0 opacity-5 ${
+                      <div className={`absolute inset-0 opacity-10 animate-pulse ${
                           savedState.analysisSnapshot.status === SignalStatus.BUY ? 'bg-titan-green' : 
                           savedState.analysisSnapshot.status === SignalStatus.SELL ? 'bg-titan-red' : 'bg-titan-gold'
                       }`}></div>
                       
-                      <span className="text-[9px] text-titan-muted font-bold uppercase tracking-[0.4em] mb-2 block relative z-10">Análise de Tendência</span>
+                      <span className="text-[9px] text-titan-muted font-bold uppercase tracking-[0.4em] mb-3 relative z-10">Análise de Tendência</span>
                       
-                      <h3 className={`text-7xl font-black italic tracking-tighter drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)] relative z-10 ${
-                          savedState.analysisSnapshot.status === SignalStatus.BUY ? 'text-titan-green shadow-titan-green/20' : 
-                          savedState.analysisSnapshot.status === SignalStatus.SELL ? 'text-titan-red shadow-titan-red/20' : 'text-titan-gold shadow-titan-gold/20'
+                      <h3 className={`font-black italic tracking-tighter drop-shadow-2xl relative z-10 leading-none ${
+                          savedState.analysisSnapshot.status === SignalStatus.BUY ? 'text-titan-green text-7xl' : 
+                          savedState.analysisSnapshot.status === SignalStatus.SELL ? 'text-titan-red text-7xl' : 'text-titan-gold text-5xl'
                       }`}>
                           {savedState.analysisSnapshot.status}
                       </h3>
                       
-                      <p className="text-white font-bold text-[10px] mt-4 uppercase tracking-widest opacity-80 relative z-10 bg-white/5 py-2 px-4 rounded-full inline-block">
+                      <p className="text-white font-bold text-[11px] mt-5 uppercase tracking-wider opacity-90 relative z-10 bg-white/5 py-2 px-5 rounded-full border border-white/5">
                         {savedState.analysisSnapshot.shortSummary}
                       </p>
                   </div>
 
-                  {/* Parâmetros de Trade (Se não for ESPERAR) */}
+                  {/* Parâmetros (Só se não for ESPERAR) */}
                   {savedState.analysisSnapshot.status !== SignalStatus.WAIT && (
                       <div className="grid grid-cols-2 gap-3">
-                          <div className="bg-red-900/10 border border-red-500/20 p-4 rounded-2xl flex flex-col items-center group active:bg-red-900/20 transition-colors">
-                              <span className="text-[9px] text-red-400 font-bold uppercase mb-1">Stop Loss</span>
+                          <div className="bg-red-900/10 border border-red-500/20 p-4 rounded-2xl flex flex-col items-center">
+                              <span className="text-[8px] text-red-400 font-bold uppercase tracking-widest mb-1">Stop Loss</span>
                               <div className="flex items-center gap-2">
                                   <span className="text-xl font-mono font-bold text-white">{savedState.analysisSnapshot.stopLoss}</span>
-                                  <button onClick={() => handleCopy(savedState.analysisSnapshot?.stopLoss || '', 'sl')} className="text-titan-muted hover:text-white transition-colors">
+                                  <button onClick={() => handleCopy(savedState.analysisSnapshot?.stopLoss || '', 'sl')} className="text-titan-muted p-1 hover:text-white transition-colors">
                                       <CopyIcon size={14} className={copiedField === 'sl' ? 'text-titan-green' : ''} />
                                   </button>
                               </div>
                           </div>
-                          <div className="bg-green-900/10 border border-green-500/20 p-4 rounded-2xl flex flex-col items-center group active:bg-green-900/20 transition-colors">
-                              <span className="text-[9px] text-green-400 font-bold uppercase mb-1">Take Profit</span>
+                          <div className="bg-green-900/10 border border-green-500/20 p-4 rounded-2xl flex flex-col items-center">
+                              <span className="text-[8px] text-green-400 font-bold uppercase tracking-widest mb-1">Take Profit</span>
                               <div className="flex items-center gap-2">
                                   <span className="text-xl font-mono font-bold text-white">{savedState.analysisSnapshot.takeProfit}</span>
-                                  <button onClick={() => handleCopy(savedState.analysisSnapshot?.takeProfit || '', 'tp')} className="text-titan-muted hover:text-white transition-colors">
+                                  <button onClick={() => handleCopy(savedState.analysisSnapshot?.takeProfit || '', 'tp')} className="text-titan-muted p-1 hover:text-white transition-colors">
                                       <CopyIcon size={14} className={copiedField === 'tp' ? 'text-titan-green' : ''} />
                                   </button>
                               </div>
@@ -265,14 +263,14 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
               </div>
           )}
 
-          {/* Terminal de Execução (Só libera após lincar) */}
+          {/* Execution Box */}
           <div className="bg-titan-card/10 rounded-2xl p-5 border border-white/5 space-y-4">
               <div className="flex items-center justify-between">
                   <div className="flex flex-col">
-                    <span className="text-[10px] text-titan-muted font-bold uppercase">Volume (Lote)</span>
-                    <span className="text-[8px] text-titan-gold italic">Gestão 1% recomendada</span>
+                    <span className="text-[10px] text-titan-muted font-bold uppercase tracking-widest leading-none mb-1">Volume Lote</span>
+                    <span className="text-[8px] text-titan-gold italic">Gestão Conservadora</span>
                   </div>
-                  <div className="flex items-center gap-5 bg-black/40 px-5 py-2 rounded-full border border-white/5 shadow-inner">
+                  <div className="flex items-center gap-5 bg-black/40 px-5 py-2 rounded-full border border-white/5">
                       <button onClick={() => setLotSize(Math.max(0.01, lotSize - 0.01))} className="text-titan-gold active:scale-125 transition-transform"><Minus size={18} /></button>
                       <span className="text-xl font-mono font-bold text-white w-14 text-center">{lotSize.toFixed(2)}</span>
                       <button onClick={() => setLotSize(lotSize + 0.01)} className="text-titan-gold active:scale-125 transition-transform"><Plus size={18} /></button>
@@ -281,16 +279,16 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
               <div className="grid grid-cols-2 gap-4">
                   <button 
                     disabled={!isBrokerConnected}
-                    className={`py-5 rounded-2xl font-black text-2xl italic tracking-tighter transition-all ${
-                        isBrokerConnected ? 'bg-titan-red text-white shadow-xl active:scale-95 border-b-4 border-red-900' : 'bg-titan-card text-titan-muted opacity-30 cursor-not-allowed grayscale'
+                    className={`py-5 rounded-2xl font-black text-2xl italic tracking-tighter transition-all shadow-xl ${
+                        isBrokerConnected ? 'bg-titan-red text-white active:scale-95 border-b-4 border-red-900' : 'bg-titan-card text-titan-muted opacity-30 cursor-not-allowed grayscale'
                     }`}
                   >
                       SELL
                   </button>
                   <button 
                     disabled={!isBrokerConnected}
-                    className={`py-5 rounded-2xl font-black text-2xl italic tracking-tighter transition-all ${
-                        isBrokerConnected ? 'bg-titan-green text-white shadow-xl active:scale-95 border-b-4 border-green-900' : 'bg-titan-card text-titan-muted opacity-30 cursor-not-allowed grayscale'
+                    className={`py-5 rounded-2xl font-black text-2xl italic tracking-tighter transition-all shadow-xl ${
+                        isBrokerConnected ? 'bg-titan-green text-white active:scale-95 border-b-4 border-green-900' : 'bg-titan-card text-titan-muted opacity-30 cursor-not-allowed grayscale'
                     }`}
                   >
                       BUY
@@ -298,13 +296,13 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
               </div>
               {!isBrokerConnected && (
                   <p className="text-[9px] text-titan-gold/40 text-center font-bold uppercase tracking-[0.25em] animate-pulse">
-                    Conecte sua corretora para operar
+                    Lincar para liberar execução instantânea
                   </p>
               )}
           </div>
       </div>
 
-      {/* MODAL DE LINCAGEM (REFINADO) */}
+      {/* MODAL */}
       {showBrokerModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/95 backdrop-blur-md animate-in fade-in duration-300">
             <div className="bg-titan-card border border-titan-gold/30 rounded-[2rem] w-full max-w-sm overflow-hidden shadow-2xl scale-in-center">
@@ -339,7 +337,7 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
                 <div className="px-5 pb-8 pt-2">
                     <div className="p-4 bg-titan-gold/5 border border-titan-gold/10 rounded-2xl">
                         <p className="text-[9px] text-titan-gold/70 leading-relaxed text-center italic">
-                          O Titan Premium sincroniza seu spread real para garantir que o Take Profit seja atingido com precisão milimétrica.
+                          O Titan Premium sincroniza seu spread real para garantir precisão milimétrica nas ordens.
                         </p>
                     </div>
                 </div>
