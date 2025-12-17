@@ -29,6 +29,7 @@ export interface AnalysisResult {
     status: SignalStatus;
     shortSummary: string;
     detailedAnalysis: string;
+    rationale: string; // Institutional rationale for the move
     validationMsg: string;
     validationStatus: 'OK' | 'WARNING';
     referencePrice: string;
@@ -36,6 +37,7 @@ export interface AnalysisResult {
     takeProfit?: string;
     rrRatio?: string;
     zoneContext?: 'PREMIUM' | 'DISCOUNT' | 'EQUILIBRIUM';
+    liquidityTarget?: string;
 }
 
 export interface Lesson {
@@ -57,7 +59,7 @@ export interface CourseModule {
 export interface UserProfile {
   name: string;
   whatsapp: string;
-  logoUrl?: string; // Nova propriedade para personalização
+  logoUrl?: string;
   isOnboarded: boolean;
   planType: 'FREE_TRIAL' | 'PRO' | 'EXPIRED';
   trialStartDate: string;
@@ -65,7 +67,7 @@ export interface UserProfile {
   subscriptionEndDate?: string; 
   redeemedCodes: string[];
   courseProgress?: Record<string, boolean>;
-  activeAccountType?: 'DEMO' | 'REAL'; // Tipo de conta ativa na bridge
+  activeAccountType?: 'DEMO' | 'REAL';
 }
 
 export interface CourseProduct {
