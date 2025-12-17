@@ -60,7 +60,7 @@ const App: React.FC = () => {
     if (storedUser) {
       try {
           const parsedUser: UserProfile = JSON.parse(storedUser);
-          if (!parsedUser.language) parsedUser.language = 'pt'; // Fallback
+          if (!parsedUser.language) parsedUser.language = 'pt';
           
           let isExpired = false;
           const today = new Date();
@@ -141,6 +141,7 @@ const App: React.FC = () => {
                 onUpdateState={(newState) => setDashboardState(newState)}
                 activeAccountType={user.activeAccountType}
                 onAccountTypeChange={(type) => updateUserState({ activeAccountType: type })}
+                translations={t}
             />
         );
       case 'courses': return <Courses />;
@@ -154,7 +155,7 @@ const App: React.FC = () => {
         />
       );
       case 'contact': return <Contact />;
-      default: return <Dashboard asset={assets[0]} savedState={dashboardState} onUpdateState={(newState) => setDashboardState(newState)} onAccountTypeChange={(type) => updateUserState({ activeAccountType: type })} />;
+      default: return <Dashboard asset={assets[0]} savedState={dashboardState} onUpdateState={(newState) => setDashboardState(newState)} onAccountTypeChange={(type) => updateUserState({ activeAccountType: type })} translations={t} />;
     }
   };
 
