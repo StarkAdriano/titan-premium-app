@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Asset, SignalStatus, AnalysisResult } from '../types';
-import { TrendingUp, TrendingDown, Calculator, CheckCircle2, AlignLeft, Lock, Activity, RotateCcw, Shield, AlertTriangle, Terminal, Settings2, Edit3, Save, BarChart3, ArrowDown, ArrowUp } from 'lucide-react';
+import { TrendingUp, TrendingDown, Calculator, CheckCircle2, AlignLeft, Lock, Activity, RotateCcw, Shield, AlertTriangle, Terminal, Settings2, Edit3, Save, BarChart3, ArrowDown, ArrowUp, Monitor, Copy } from 'lucide-react';
 
 interface DashboardState {
     userPrice: string;
@@ -15,6 +15,47 @@ interface DashboardProps {
   savedState: DashboardState;
   onUpdateState: (newState: DashboardState) => void;
 }
+
+// --- SCRIPT TRADINGVIEW CORRIGIDO (CONSTANTE) ---
+const TRADINGVIEW_SCRIPT = `//@version=5
+indicator("Titan Premium - Institutional Setup", overlay=true, shorttitle="TITAN PRO")
+
+// CORES TITAN
+titanGold = color.new(#d4af37, 0)
+titanRed = color.new(#ef4444, 10)
+titanGreen = color.new(#10b981, 10)
+
+// CONFIGURAÇÃO
+refPrice = input.float(1.05450, title="Preço de Referência (Fair Value)")
+trendBias = input.string("Bearish", title="Tendência Macro", options=["Bullish", "Bearish"])
+showZones = input.bool(true, title="Mostrar Zonas Premium/Discount")
+
+// LÓGICA
+isPremium = close > refPrice
+isDiscount = close < refPrice
+
+// ZONAS
+bgcolor(showZones and isPremium ? color.new(color.red, 90) : na, title="Premium Zone")
+bgcolor(showZones and isDiscount ? color.new(color.green, 90) : na, title="Discount Zone")
+
+// REF
+plot(refPrice, "Equilibrium", color=titanGold, linewidth=2, style=plot.style_linebr)
+
+// SINAIS SIMPLES
+bearSignal = (trendBias == "Bearish") and isPremium and (high - close) > (close - open) * 2
+plotshape(bearSignal, title="Venda Titan", location=location.abovebar, color=color.red, style=shape.labeldown, text="SELL", textcolor=color.white)
+
+bullSignal = (trendBias == "Bullish") and isDiscount and close > open
+plotshape(bullSignal, title="Compra Titan", location=location.belowbar, color=color.green, style=shape.labelup, text="BUY", textcolor=color.black)
+
+// PAINEL
+var table panel = table.new(position.top_right, 2, 4, border_width=1)
+if barstate.islast
+    table.cell(panel, 0, 0, "TITAN MONITOR", bgcolor=color.black, text_color=titanGold)
+    table.cell(panel, 0, 1, "Viés Macro:", bgcolor=color.black, text_color=color.white)
+    table.cell(panel, 1, 1, trendBias, bgcolor=trendBias == "Bullish" ? color.green : color.red, text_color=color.white)
+    table.cell(panel, 0, 2, "Zona Atual:", bgcolor=color.black, text_color=color.white)
+    table.cell(panel, 1, 2, isPremium ? "PREMIUM" : "DESCONTO", bgcolor=isPremium ? color.red : color.green, text_color=color.white)`;
 
 // --- LÓGICA TITAN PREMIUM (REFINADA) ---
 const generateTitanAnalysis = (
@@ -121,6 +162,7 @@ const generateTitanAnalysis = (
 const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState }) => {
   const [isValidating, setIsValidating] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [scriptCopied, setScriptCopied] = useState(false);
   const [isEditingRef, setIsEditingRef] = useState(false);
   const [tempRefPrice, setTempRefPrice] = useState('');
   
@@ -193,6 +235,12 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
   const startEditingRef = () => {
       setTempRefPrice(savedState.referencePrice || asset.price);
       setIsEditingRef(true);
+  };
+
+  const handleCopyScript = () => {
+      navigator.clipboard.writeText(TRADINGVIEW_SCRIPT);
+      setScriptCopied(true);
+      setTimeout(() => setScriptCopied(false), 3000);
   };
 
   const handleReveal = () => {
@@ -268,33 +316,48 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState 
          </div>
 
          {/* Reference Price Config */}
-         <div className="bg-titan-card rounded-lg p-3 border border-titan-card flex items-center justify-between">
-            <div className="flex flex-col">
+         <div className="bg-titan-card rounded-lg p-3 border border-titan-card flex flex-col justify-between">
+             
+             {/* Label Header com Botão Script */}
+             <div className="flex items-center justify-between mb-2 w-full">
                 <span className="text-[10px] text-titan-muted uppercase tracking-wider flex items-center gap-1">
                     <Settings2 size={10} /> PREÇO DE REFERÊNCIA (FAIR VALUE)
                 </span>
                 
-                {isEditingRef ? (
-                    <div className="flex items-center gap-2 mt-1">
-                        <input 
-                            autoFocus
-                            type="text"
-                            inputMode="decimal"
-                            className="bg-black/50 text-white font-mono text-sm p-1 rounded w-24 border border-titan-gold focus:outline-none"
-                            value={tempRefPrice}
-                            onChange={(e) => setTempRefPrice(e.target.value)}
-                        />
-                        <button onClick={saveRefPrice} className="text-green-400"><Save size={16} /></button>
-                    </div>
-                ) : (
-                    <div className="flex items-center gap-2 mt-1 cursor-pointer group" onClick={startEditingRef}>
-                        <span className="text-sm font-mono font-bold text-white group-hover:text-titan-gold transition-colors border-b border-dashed border-gray-600">
-                            {savedState.referencePrice || asset.price}
-                        </span>
-                        <Edit3 size={12} className="text-titan-muted opacity-50 group-hover:opacity-100" />
-                    </div>
-                )}
-            </div>
+                <button 
+                    onClick={handleCopyScript} 
+                    className={`flex items-center gap-1 text-[9px] font-bold px-2 py-1 rounded border transition-colors ${
+                        scriptCopied 
+                        ? 'bg-green-500/20 text-green-400 border-green-500/50' 
+                        : 'bg-titan-dark text-titan-gold border-titan-gold/30 hover:bg-titan-gold/10'
+                    }`}
+                >
+                    {scriptCopied ? <CheckCircle2 size={10} /> : <Monitor size={10} />}
+                    {scriptCopied ? 'COPIADO' : 'SCRIPT TV'}
+                </button>
+             </div>
+                
+            {/* Input / Display */}
+            {isEditingRef ? (
+                <div className="flex items-center gap-2">
+                    <input 
+                        autoFocus
+                        type="text"
+                        inputMode="decimal"
+                        className="bg-black/50 text-white font-mono text-sm p-1 rounded w-full border border-titan-gold focus:outline-none"
+                        value={tempRefPrice}
+                        onChange={(e) => setTempRefPrice(e.target.value)}
+                    />
+                    <button onClick={saveRefPrice} className="text-green-400"><Save size={16} /></button>
+                </div>
+            ) : (
+                <div className="flex items-center gap-2 cursor-pointer group" onClick={startEditingRef}>
+                    <span className="text-sm font-mono font-bold text-white group-hover:text-titan-gold transition-colors border-b border-dashed border-gray-600">
+                        {savedState.referencePrice || asset.price}
+                    </span>
+                    <Edit3 size={12} className="text-titan-muted opacity-50 group-hover:opacity-100" />
+                </div>
+            )}
          </div>
       </div>
 
