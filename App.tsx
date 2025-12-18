@@ -4,7 +4,7 @@ import Layout from './components/Layout';
 import OnboardingModal from './components/OnboardingModal';
 import ExpiredLockScreen from './components/ExpiredLockScreen';
 import Dashboard from './pages/Dashboard';
-import Courses from './pages/Courses';
+import Academy from './pages/Courses';
 import Profile from './pages/Profile';
 import Contact from './pages/Contact';
 import { UserProfile, Asset, AnalysisResult, Language } from './types';
@@ -115,7 +115,7 @@ const App: React.FC = () => {
   const handleManualUnlock = (code: string) => {
       if (!user) return;
       const daysToAdd = ACTIVATION_CODES[code];
-      if (!daysToAdd) { alert("Código inválido."); return; }
+      if (!daysToAdd) return;
       const now = new Date();
       const newEndDate = addDaysToDate(now, daysToAdd);
       updateUserState({
@@ -123,7 +123,6 @@ const App: React.FC = () => {
           subscriptionEndDate: newEndDate,
           redeemedCodes: [...(user.redeemedCodes || []), code]
       });
-      alert(`Success! Renewed for ${daysToAdd} days!`);
   };
 
   if (user?.planType === 'EXPIRED') return <ExpiredLockScreen onUnlock={handleManualUnlock} />;
@@ -144,7 +143,7 @@ const App: React.FC = () => {
                 translations={t}
             />
         );
-      case 'courses': return <Courses />;
+      case 'courses': return <Academy language={user.language} />;
       case 'profile': return (
         <Profile 
           user={user} 

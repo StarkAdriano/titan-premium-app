@@ -132,7 +132,7 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState,
                 isRevealed: true, 
                 analysisSnapshot: {
                     status,
-                    shortSummary: status === SignalStatus.WAIT ? t.equi : t.smc_valid,
+                    shortSummary: status === SignalStatus.WAIT ? t.equilibrium : t.smc_validated,
                     detailedAnalysis: "",
                     rationale: t[rationaleKey], 
                     validationStatus: zone === 'EQUILIBRIUM' ? 'WARNING' : 'OK',
@@ -159,12 +159,12 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState,
             <div className="flex items-center gap-1.5 mt-1.5">
                 <div className={`w-1 h-1 rounded-full ${isBrokerConnected ? 'bg-titan-green shadow-[0_0_5px_#10b981]' : 'bg-titan-muted'}`}></div>
                 <span className="text-[8px] text-titan-muted font-black tracking-[0.2em] uppercase">
-                    {isBrokerConnected ? `${selectedBroker?.name} LIVE` : 'OFFLINE'}
+                    {isBrokerConnected ? `${selectedBroker?.name} LIVE` : t.offline}
                 </span>
             </div>
          </div>
          <button onClick={() => { if(!isBrokerConnected) setShowBrokerModal(true); }} className={`px-4 py-2 rounded-xl text-[10px] font-black border transition-all active:scale-95 ${isBrokerConnected ? 'bg-titan-green/10 border-titan-green/30 text-titan-green' : 'bg-titan-gold text-black border-titan-gold shadow-lg'}`}>
-            {isBrokerConnected ? 'CONNECTED' : t.connect}
+            {isBrokerConnected ? t.connected : t.connect}
          </button>
       </div>
 

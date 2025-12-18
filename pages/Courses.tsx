@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { CourseModule, Lesson } from '../types';
+import { translations } from '../i18n';
 import { 
   CheckCircle2, 
   ChevronRight, 
@@ -15,65 +16,35 @@ import {
   X
 } from 'lucide-react';
 
-const ACADEMY_DATA: CourseModule[] = [
-  {
-    id: 'm1',
-    title: 'Arquitetura IPDA & SMC',
-    description: 'Como os bancos manipulam o EURUSD através do algoritmo.',
-    lessons: [
-      { id: 'l1', title: 'O Código do IPDA', duration: 'Masterclass', imageUrl: 'https://images.unsplash.com/photo-1551288049-bbbda536639a?auto=format&fit=crop&q=80&w=1200', completed: true },
-      { id: 'l2', title: 'Liquidez vs Volume', duration: 'Deep Dive', imageUrl: 'https://images.unsplash.com/photo-1611974714024-4607a50d487f?auto=format&fit=crop&q=80&w=1200', completed: true }
-    ]
-  },
-  {
-    id: 'm2',
-    title: 'Estrutura de Mercado Elite',
-    description: 'Identificando BOS, CHoCH e Inducement com precisão.',
-    lessons: [
-      { id: 'l3', title: 'Mapeamento de Range', duration: 'Advanced', imageUrl: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=1200', completed: false },
-      { id: 'l4', title: 'CHoCH: A Virada de Fluxo', duration: 'SMC Core', imageUrl: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&q=80&w=1200', completed: false }
-    ]
-  },
-  {
-    id: 'm3',
-    title: 'Supply & Demand (Advanced)',
-    description: 'Order Blocks, Fair Value Gaps e zonas de mitigação.',
-    lessons: [
-      { id: 'l5', title: 'Anatomia do Order Block', duration: 'High Impact', imageUrl: 'https://images.unsplash.com/photo-1526303328194-ed252289744c?auto=format&fit=crop&q=80&w=1200', completed: false },
-      { id: 'l6', title: 'Engenharia de Liquidez', duration: 'Technical', imageUrl: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&q=80&w=1200', completed: false }
-    ]
-  },
-  {
-    id: 'm4',
-    title: 'Psicologia Institucional',
-    description: 'A mentalidade dos 1% que dominam o mercado cambial.',
-    lessons: [
-      { id: 'l7', title: 'O Viés de Execução', duration: 'Mindset', imageUrl: 'https://images.unsplash.com/photo-1507413245164-6160d8298b31?auto=format&fit=crop&q=80&w=1200', completed: false },
-      { id: 'l8', title: 'Paciência Seletiva', duration: 'VIP Content', imageUrl: 'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?auto=format&fit=crop&q=80&w=1200', completed: false }
-    ]
-  }
-];
+interface AcademyProps {
+    language: string;
+}
 
-const ProgressRing = ({ progress }: { progress: number }) => {
-  const radius = 24;
-  const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (progress / 100) * circumference;
-
-  return (
-    <div className="relative flex items-center justify-center">
-      <svg className="w-16 h-16 transform -rotate-90">
-        <circle cx="32" cy="32" r={radius} stroke="currentColor" strokeWidth="4" fill="transparent" className="text-white/5" />
-        <circle cx="32" cy="32" r={radius} stroke="currentColor" strokeWidth="4" fill="transparent" 
-          strokeDasharray={circumference} strokeDashoffset={offset} className="text-titan-gold transition-all duration-1000 ease-out" />
-      </svg>
-      <span className="absolute text-[10px] font-black text-titan-gold">{Math.round(progress)}%</span>
-    </div>
-  );
-};
-
-const Academy: React.FC = () => {
+const Academy: React.FC<AcademyProps> = ({ language }) => {
+  const t = translations[language] || translations['en'];
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
   const [isFullMap, setIsFullMap] = useState(false);
+
+  const ACADEMY_DATA: CourseModule[] = [
+    {
+      id: 'm1',
+      title: 'Arquitetura IPDA & SMC',
+      description: t.smc_briefing,
+      lessons: [
+        { id: 'l1', title: 'O Código do IPDA', duration: 'Masterclass', imageUrl: 'https://images.unsplash.com/photo-1551288049-bbbda536639a?auto=format&fit=crop&q=80&w=1200', completed: true },
+        { id: 'l2', title: 'Liquidez vs Volume', duration: 'Deep Dive', imageUrl: 'https://images.unsplash.com/photo-1611974714024-4607a50d487f?auto=format&fit=crop&q=80&w=1200', completed: true }
+      ]
+    },
+    {
+      id: 'm2',
+      title: 'Estrutura de Mercado Elite',
+      description: t.certified_grade,
+      lessons: [
+        { id: 'l3', title: 'Mapeamento de Range', duration: 'Advanced', imageUrl: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=1200', completed: false },
+        { id: 'l4', title: 'CHoCH: A Virada de Fluxo', duration: 'SMC Core', imageUrl: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&q=80&w=1200', completed: false }
+      ]
+    }
+  ];
   
   const totalLessons = ACADEMY_DATA.reduce((acc, m) => acc + m.lessons.length, 0);
   const completedLessons = ACADEMY_DATA.reduce((acc, m) => acc + m.lessons.filter(l => l.completed).length, 0);
@@ -102,28 +73,18 @@ const Academy: React.FC = () => {
         </div>
         
         <div className="aspect-video bg-black relative overflow-hidden border-b border-titan-gold/10">
-          <img 
-            className="w-full h-full object-cover opacity-90" 
-            src={selectedLesson.imageUrl}
-            alt={selectedLesson.title}
-          />
-          
+          <img className="w-full h-full object-cover opacity-90" src={selectedLesson.imageUrl} alt={selectedLesson.title} />
           <div className="absolute inset-0 bg-gradient-to-t from-titan-darker via-transparent to-transparent"></div>
-
           <div className="absolute inset-0 pointer-events-none p-6 flex flex-col justify-between">
             <div className="flex justify-between items-start">
                <div className="bg-black/60 backdrop-blur-lg border border-titan-gold/40 px-3 py-1.5 rounded-lg flex items-center gap-2">
                   <Cpu size={12} className="text-titan-gold" />
                   <span className="text-[8px] text-titan-gold font-black tracking-widest uppercase">SCANNING_DATA</span>
                </div>
-               <button 
-                  onClick={() => setIsFullMap(true)} 
-                  className="pointer-events-auto bg-titan-gold/10 p-3 rounded-xl border border-titan-gold/30 hover:bg-titan-gold/20 transition-all"
-               >
+               <button onClick={() => setIsFullMap(true)} className="pointer-events-auto bg-titan-gold/10 p-3 rounded-xl border border-titan-gold/30 hover:bg-titan-gold/20 transition-all">
                   <Maximize2 size={16} className="text-titan-gold" />
                </button>
             </div>
-            
             <div className="flex justify-between items-end text-[7px] text-white/50 font-mono">
                <p>SOURCE: INSTITUTIONAL_BRAIN<br/>QUALITY: 4K_UHD</p>
                <BarChart3 size={24} className="text-titan-gold opacity-30" />
@@ -136,7 +97,7 @@ const Academy: React.FC = () => {
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <ShieldCheck size={14} className="text-titan-gold" />
-                <span className="text-[10px] text-titan-gold font-black uppercase tracking-[0.3em]">Institutional Grade</span>
+                <span className="text-[10px] text-titan-gold font-black uppercase tracking-[0.3em]">{t.certified_grade}</span>
               </div>
               <h1 className="text-4xl font-black text-white italic tracking-tighter uppercase leading-none">{selectedLesson.title}</h1>
             </div>
@@ -144,17 +105,13 @@ const Academy: React.FC = () => {
 
           <div className="bg-titan-card/30 rounded-3xl p-8 border border-white/5 space-y-6 relative overflow-hidden">
             <h3 className="text-[10px] font-black text-white uppercase tracking-widest flex items-center gap-2">
-              <Zap size={14} className="text-titan-gold" /> Data Intelligence
+              <Zap size={14} className="text-titan-gold" /> {t.smc_briefing}
             </h3>
             <p className="text-[13px] text-titan-muted leading-relaxed font-medium">
-                Esta aula técnica utiliza visualizações de alta definição para mapear onde a liquidez institucional está escondida no gráfico. O foco é identificar o rastro dos grandes bancos através de footprints algorítmicos reais.
+                {t.academy_desc}
             </p>
-            
-            <button 
-              onClick={() => setIsFullMap(true)}
-              className="w-full flex items-center justify-center gap-3 p-6 bg-titan-gold text-black rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] active:scale-95 shadow-2xl hover:bg-titan-goldLight transition-all"
-            >
-              <ImageIcon size={20} /> Resolução Total (Full Map)
+            <button onClick={() => setIsFullMap(true)} className="w-full flex items-center justify-center gap-3 p-6 bg-titan-gold text-black rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] active:scale-95 shadow-2xl hover:bg-titan-goldLight transition-all">
+              <ImageIcon size={20} /> {t.full_resolution}
             </button>
           </div>
         </div>
@@ -168,33 +125,32 @@ const Academy: React.FC = () => {
         <div className="relative z-10">
           <div className="flex items-center gap-2 mb-3">
             <Star size={12} className="text-titan-gold fill-current" />
-            <span className="text-[10px] text-titan-gold font-black uppercase tracking-[0.4em]">Knowledge Center</span>
+            <span className="text-[10px] text-titan-gold font-black uppercase tracking-[0.4em]">{t.knowledge_center}</span>
           </div>
-          <h2 className="text-4xl font-black text-white italic tracking-tighter mb-2 leading-none uppercase">ELITE<br/>EDUCATION</h2>
+          <h2 className="text-4xl font-black text-white italic tracking-tighter mb-2 leading-none uppercase">{t.elite_education}</h2>
         </div>
-        <ProgressRing progress={progress} />
+        <div className="relative flex items-center justify-center">
+            <svg className="w-16 h-16 transform -rotate-90">
+                <circle cx="32" cy="32" r="24" stroke="currentColor" strokeWidth="4" fill="transparent" className="text-white/5" />
+                <circle cx="32" cy="32" r="24" stroke="currentColor" strokeWidth="4" fill="transparent" strokeDasharray={150.8} strokeDashoffset={150.8 - (progress / 100) * 150.8} className="text-titan-gold transition-all duration-1000 ease-out" />
+            </svg>
+            <span className="absolute text-[10px] font-black text-titan-gold">{Math.round(progress)}%</span>
+        </div>
       </div>
 
       <div className="space-y-12">
         {ACADEMY_DATA.map((module, mIdx) => (
           <div key={module.id} className="space-y-4">
              <div className="flex items-center gap-4 px-2">
-                <div className="w-12 h-12 rounded-[1rem] bg-titan-dark border border-white/5 flex items-center justify-center font-black text-titan-gold text-xl shadow-xl">
-                    {mIdx + 1}
-                </div>
+                <div className="w-12 h-12 rounded-[1rem] bg-titan-dark border border-white/5 flex items-center justify-center font-black text-titan-gold text-xl shadow-xl">{mIdx + 1}</div>
                 <div className="flex-1">
                     <h3 className="text-lg font-black text-white uppercase tracking-tight leading-none mb-1">{module.title}</h3>
                     <p className="text-[11px] text-titan-muted uppercase tracking-tighter font-medium">{module.description}</p>
                 </div>
              </div>
-             
              <div className="bg-titan-card/30 border border-white/5 rounded-[2.5rem] overflow-hidden shadow-2xl">
                 {module.lessons.map((lesson) => (
-                  <button 
-                    key={lesson.id}
-                    onClick={() => setSelectedLesson(lesson)}
-                    className="w-full flex items-center justify-between p-8 border-b border-white/5 last:border-0 hover:bg-white/5 transition-all group"
-                  >
+                  <button key={lesson.id} onClick={() => setSelectedLesson(lesson)} className="w-full flex items-center justify-between p-8 border-b border-white/5 last:border-0 hover:bg-white/5 transition-all group">
                     <div className="flex items-center gap-6">
                         <div className={`p-4 rounded-[1.5rem] transition-all ${lesson.completed ? 'bg-titan-green/10 text-titan-green shadow-inner' : 'bg-black/40 text-titan-muted group-hover:text-titan-gold shadow-lg'}`}>
                             {lesson.completed ? <CheckCircle2 size={24} /> : <ImageIcon size={24} />}
