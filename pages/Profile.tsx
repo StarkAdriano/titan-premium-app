@@ -52,31 +52,35 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpgradeClick, onUpdateLogo, o
   const handleForceReload = async () => {
     setSyncStatus('syncing');
     
-    // Processamento de limpeza de forma ultra-segura para evitar crash no document state
+    // Processamento de limpeza de forma ultra-segura
     try {
-        // 1. Limpeza de Caches (Geralmente seguro em todos os browsers)
-        if (window.caches) {
+        // 1. Limpeza de Caches
+        if (typeof window !== 'undefined' && window.caches) {
             const keys = await caches.keys();
             await Promise.all(keys.map(k => caches.delete(k)));
         }
     } catch (e) { console.warn('Cache storage cleanup skipped'); }
 
     try {
-        // 2. Limpeza de Service Workers (A causa do erro "Invalid State" em alguns contexts)
-        // Usamos uma verificação mais rigorosa e catch silencioso
+        // 2. Limpeza de Service Workers com verificação de estado ativo
+        // Isso previne o erro "The document is in an invalid state"
         if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
             const registrations = await navigator.serviceWorker.getRegistrations();
             for (const registration of registrations) {
-                await registration.unregister();
+                // Apenas tenta desregistrar se estiver em um estado válido
+                try {
+                  await registration.unregister();
+                } catch (regError) {
+                  console.warn('Individual SW unregister failed', regError);
+                }
             }
         }
     } catch (e) { 
-        // Silenciamos o erro de Invalid State pois não deve impedir o reload do app
-        console.warn('Service Worker registration check skipped or failed'); 
+        console.warn('Service Worker check failed, proceeding to reload'); 
     }
 
     try {
-        // 3. Limpeza de Storage para reset total do estado
+        // 3. Limpeza de Storage
         localStorage.clear();
         sessionStorage.clear();
     } catch (e) { console.warn('Storage cleanup skipped'); }
@@ -84,11 +88,11 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpgradeClick, onUpdateLogo, o
     setSyncStatus('success');
     
     setTimeout(() => {
-        // Força o recarregamento total da página ignorando o cache do browser
-        // Adicionamos um timestamp na URL para garantir que o servidor não retorne cache
-        const url = new URL(window.location.href);
-        url.searchParams.set('reload', Date.now().toString());
-        window.location.replace(url.toString());
+        // CORREÇÃO: Redireciona para a URL atual com um cache-buster (timestamp)
+        // Isso garante que o recarregamento funcione corretamente em subpastas
+        const currentUrl = window.location.href.split('?')[0];
+        const cacheBuster = `?v=${new Date().getTime()}`;
+        window.location.replace(currentUrl + cacheBuster);
     }, 1000);
   };
 
