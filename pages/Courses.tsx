@@ -6,7 +6,6 @@ import {
   CheckCircle2, 
   ChevronRight, 
   ArrowLeft,
-  Zap,
   Star,
   ShieldCheck,
   PlayCircle,
@@ -16,7 +15,8 @@ import {
   Layers,
   Target,
   BarChart,
-  ShieldAlert
+  ShieldAlert,
+  Youtube
 } from 'lucide-react';
 
 interface AcademyProps {
@@ -27,27 +27,41 @@ const Academy: React.FC<AcademyProps> = ({ language }) => {
   const t = translations[language] || translations['pt'];
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
 
-  // GRADE CURRICULAR RESTAURADA - PRONTA PARA SEUS VÍDEOS 16x9
+  // Helper para converter youtu.be em embed link
+  const getEmbedUrl = (url: string) => {
+    if (!url) return '';
+    const id = url.split('/').pop();
+    return `https://www.youtube.com/embed/${id}?rel=0&modestbranding=1&showinfo=0`;
+  };
+
   const ACADEMY_DATA: CourseModule[] = [
     {
       id: 'm1',
       title: language === 'pt' ? 'Arquitetura Algorítmica (IPDA)' : language === 'en' ? 'Algorithmic Architecture (IPDA)' : 'Arquitectura Algorítmica (IPDA)',
-      description: 'O código por trás do preço.',
+      description: language === 'pt' ? 'O código por trás do preço.' : language === 'en' ? 'The code behind the price.' : 'El código detrás del precio.',
       lessons: [
         { 
           id: 'l1', 
           title: 'Liquidez vs Volume', 
           duration: '12:45', 
-          videoUrl: '', // Insira seu link aqui
-          explanation: language === 'pt' ? 'Como as instituições movem o mercado através de pools de liquidez.' : language === 'en' ? 'How institutions move the market through liquidity pools.' : 'Cómo las instituciones mueven el mercado a través de pools de liquidez.',
+          videoUrl: 'https://youtu.be/HPTU-4t6CtM',
+          explanation: language === 'pt' ? 'Entenda como o algoritmo interbancário busca pools de liquidez para injetar volume.' : language === 'en' ? 'Understand how the interbank algorithm seeks liquidity pools to inject volume.' : 'Comprenda cómo el algoritmo interbancario busca pools de liquidez para inyectar volumen.',
           completed: true 
         },
         { 
           id: 'l2', 
-          title: 'Order Blocks Reais', 
-          duration: '15:10', 
-          videoUrl: '', // Insira seu link aqui
-          explanation: language === 'pt' ? 'Identificando as pegadas exatas dos grandes bancos no gráfico.' : language === 'en' ? 'Identifying the exact footprints of big banks on the chart.' : 'Identificando las huellas exactas de los grandes bancos en el gráfico.',
+          title: 'Paciência Seletiva', 
+          duration: '10:15', 
+          videoUrl: 'https://youtu.be/xlvhZi6AdXE',
+          explanation: language === 'pt' ? 'A virtude mais cara do trader: saber quando o mercado não oferece vantagem matemática.' : language === 'en' ? 'The trader\'s most expensive virtue: knowing when the market offers no mathematical advantage.' : 'A virtude mais cara do trader: saber quando o mercado não oferece vantagem matemática.',
+          completed: false 
+        },
+        { 
+          id: 'l3', 
+          title: 'Order Blocks', 
+          duration: '15:30', 
+          videoUrl: 'https://youtu.be/WoeGeeIox1I',
+          explanation: language === 'pt' ? 'Identificação precisa de zonas de oferta e demanda institucional.' : language === 'en' ? 'Precise identification of institutional supply and demand zones.' : 'Identificación precisa de zonas de oferta y demanda institucional.',
           completed: false 
         }
       ]
@@ -55,22 +69,30 @@ const Academy: React.FC<AcademyProps> = ({ language }) => {
     {
       id: 'm2',
       title: language === 'pt' ? 'Estrutura de Mercado Elite' : language === 'en' ? 'Elite Market Structure' : 'Estructura de Mercado Elite',
-      description: 'Mapeamento de tendência institucional.',
+      description: language === 'pt' ? 'Mapeamento de tendência institucional.' : language === 'en' ? 'Institutional trend mapping.' : 'Mapeo de tendencias institucionales.',
       lessons: [
         { 
-          id: 'l3', 
-          title: 'BOS & CHoCH Profissional', 
-          duration: '18:30', 
-          videoUrl: '', 
-          explanation: language === 'pt' ? 'A diferença entre uma quebra de estrutura real e uma indução de varejo.' : language === 'en' ? 'The difference between a real structure break and retail inducement.' : 'La diferencia entre una ruptura de estructura real e inducción minorista.',
+          id: 'l4', 
+          title: 'Tendência Institucional', 
+          duration: '14:20', 
+          videoUrl: 'https://youtu.be/TjYKCLZ4UxA', 
+          explanation: language === 'pt' ? 'Aprenda a ler o fluxo de ordens real, ignorando o ruído do varejo.' : language === 'en' ? 'Learn to read real order flow, ignoring retail noise.' : 'Aprenda a leer el flujo de órdenes real, ignorando el ruido minorista.',
           completed: false 
         },
         { 
-          id: 'l4', 
+          id: 'l5', 
+          title: 'Bos & Choch', 
+          duration: '11:45', 
+          videoUrl: 'https://youtu.be/VOdVaCjUX7A', 
+          explanation: language === 'pt' ? 'A assinatura da reversão e continuidade de tendência profissional.' : language === 'en' ? 'The signature of professional trend reversal and continuity.' : 'La firma de la reversión y continuidad de tendencia profesional.',
+          completed: false 
+        },
+        { 
+          id: 'l6', 
           title: 'Mapeamento de Range', 
-          duration: '14:20', 
-          videoUrl: '', 
-          explanation: language === 'pt' ? 'Definindo as zonas de Premium e Discount para execução de alta probabilidade.' : language === 'en' ? 'Defining Premium and Discount zones for high probability execution.' : 'Definiendo zonas de Premium y Discount para ejecución de alta probabilidad.',
+          duration: '13:10', 
+          videoUrl: 'https://youtu.be/x-sTpp-BAbE', 
+          explanation: language === 'pt' ? 'Definindo o campo de batalha: Premium vs Discount.' : language === 'en' ? 'Defining the battlefield: Premium vs Discount.' : 'Definiendo el campo de batalla: Premium vs Discount.',
           completed: false 
         }
       ]
@@ -78,22 +100,30 @@ const Academy: React.FC<AcademyProps> = ({ language }) => {
     {
       id: 'm3',
       title: language === 'pt' ? 'Liquidez & Armadilhas' : language === 'en' ? 'Liquidity & Traps' : 'Liquidez y Trampas',
-      description: 'Onde o varejo perde e o Titan ganha.',
+      description: language === 'pt' ? 'Onde o varejo perde e o Titan ganha.' : language === 'en' ? 'Where retail loses and Titan wins.' : 'Donde el minorista pierde y Titan gana.',
       lessons: [
         { 
-          id: 'l5', 
-          title: 'Inducement (Indução)', 
-          duration: '22:15', 
-          videoUrl: '', 
-          explanation: language === 'pt' ? 'Aprenda a não ser a liquidez do mercado.' : language === 'en' ? 'Learn how not to be the market liquidity.' : 'Aprende a no ser la liquidez del mercado.',
+          id: 'l7', 
+          title: 'Liquidez vs Armadilhas', 
+          duration: '16:40', 
+          videoUrl: 'https://youtu.be/Hl2JFNRV_ps', 
+          explanation: language === 'pt' ? 'O mercado não se move por notícias, move-se por liquidez pendente.' : language === 'en' ? 'The market doesn\'t move by news, it moves by pending liquidity.' : 'El mercado no se mueve por noticias, se mueve por liquidez pendiente.',
           completed: false 
         },
         { 
-          id: 'l6', 
-          title: 'Fair Value Gaps (FVG)', 
-          duration: '11:50', 
-          videoUrl: '', 
-          explanation: language === 'pt' ? 'Utilizando os desequilíbrios de preço como imãs para o take profit.' : language === 'en' ? 'Using price imbalances as magnets for take profit.' : 'Utilizando desequilibrios de precios como imanes para el take profit.',
+          id: 'l8', 
+          title: 'Indução (Inducement)', 
+          duration: '12:20', 
+          videoUrl: 'https://youtu.be/-hpD_kqc0fw', 
+          explanation: language === 'pt' ? 'Como as instituições enganam traders precoces para criar combustível de preço.' : language === 'en' ? 'How institutions trick early traders to create price fuel.' : 'Cómo las instituciones engañan a los traders prematuros para crear combustible de precios.',
+          completed: false 
+        },
+        { 
+          id: 'l9', 
+          title: 'Fair Value Gap', 
+          duration: '09:55', 
+          videoUrl: 'https://youtu.be/Jx1jVx_tpTQ', 
+          explanation: language === 'pt' ? 'Identificando ineficiências que o preço é obrigado a mitigar.' : language === 'en' ? 'Identifying inefficiencies that the price is forced to mitigate.' : 'Identificar ineficiencias que el precio se ve obligado a mitigar.',
           completed: false 
         }
       ]
@@ -101,14 +131,22 @@ const Academy: React.FC<AcademyProps> = ({ language }) => {
     {
       id: 'm4',
       title: language === 'pt' ? 'Gestão de Risco NASA' : language === 'en' ? 'NASA Risk Management' : 'Gestión de Riesgo NASA',
-      description: 'Matemática e Psicologia de Alta Performance.',
+      description: language === 'pt' ? 'Matemática e Psicologia de Alta Performance.' : language === 'en' ? 'High Performance Math and Psychology.' : 'Matemáticas y Psicología de Alto Rendimiento.',
       lessons: [
         { 
-          id: 'l7', 
-          title: 'Risco Retorno 1:3+', 
-          duration: '09:40', 
-          videoUrl: '', 
-          explanation: language === 'pt' ? 'Como manter a conta positiva mesmo errando mais de 50% das vezes.' : language === 'en' ? 'How to keep the account positive even missing more than 50% of the time.' : 'Cómo mantener la cuenta positiva incluso fallando más del 50% de las veces.',
+          id: 'l10', 
+          title: 'Gestão de Risco NASA', 
+          duration: '20:15', 
+          videoUrl: 'https://youtu.be/pcpdNcCQuPk', 
+          explanation: language === 'pt' ? 'Protocolos de sobrevivência e escala para contas de seis dígitos.' : language === 'en' ? 'Survival and scaling protocols for six-figure accounts.' : 'Protocolos de supervivencia y escala para cuentas de seis cifras.',
+          completed: false 
+        },
+        { 
+          id: 'l11', 
+          title: 'Risco Retorno', 
+          duration: '08:45', 
+          videoUrl: 'https://youtu.be/cX0AeF-uMeI', 
+          explanation: language === 'pt' ? 'A matemática sagrada do trading: Por que a taxa de acerto é secundária.' : language === 'en' ? 'The sacred math of trading: Why win rate is secondary.' : 'La matemática sagrada del trading: Por qué el win rate es secundario.',
           completed: false 
         }
       ]
@@ -127,25 +165,25 @@ const Academy: React.FC<AcademyProps> = ({ language }) => {
             <ArrowLeft size={18} />
           </button>
           <div className="flex flex-col">
-            <span className="text-[8px] text-titan-gold font-black uppercase tracking-[0.3em]">Titan Academy Player</span>
+            <span className="text-[8px] text-titan-gold font-black uppercase tracking-[0.3em]">Titan Academy Stream</span>
             <h2 className="text-sm font-bold text-white tracking-tight">{selectedLesson.title}</h2>
           </div>
         </div>
         
-        {/* Professional 16:9 Video Player Container */}
-        <div className="w-full aspect-video bg-black relative shadow-2xl border-b border-titan-gold/10">
+        {/* Titan Cinema Engine - 16:9 YouTube Embed */}
+        <div className="w-full aspect-video bg-black relative shadow-2xl border-b border-titan-gold/10 overflow-hidden">
            {selectedLesson.videoUrl ? (
-             <video 
-               src={selectedLesson.videoUrl} 
-               controls 
-               className="w-full h-full object-contain"
-             >
-               {t.video_loading}
-             </video>
+             <iframe 
+               src={getEmbedUrl(selectedLesson.videoUrl)}
+               title={selectedLesson.title}
+               className="w-full h-full border-0"
+               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+               allowFullScreen
+             ></iframe>
            ) : (
              <div className="w-full h-full flex flex-col items-center justify-center gap-4 text-titan-muted/20">
-                <PlayCircle size={64} className="animate-pulse" />
-                <span className="text-[10px] font-black uppercase tracking-[0.3em]">Waiting Video Feed (16:9)</span>
+                <Youtube size={64} className="animate-pulse" />
+                <span className="text-[10px] font-black uppercase tracking-[0.3em]">Feed Offline</span>
              </div>
            )}
         </div>
@@ -170,7 +208,7 @@ const Academy: React.FC<AcademyProps> = ({ language }) => {
 
           <div className="flex items-center gap-4 text-titan-muted text-[10px] font-black uppercase tracking-widest px-2">
              <div className="flex items-center gap-2"><Clock size={14} /> {selectedLesson.duration}</div>
-             <div className="flex items-center gap-2"><FileText size={14} /> Blueprint PDF</div>
+             <div className="flex items-center gap-2"><FileText size={14} /> PDF Blueprint</div>
           </div>
         </div>
       </div>
