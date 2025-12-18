@@ -9,7 +9,6 @@ import {
   Star,
   ShieldCheck,
   PlayCircle,
-  FileText,
   Clock,
   Info,
   Layers,
@@ -27,11 +26,20 @@ const Academy: React.FC<AcademyProps> = ({ language }) => {
   const t = translations[language] || translations['pt'];
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
 
-  // Helper para converter youtu.be em embed link
+  // Motor de extração de ID do YouTube robusto
   const getEmbedUrl = (url: string) => {
     if (!url) return '';
-    const id = url.split('/').pop();
-    return `https://www.youtube.com/embed/${id}?rel=0&modestbranding=1&showinfo=0`;
+    let videoId = '';
+    
+    if (url.includes('youtu.be/')) {
+      videoId = url.split('youtu.be/')[1].split(/[?#]/)[0];
+    } else if (url.includes('youtube.com/watch?v=')) {
+      videoId = url.split('v=')[1].split(/[&?#]/)[0];
+    } else {
+      videoId = url.split('/').pop() || '';
+    }
+    
+    return `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&autoplay=0`;
   };
 
   const ACADEMY_DATA: CourseModule[] = [
@@ -170,7 +178,7 @@ const Academy: React.FC<AcademyProps> = ({ language }) => {
           </div>
         </div>
         
-        {/* Titan Cinema Engine - 16:9 YouTube Embed */}
+        {/* Titan Cinema Engine - 16:9 YouTube Embed - Fixed Logic */}
         <div className="w-full aspect-video bg-black relative shadow-2xl border-b border-titan-gold/10 overflow-hidden">
            {selectedLesson.videoUrl ? (
              <iframe 
@@ -195,6 +203,9 @@ const Academy: React.FC<AcademyProps> = ({ language }) => {
               <span className="text-[10px] text-titan-gold font-black uppercase tracking-[0.3em]">SMC Institutional Intel</span>
             </div>
             <h1 className="text-3xl font-black text-white italic tracking-tighter uppercase leading-none">{selectedLesson.title}</h1>
+            <div className="flex items-center gap-2 text-titan-muted text-[10px] font-black uppercase tracking-widest py-2">
+               <Clock size={12} /> {selectedLesson.duration}
+            </div>
           </div>
 
           <div className="bg-titan-card/30 rounded-3xl p-8 border border-white/5 space-y-4">
@@ -204,11 +215,6 @@ const Academy: React.FC<AcademyProps> = ({ language }) => {
             <p className="text-[13px] text-titan-muted leading-relaxed font-medium">
                 {selectedLesson.explanation}
             </p>
-          </div>
-
-          <div className="flex items-center gap-4 text-titan-muted text-[10px] font-black uppercase tracking-widest px-2">
-             <div className="flex items-center gap-2"><Clock size={14} /> {selectedLesson.duration}</div>
-             <div className="flex items-center gap-2"><FileText size={14} /> PDF Blueprint</div>
           </div>
         </div>
       </div>
