@@ -99,7 +99,7 @@ const App: React.FC = () => {
       trialEndDate: addDaysToDate(now, 30),
       redeemedCodes: [],
       activeAccountType: 'DEMO',
-      language: 'pt'
+      language: data.language || 'pt'
     };
     setUser(newUser);
     localStorage.setItem('titan_user', JSON.stringify(newUser));
@@ -154,7 +154,7 @@ const App: React.FC = () => {
           onUpdateLanguage={(lang) => updateUserState({ language: lang })}
         />
       );
-      case 'contact': return <Contact />;
+      case 'contact': return <Contact language={user.language} />;
       default: return <Dashboard asset={assets[0]} savedState={dashboardState} onUpdateState={(newState) => setDashboardState(newState)} onAccountTypeChange={(type) => updateUserState({ activeAccountType: type })} translations={t} />;
     }
   };

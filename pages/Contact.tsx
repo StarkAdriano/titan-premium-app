@@ -1,58 +1,64 @@
+
 import React from 'react';
 import { CONTACT_EMAIL, CONTACT_WHATSAPP, CONTACT_WHATSAPP_LINK } from '../constants';
+import { translations } from '../i18n';
 import { Mail, MessageCircle, HelpCircle } from 'lucide-react';
 
-const Contact: React.FC = () => {
+const Contact: React.FC<{ language: string }> = ({ language }) => {
+  const t = translations[language] || translations['pt'];
+
   return (
     <div className="p-4 space-y-6">
       <div className="text-center py-6">
         <div className="w-16 h-16 bg-titan-card rounded-full flex items-center justify-center mx-auto mb-4 border border-titan-gold/30">
           <HelpCircle size={32} className="text-titan-gold" />
         </div>
-        <h2 className="text-xl font-bold text-white mb-2">Precisa de Ajuda?</h2>
+        <h2 className="text-xl font-bold text-white mb-2">Suporte Titan</h2>
         <p className="text-sm text-titan-muted max-w-xs mx-auto">
-          Para dúvidas, suporte técnico ou informações sobre os cursos e o app Titan Premium.
+          Para dúvidas sobre ativação, renovação ou suporte técnico especializado.
         </p>
       </div>
 
       <div className="space-y-4">
         <a 
           href={`mailto:${CONTACT_EMAIL}`}
-          className="block bg-titan-card border border-titan-card hover:border-titan-gold/50 p-5 rounded-xl transition-all group"
+          className="block bg-titan-card border border-titan-card hover:border-titan-gold/50 p-6 rounded-3xl transition-all group"
         >
           <div className="flex items-center gap-4 mb-2">
-            <div className="w-10 h-10 rounded-full bg-titan-dark flex items-center justify-center group-hover:bg-titan-gold transition-colors">
-              <Mail size={18} className="text-white group-hover:text-black" />
+            <div className="w-12 h-12 rounded-2xl bg-titan-dark flex items-center justify-center group-hover:bg-titan-gold transition-colors shadow-lg">
+              <Mail size={20} className="text-white group-hover:text-black" />
             </div>
-            <span className="font-bold text-white text-lg">E-mail</span>
+            <span className="font-black text-white text-lg uppercase tracking-tighter">E-mail</span>
           </div>
-          <p className="text-titan-muted text-sm ml-14">{CONTACT_EMAIL}</p>
+          <p className="text-titan-muted text-sm ml-16">{CONTACT_EMAIL}</p>
         </a>
 
         <a 
           href={CONTACT_WHATSAPP_LINK}
           target="_blank"
           rel="noopener noreferrer"
-          className="block bg-titan-card border border-titan-card hover:border-titan-green/50 p-5 rounded-xl transition-all group"
+          className="block bg-titan-card border border-titan-card hover:border-titan-green/50 p-6 rounded-3xl transition-all group"
         >
           <div className="flex items-center gap-4 mb-2">
-            <div className="w-10 h-10 rounded-full bg-titan-dark flex items-center justify-center group-hover:bg-green-500 transition-colors">
-              <MessageCircle size={18} className="text-white group-hover:text-black" />
+            <div className="w-12 h-12 rounded-2xl bg-titan-dark flex items-center justify-center group-hover:bg-green-500 transition-colors shadow-lg">
+              <MessageCircle size={20} className="text-white group-hover:text-black" />
             </div>
-            <span className="font-bold text-white text-lg">WhatsApp</span>
+            <span className="font-black text-white text-lg uppercase tracking-tighter">WhatsApp</span>
           </div>
-          <p className="text-titan-muted text-sm ml-14">{CONTACT_WHATSAPP}</p>
-          <div className="mt-4 ml-14">
-             <span className="text-[10px] font-bold bg-green-900/30 text-green-400 px-2 py-1 rounded border border-green-900/50">
-               Recomendado para resposta rápida
+          <p className="text-titan-muted text-sm ml-16">{CONTACT_WHATSAPP}</p>
+          <div className="mt-4 ml-16">
+             <span className="text-[9px] font-black bg-green-900/30 text-green-400 px-3 py-1.5 rounded-lg border border-green-900/50 uppercase tracking-widest">
+               Resposta Imediata
              </span>
           </div>
         </a>
       </div>
       
-      <div className="mt-12 text-center">
-         <p className="text-[10px] text-titan-muted">Titan Premium © {new Date().getFullYear()}</p>
-         <p className="text-[10px] text-titan-muted/50">Desenvolvido com excelência.</p>
+      <div className="mt-20 text-center space-y-1">
+         <p className="text-[11px] font-bold text-titan-muted">Titan Premium © 2025</p>
+         <p className="text-[10px] text-titan-muted/60 font-medium">
+           {t.developed_by}
+         </p>
       </div>
     </div>
   );

@@ -22,7 +22,7 @@ const ACADEMY_DATA: CourseModule[] = [
     description: 'Como os bancos manipulam o EURUSD através do algoritmo.',
     lessons: [
       { id: 'l1', title: 'O Código do IPDA', duration: 'Masterclass', imageUrl: 'https://images.unsplash.com/photo-1551288049-bbbda536639a?auto=format&fit=crop&q=80&w=1200', completed: true },
-      { id: 'l2', title: 'Liquidez vs Volume', duration: 'Deep Dive', imageUrl: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=1200', completed: true }
+      { id: 'l2', title: 'Liquidez vs Volume', duration: 'Deep Dive', imageUrl: 'https://images.unsplash.com/photo-1611974714024-4607a50d487f?auto=format&fit=crop&q=80&w=1200', completed: true }
     ]
   },
   {
@@ -49,7 +49,7 @@ const ACADEMY_DATA: CourseModule[] = [
     description: 'A mentalidade dos 1% que dominam o mercado cambial.',
     lessons: [
       { id: 'l7', title: 'O Viés de Execução', duration: 'Mindset', imageUrl: 'https://images.unsplash.com/photo-1507413245164-6160d8298b31?auto=format&fit=crop&q=80&w=1200', completed: false },
-      { id: 'l8', title: 'Paciência Seletiva', duration: 'VIP Content', imageUrl: 'https://images.unsplash.com/photo-1484417855527-41c00a4a96df?auto=format&fit=crop&q=80&w=1200', completed: false }
+      { id: 'l8', title: 'Paciência Seletiva', duration: 'VIP Content', imageUrl: 'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?auto=format&fit=crop&q=80&w=1200', completed: false }
     ]
   }
 ];
@@ -82,11 +82,10 @@ const Academy: React.FC = () => {
   if (selectedLesson) {
     return (
       <div className="flex flex-col min-h-full bg-titan-darker animate-in slide-in-from-right-4">
-        {/* Full Map Modal */}
         {isFullMap && (
-          <div className="fixed inset-0 z-[200] bg-black flex items-center justify-center p-4 animate-in fade-in zoom-in">
-             <button onClick={() => setIsFullMap(false)} className="absolute top-10 right-10 z-[210] p-4 bg-white/10 rounded-full text-white">
-                <X size={24} />
+          <div className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in zoom-in">
+             <button onClick={() => setIsFullMap(false)} className="absolute top-10 right-10 z-[210] p-4 bg-white/10 rounded-full text-white hover:bg-white/20 transition-all">
+                <X size={28} />
              </button>
              <img src={selectedLesson.imageUrl} className="max-w-full max-h-full object-contain rounded-xl shadow-2xl" alt="Full Resolution" />
           </div>
@@ -97,65 +96,65 @@ const Academy: React.FC = () => {
             <ArrowLeft size={18} />
           </button>
           <div className="flex flex-col">
-            <span className="text-[8px] text-titan-gold font-black uppercase tracking-[0.3em]">Titan Visual Intelligence</span>
+            <span className="text-[8px] text-titan-gold font-black uppercase tracking-[0.3em]">Titan Alpha Intelligence</span>
             <h2 className="text-sm font-bold text-white tracking-tight">{selectedLesson.title}</h2>
           </div>
         </div>
         
-        <div className="aspect-video bg-black relative group overflow-hidden border-b border-titan-gold/10">
+        <div className="aspect-video bg-black relative overflow-hidden border-b border-titan-gold/10">
           <img 
             className="w-full h-full object-cover opacity-90" 
             src={selectedLesson.imageUrl}
             alt={selectedLesson.title}
           />
           
-          <div className="absolute inset-0 bg-gradient-to-t from-titan-darker/95 via-transparent to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-titan-darker via-transparent to-transparent"></div>
 
           <div className="absolute inset-0 pointer-events-none p-6 flex flex-col justify-between">
             <div className="flex justify-between items-start">
-               <div className="bg-black/80 backdrop-blur-xl border border-titan-gold/40 px-3 py-1.5 rounded-lg flex items-center gap-2">
+               <div className="bg-black/60 backdrop-blur-lg border border-titan-gold/40 px-3 py-1.5 rounded-lg flex items-center gap-2">
                   <Cpu size={12} className="text-titan-gold" />
-                  <span className="text-[8px] text-titan-gold font-black tracking-widest uppercase">HD_SCAN_ACTIVE</span>
+                  <span className="text-[8px] text-titan-gold font-black tracking-widest uppercase">SCANNING_DATA</span>
                </div>
                <button 
                   onClick={() => setIsFullMap(true)} 
-                  className="pointer-events-auto bg-titan-gold/10 p-2 rounded-lg border border-titan-gold/30 hover:bg-titan-gold/20 transition-all"
+                  className="pointer-events-auto bg-titan-gold/10 p-3 rounded-xl border border-titan-gold/30 hover:bg-titan-gold/20 transition-all"
                >
-                  <Maximize2 size={12} className="text-titan-gold" />
+                  <Maximize2 size={16} className="text-titan-gold" />
                </button>
             </div>
             
-            <div className="flex justify-between items-end text-[7px] text-white/30 font-mono">
-               <p>INSTITUTIONAL_MAP_01<br/>RES: 4K_ULTRA</p>
+            <div className="flex justify-between items-end text-[7px] text-white/50 font-mono">
+               <p>SOURCE: INSTITUTIONAL_BRAIN<br/>QUALITY: 4K_UHD</p>
                <BarChart3 size={24} className="text-titan-gold opacity-30" />
             </div>
           </div>
         </div>
 
-        <div className="p-8 space-y-8">
+        <div className="p-8 space-y-10">
           <div className="flex items-start justify-between">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <ShieldCheck size={14} className="text-titan-gold" />
-                <span className="text-[10px] text-titan-gold font-black uppercase tracking-[0.3em]">Validated Setup</span>
+                <span className="text-[10px] text-titan-gold font-black uppercase tracking-[0.3em]">Institutional Grade</span>
               </div>
               <h1 className="text-4xl font-black text-white italic tracking-tighter uppercase leading-none">{selectedLesson.title}</h1>
             </div>
           </div>
 
-          <div className="bg-titan-card/30 rounded-3xl p-6 border border-white/5 space-y-6 relative overflow-hidden">
+          <div className="bg-titan-card/30 rounded-3xl p-8 border border-white/5 space-y-6 relative overflow-hidden">
             <h3 className="text-[10px] font-black text-white uppercase tracking-widest flex items-center gap-2">
-              <Zap size={14} className="text-titan-gold" /> High Impact Intel
+              <Zap size={14} className="text-titan-gold" /> Data Intelligence
             </h3>
-            <p className="text-xs text-titan-muted leading-relaxed font-medium">
-                Esta aula técnica utiliza visualizações de alta definição para mapear onde a liquidez institucional está escondida no gráfico. O foco é identificar o rastro dos grandes bancos através de footprints algorítmicos.
+            <p className="text-[13px] text-titan-muted leading-relaxed font-medium">
+                Esta aula técnica utiliza visualizações de alta definição para mapear onde a liquidez institucional está escondida no gráfico. O foco é identificar o rastro dos grandes bancos através de footprints algorítmicos reais.
             </p>
             
             <button 
               onClick={() => setIsFullMap(true)}
-              className="w-full flex items-center justify-center gap-3 p-5 bg-titan-gold text-black rounded-2xl text-[10px] font-black uppercase tracking-widest active:scale-95 shadow-xl hover:bg-titan-goldLight transition-all"
+              className="w-full flex items-center justify-center gap-3 p-6 bg-titan-gold text-black rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] active:scale-95 shadow-2xl hover:bg-titan-goldLight transition-all"
             >
-              <ImageIcon size={18} /> Resolução Total (Full Map)
+              <ImageIcon size={20} /> Resolução Total (Full Map)
             </button>
           </div>
         </div>
@@ -169,23 +168,23 @@ const Academy: React.FC = () => {
         <div className="relative z-10">
           <div className="flex items-center gap-2 mb-3">
             <Star size={12} className="text-titan-gold fill-current" />
-            <span className="text-[10px] text-titan-gold font-black uppercase tracking-[0.4em]">Elite Academy</span>
+            <span className="text-[10px] text-titan-gold font-black uppercase tracking-[0.4em]">Knowledge Center</span>
           </div>
-          <h2 className="text-4xl font-black text-white italic tracking-tighter mb-2 leading-none uppercase">HIGH<br/>PERFORMANCE</h2>
+          <h2 className="text-4xl font-black text-white italic tracking-tighter mb-2 leading-none uppercase">ELITE<br/>EDUCATION</h2>
         </div>
         <ProgressRing progress={progress} />
       </div>
 
-      <div className="space-y-10">
+      <div className="space-y-12">
         {ACADEMY_DATA.map((module, mIdx) => (
           <div key={module.id} className="space-y-4">
              <div className="flex items-center gap-4 px-2">
-                <div className="w-12 h-12 rounded-[1rem] bg-titan-dark border border-white/5 flex items-center justify-center font-black text-titan-gold text-lg shadow-xl">
+                <div className="w-12 h-12 rounded-[1rem] bg-titan-dark border border-white/5 flex items-center justify-center font-black text-titan-gold text-xl shadow-xl">
                     {mIdx + 1}
                 </div>
                 <div className="flex-1">
                     <h3 className="text-lg font-black text-white uppercase tracking-tight leading-none mb-1">{module.title}</h3>
-                    <p className="text-[10px] text-titan-muted uppercase tracking-tighter font-medium">{module.description}</p>
+                    <p className="text-[11px] text-titan-muted uppercase tracking-tighter font-medium">{module.description}</p>
                 </div>
              </div>
              
@@ -194,18 +193,18 @@ const Academy: React.FC = () => {
                   <button 
                     key={lesson.id}
                     onClick={() => setSelectedLesson(lesson)}
-                    className="w-full flex items-center justify-between p-7 border-b border-white/5 last:border-0 hover:bg-white/5 transition-all group"
+                    className="w-full flex items-center justify-between p-8 border-b border-white/5 last:border-0 hover:bg-white/5 transition-all group"
                   >
                     <div className="flex items-center gap-6">
                         <div className={`p-4 rounded-[1.5rem] transition-all ${lesson.completed ? 'bg-titan-green/10 text-titan-green shadow-inner' : 'bg-black/40 text-titan-muted group-hover:text-titan-gold shadow-lg'}`}>
-                            {lesson.completed ? <CheckCircle2 size={20} /> : <ImageIcon size={20} />}
+                            {lesson.completed ? <CheckCircle2 size={24} /> : <ImageIcon size={24} />}
                         </div>
                         <div className="text-left">
                             <p className="text-sm font-black uppercase tracking-tight text-white group-hover:text-titan-gold transition-colors">{lesson.title}</p>
-                            <span className="text-[9px] text-titan-muted uppercase font-bold tracking-widest">{lesson.duration}</span>
+                            <span className="text-[10px] text-titan-muted uppercase font-bold tracking-widest">{lesson.duration}</span>
                         </div>
                     </div>
-                    <ChevronRight size={18} className="text-titan-muted group-hover:text-titan-gold transition-all" />
+                    <ChevronRight size={20} className="text-titan-muted group-hover:text-titan-gold transition-all" />
                   </button>
                 ))}
              </div>

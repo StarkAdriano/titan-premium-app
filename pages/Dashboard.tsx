@@ -132,9 +132,9 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState,
                 isRevealed: true, 
                 analysisSnapshot: {
                     status,
-                    shortSummary: status === SignalStatus.WAIT ? "EQUILÍBRIO" : "SMC SETUP VALIDADO",
+                    shortSummary: status === SignalStatus.WAIT ? t.equi : t.smc_valid,
                     detailedAnalysis: "",
-                    rationale: t[rationaleKey], // Tradução dinâmica aqui
+                    rationale: t[rationaleKey], 
                     validationStatus: zone === 'EQUILIBRIUM' ? 'WARNING' : 'OK',
                     validationMsg: 'Protocolo Processado',
                     referencePrice: sanitizedPrice,
@@ -150,37 +150,26 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState,
 
   return (
     <div className="flex flex-col min-h-full pb-32 bg-titan-darker font-sans">
-      <div className="px-4 py-1.5 bg-black/80 text-[7px] flex justify-between items-center border-b border-white/5 font-mono tracking-widest opacity-70">
-         <div className="flex gap-4">
-             <span className="flex items-center gap-1"><Server size={8} /> CLUSTER: EUR-LDN-05</span>
-             <span className="flex items-center gap-1 text-titan-green"><Wifi size={8} /> 24ms</span>
-         </div>
-         <div className="flex gap-4 uppercase">
-             <span className="text-titan-gold flex items-center gap-1"><Fingerprint size={8} /> SECURE BRIDGE</span>
-             <span>ID: TITAN-PROTOCOL</span>
-         </div>
-      </div>
-
       <div className="px-4 py-4 bg-titan-dark flex items-center justify-between border-b border-white/5 sticky top-0 z-20 shadow-lg">
          <div className="flex flex-col">
-            <h2 className="text-xs font-black text-white italic tracking-tighter leading-none flex items-center gap-2 uppercase">
-                <Terminal size={14} className="text-titan-gold" />
+            <h2 className="text-sm font-black text-white italic tracking-tighter leading-none flex items-center gap-2 uppercase">
+                <Terminal size={16} className="text-titan-gold" />
                 EURUSD <span className="text-titan-gold">{t.terminal}</span>
             </h2>
             <div className="flex items-center gap-1.5 mt-1.5">
-                <div className={`w-1 h-1 rounded-full ${isBrokerConnected ? 'bg-titan-green animate-pulse shadow-[0_0_5px_#10b981]' : 'bg-titan-muted'}`}></div>
-                <span className="text-[7px] text-titan-muted font-black tracking-[0.2em] uppercase">
-                    {isBrokerConnected ? `${selectedBroker?.name} ACTIVE` : 'DISCONNECTED'}
+                <div className={`w-1 h-1 rounded-full ${isBrokerConnected ? 'bg-titan-green shadow-[0_0_5px_#10b981]' : 'bg-titan-muted'}`}></div>
+                <span className="text-[8px] text-titan-muted font-black tracking-[0.2em] uppercase">
+                    {isBrokerConnected ? `${selectedBroker?.name} LIVE` : 'OFFLINE'}
                 </span>
             </div>
          </div>
-         <button onClick={() => { if(!isBrokerConnected) setShowBrokerModal(true); }} className={`px-4 py-2 rounded-xl text-[8px] font-black border transition-all active:scale-95 ${isBrokerConnected ? 'bg-titan-green/5 border-titan-green/30 text-titan-green' : 'bg-titan-gold text-black border-titan-gold shadow-lg'}`}>
-            {isBrokerConnected ? 'BRIDGE ON' : t.connect}
+         <button onClick={() => { if(!isBrokerConnected) setShowBrokerModal(true); }} className={`px-4 py-2 rounded-xl text-[10px] font-black border transition-all active:scale-95 ${isBrokerConnected ? 'bg-titan-green/10 border-titan-green/30 text-titan-green' : 'bg-titan-gold text-black border-titan-gold shadow-lg'}`}>
+            {isBrokerConnected ? 'CONNECTED' : t.connect}
          </button>
       </div>
 
       <div className="px-4 py-2">
-          <div className="bg-titan-card/40 rounded-[2.5rem] p-8 border border-white/5 shadow-2xl relative overflow-hidden mt-4">
+          <div className="bg-titan-card/40 rounded-[2.5rem] p-8 border border-white/5 shadow-2xl relative overflow-hidden mt-6">
                 <input 
                     type="text" 
                     inputMode="decimal" 
@@ -196,7 +185,7 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState,
                         {isValidating ? <Loader2 className="animate-spin" size={20} /> : <Shield size={20} />} {t.run_analysis}
                     </button>
                 ) : (
-                    <div className="space-y-4 animate-in slide-in-from-bottom-4 duration-500">
+                    <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
                         <div className={`flex flex-col items-center justify-center p-10 rounded-[2.5rem] border-2 text-center bg-black/80 min-h-[220px] transition-all duration-700 ${
                             savedState.analysisSnapshot?.status === SignalStatus.BUY ? 'border-titan-green shadow-[0_0_60px_rgba(16,185,129,0.1)]' : 
                             savedState.analysisSnapshot?.status === SignalStatus.SELL ? 'border-titan-red shadow-[0_0_60px_rgba(239,68,68,0.1)]' : 'border-slate-800'
@@ -209,17 +198,17 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState,
                             </h3>
                         </div>
                         
-                        <div className="bg-titan-dark/40 border border-white/5 rounded-3xl p-5">
-                            <h4 className="text-titan-gold text-[7px] font-black uppercase tracking-widest mb-2 flex items-center gap-2">
-                                <Activity size={10} /> {t.institutional_rationale}
+                        <div className="bg-titan-dark/60 border border-white/5 rounded-3xl p-6">
+                            <h4 className="text-titan-gold text-[8px] font-black uppercase tracking-widest mb-3 flex items-center gap-2">
+                                <Activity size={12} /> {t.institutional_rationale}
                             </h4>
-                            <p className="text-[11px] text-titan-muted leading-relaxed font-medium italic">
+                            <p className="text-[12px] text-titan-muted leading-relaxed font-medium italic">
                                 "{savedState.analysisSnapshot?.rationale}"
                             </p>
                         </div>
 
-                        <button onClick={() => onUpdateState({...savedState, isRevealed: false})} className="w-full py-2 text-titan-muted text-[9px] uppercase font-black tracking-widest flex items-center justify-center gap-2 hover:text-white transition-colors">
-                            <RotateCcw size={12} /> {t.clear_memory}
+                        <button onClick={() => onUpdateState({...savedState, isRevealed: false})} className="w-full py-2 text-titan-muted text-[10px] uppercase font-black tracking-widest flex items-center justify-center gap-2 hover:text-white transition-colors">
+                            <RotateCcw size={14} /> {t.clear_memory}
                         </button>
                     </div>
                 )}
@@ -231,8 +220,8 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState,
               <div className="bg-titan-card/50 rounded-[2.5rem] p-8 border border-titan-gold/10 shadow-2xl">
                   <div className="flex items-center justify-between mb-6">
                       <div className="flex items-center gap-2">
-                          <Target size={14} className="text-titan-gold" />
-                          <span className="text-[9px] text-white font-black uppercase tracking-widest">{t.trade_plan}</span>
+                          <Target size={16} className="text-titan-gold" />
+                          <span className="text-[10px] text-white font-black uppercase tracking-widest">{t.trade_plan}</span>
                       </div>
                   </div>
 
@@ -240,16 +229,16 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState,
                       <button 
                         onClick={() => { setPendingSide('SELL'); setShowTradeTicket(true); }}
                         disabled={!isBrokerConnected} 
-                        className={`py-7 rounded-3xl font-black text-2xl italic tracking-tighter border-b-4 transition-all flex flex-col items-center justify-center ${isBrokerConnected ? 'bg-red-600 border-red-900 text-white active:scale-95 shadow-xl' : 'bg-white/5 text-titan-muted opacity-20'}`}
+                        className={`py-8 rounded-3xl font-black text-2xl italic tracking-tighter border-b-4 transition-all flex flex-col items-center justify-center ${isBrokerConnected ? 'bg-red-600 border-red-900 text-white active:scale-95 shadow-xl' : 'bg-white/5 text-titan-muted opacity-20'}`}
                       >
-                        <ArrowDownCircle size={24} className="mb-1" /> {t.sell}
+                        <ArrowDownCircle size={28} className="mb-2" /> {t.sell}
                       </button>
                       <button 
                         onClick={() => { setPendingSide('BUY'); setShowTradeTicket(true); }}
                         disabled={!isBrokerConnected} 
-                        className={`py-7 rounded-3xl font-black text-2xl italic tracking-tighter border-b-4 transition-all flex flex-col items-center justify-center ${isBrokerConnected ? 'bg-titan-green border-green-900 text-white active:scale-95 shadow-xl' : 'bg-white/5 text-titan-muted opacity-20'}`}
+                        className={`py-8 rounded-3xl font-black text-2xl italic tracking-tighter border-b-4 transition-all flex flex-col items-center justify-center ${isBrokerConnected ? 'bg-titan-green border-green-900 text-white active:scale-95 shadow-xl' : 'bg-white/5 text-titan-muted opacity-20'}`}
                       >
-                        <ArrowUpCircle size={24} className="mb-1" /> {t.buy}
+                        <ArrowUpCircle size={28} className="mb-2" /> {t.buy}
                       </button>
                   </div>
               </div>
@@ -265,14 +254,14 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState,
                 </div>
                 <div className="p-10 max-h-[500px] overflow-y-auto">
                     {brokers.map((b) => (
-                        <button key={b.id} onClick={() => { setSelectedBroker(b); setIsBrokerConnected(true); setShowBrokerModal(false); }} className="w-full flex items-center justify-between p-5 bg-black/40 border border-white/5 rounded-3xl mb-3 hover:border-titan-gold/40 transition-all group">
-                            <div className="flex items-center gap-4">
-                                <div className={`w-12 h-12 ${b.color} rounded-2xl flex items-center justify-center shadow-lg transition-transform group-hover:scale-105`}><b.icon size={22} className="text-white" /></div>
+                        <button key={b.id} onClick={() => { setSelectedBroker(b); setIsBrokerConnected(true); setShowBrokerModal(false); }} className="w-full flex items-center justify-between p-6 bg-black/40 border border-white/5 rounded-3xl mb-4 hover:border-titan-gold/40 transition-all group">
+                            <div className="flex items-center gap-5">
+                                <div className={`w-14 h-14 ${b.color} rounded-2xl flex items-center justify-center shadow-lg transition-transform group-hover:scale-105`}><b.icon size={26} className="text-white" /></div>
                                 <div className="text-left">
-                                    <p className="text-base font-bold text-white group-hover:text-titan-gold transition-colors">{b.name}</p>
+                                    <p className="text-lg font-bold text-white group-hover:text-titan-gold transition-colors">{b.name}</p>
                                 </div>
                             </div>
-                            <ChevronRight size={16} className="text-titan-muted" />
+                            <ChevronRight size={20} className="text-titan-muted" />
                         </button>
                     ))}
                 </div>

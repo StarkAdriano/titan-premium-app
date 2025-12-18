@@ -16,7 +16,9 @@ export const translations: Record<Language, any> = {
     rationale_buy: 'Liquidez de sell-side capturada. Ordem institucional detectada em OB H1. Risco de mitigação baixo.',
     rationale_sell: 'Rejeição em FVG Premium Zone. Fluxo de ordens interbancário aponta para liquidez inferior.',
     rationale_wait: 'Mercado em equilíbrio de preço (Fair Value). Sem vantagem matemática para exposição imediata.',
-    full_resolution: 'Resolução Total', high_impact: 'Alta Performance'
+    full_resolution: 'Resolução Total', high_impact: 'Alta Performance',
+    developed_by: 'Desenvolvido por Adriano Vettorel com excelência',
+    equi: 'EQUILÍBRIO', smc_valid: 'SMC SETUP VALIDADO'
   },
   en: {
     terminal: 'Terminal', academy: 'Academy', access: 'Access', network: 'Network',
@@ -32,7 +34,9 @@ export const translations: Record<Language, any> = {
     rationale_buy: 'Sell-side liquidity captured. Institutional order detected in H1 OB. Low mitigation risk.',
     rationale_sell: 'Rejection in FVG Premium Zone. Interbank order flow points to lower liquidity.',
     rationale_wait: 'Market in price equilibrium (Fair Value). No mathematical advantage for immediate exposure.',
-    full_resolution: 'Full Resolution', high_impact: 'High Performance'
+    full_resolution: 'Full Resolution', high_impact: 'High Performance',
+    developed_by: 'Developed by Adriano Vettorel with excellence',
+    equi: 'EQUILIBRIUM', smc_valid: 'SMC SETUP VALIDATED'
   },
   es: {
     terminal: 'Terminal', academy: 'Academia', access: 'Acceso', network: 'Red',
@@ -48,7 +52,9 @@ export const translations: Record<Language, any> = {
     rationale_buy: 'Liquidez de sell-side capturada. Orden institucional detectada en OB H1. Bajo riesgo de mitigación.',
     rationale_sell: 'Rechazo en FVG Premium Zone. El flujo de órdenes interbancarias apunta a una menor liquidez.',
     rationale_wait: 'Mercado en equilibrio de precios (Fair Value). Sin ventaja matemática para la exposición inmediata.',
-    full_resolution: 'Resolución Total', high_impact: 'Alto Rendimiento'
+    full_resolution: 'Resolución Total', high_impact: 'Alto Rendimiento',
+    developed_by: 'Desarrollado por Adriano Vettorel con excelencia',
+    equi: 'EQUILIBRIO', smc_valid: 'SMC SETUP VALIDADO'
   },
   it: {
     terminal: 'Terminale', academy: 'Accademia', access: 'Accesso', network: 'Rete',
@@ -64,7 +70,9 @@ export const translations: Record<Language, any> = {
     rationale_buy: 'Liquidità sell-side catturata. Ordine istituzionale rilevato in OB H1. Basso rischio di mitigazione.',
     rationale_sell: 'Rifiuto in FVG Premium Zone. Il flusso di ordini interbancari punta a una liquidità inferiore.',
     rationale_wait: 'Mercato in equilibrio di prezzo (Fair Value). Nessun vantaggio matematico per l\'esposizione immediata.',
-    full_resolution: 'Risoluzione Totale', high_impact: 'Alte Prestazioni'
+    full_resolution: 'Risoluzione Totale', high_impact: 'Alte Prestazioni',
+    developed_by: 'Sviluppato da Adriano Vettorel con eccellenza',
+    equi: 'EQUILIBRIO', smc_valid: 'SMC SETUP VALIDATO'
   },
   ja: {
     terminal: 'ターミナル', academy: 'アカデミー', access: 'アクセス', network: 'ネットワーク',
@@ -80,7 +88,9 @@ export const translations: Record<Language, any> = {
     rationale_buy: 'セルサイドの流動性を確保。H1 OBで機関投資家の注文を検出。軽減リスクは低い。',
     rationale_sell: 'FVGプレミアムゾーンでの拒絶。インターバンクの注文フローはより低い流動性を示唆。',
     rationale_wait: '市場は価格均衡（フェアバリュー）状態。即時のエクスポージャーに数学的利点なし。',
-    full_resolution: 'フル解像度', high_impact: 'ハイパフォーマンス'
+    full_resolution: 'フル解像度', high_impact: 'ハイパフォーマンス',
+    developed_by: 'Adriano Vettorelによって卓越して開発されました',
+    equi: '均衡', smc_valid: 'SMCセットアップ検証済み'
   },
   zh: {
     terminal: '终端', academy: '学院', access: '访问', network: '网络',
@@ -96,7 +106,9 @@ export const translations: Record<Language, any> = {
     rationale_buy: '卖方流动性已被捕捉。H1 OB 检测到机构订单。缓解风险较低。',
     rationale_sell: 'FVG 溢价区遭到拒绝。银行间订单流指向更低的流动性。',
     rationale_wait: '市场处于价格平衡（公允价值）。立即入场没有数学优势。',
-    full_resolution: '全分辨率', high_impact: '高性能'
+    full_resolution: '全分辨率', high_impact: '高性能',
+    developed_by: '由 Adriano Vettorel 卓越开发',
+    equi: '均衡', smc_valid: 'SMC设置已验证'
   },
   he: {
     terminal: 'מסוף', academy: 'אקדמיה', access: 'גישה', network: 'רשת',
@@ -112,7 +124,9 @@ export const translations: Record<Language, any> = {
     rationale_buy: 'נזילות צד המכירה נלכדה. זוהתה פקודה מוסדית ב-OB H1. סיכון נמוך.',
     rationale_sell: 'דחייה באזור פרימיום FVG. זרימת הפקודות הבין-בנקאית מצביעה על נזילות נמוכה יותר.',
     rationale_wait: 'שוק בשיווי משקל מחירים (Fair Value). אין יתרון מתמטי לחשיפה מיידית.',
-    full_resolution: 'רזולוציה מלאה', high_impact: 'ביצועים גבוהים'
+    full_resolution: 'רזולוציה מלאה', high_impact: 'ביצועים גבוהים',
+    developed_by: 'פותח על ידי אדריאנו וטורל במצוינות',
+    equi: 'שיווי משקל', smc_valid: 'SMC הוגדר כמאומת'
   },
   ru: {
     terminal: 'Терминал', academy: 'Академия', access: 'Доступ', network: 'Сеть',
@@ -128,7 +142,9 @@ export const translations: Record<Language, any> = {
     rationale_buy: 'Ликвидность на стороне продажи захвачена. Институциональный ордер обнаружен в H1 OB. Низкий риск.',
     rationale_sell: 'Отказ в зоне премиум FVG. Межбанковский поток ордеров указывает на более низкую ликвидность.',
     rationale_wait: 'Рынок в ценовом равновесии (Fair Value). Нет математического преимущества для немедленного входа.',
-    full_resolution: 'Полное разрешение', high_impact: 'Высокая производительность'
+    full_resolution: 'Полное разрешение', high_impact: 'Высокая производительность',
+    developed_by: 'Разработано Адриано Ветторелем с отличием',
+    equi: 'РАВНОВЕСИЕ', smc_valid: 'SMC SETUP ПОДТВЕРЖДЕН'
   }
 };
 
