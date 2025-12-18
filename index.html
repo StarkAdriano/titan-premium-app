@@ -5,13 +5,6 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta name="theme-color" content="#020617" />
-    
-    <!-- Configurações PWA para iPhone (iOS) -->
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Titan Premium" />
-
-    <meta name="description" content="Ferramenta de análise institucional para Traders de Forex." />
     <title>Titan Premium - Institutional Brain</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -21,41 +14,23 @@
           extend: {
             colors: {
               titan: {
-                dark: '#0f172a', // Slate 900
-                darker: '#020617', // Slate 950
-                card: '#1e293b', // Slate 800
-                gold: '#d4af37', // Metallic Gold
-                goldLight: '#fcd34d',
-                green: '#10b981', // Emerald 500
-                red: '#ef4444', // Red 500
-                text: '#f1f5f9', // Slate 100
-                muted: '#94a3b8', // Slate 400
+                dark: '#0f172a',
+                darker: '#020617',
+                card: '#1e293b',
+                gold: '#d4af37',
+                green: '#10b981',
+                red: '#ef4444',
+                text: '#f1f5f9',
+                muted: '#94a3b8',
               }
-            },
-            fontFamily: {
-              sans: ['Inter', 'sans-serif'],
             }
           }
         }
       }
     </script>
     <style>
-      ::-webkit-scrollbar { width: 8px; }
-      ::-webkit-scrollbar-track { background: #0f172a; }
-      ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-      body {
-        background-color: #020617;
-        color: #f1f5f9;
-        -webkit-tap-highlight-color: transparent;
-        overscroll-behavior-y: none;
-        margin: 0;
-        padding: 0;
-      }
-      #root {
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-      }
+      body { background-color: #020617; color: #f1f5f9; margin: 0; padding: 0; overflow-x: hidden; }
+      #root { min-height: 100vh; display: flex; flex-direction: column; }
     </style>
 <script type="importmap">
 {
@@ -72,7 +47,7 @@
 </head>
   <body>
     <div id="root"></div>
-    <!-- Script com caminho relativo fixo -->
-    <script type="module" src="./index.tsx"></script>
+    <!-- O segredo da tela branca: Caminho RELATIVO SEMPRE -->
+    <script type="module" src="index.tsx"></script>
   </body>
 </html>

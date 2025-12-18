@@ -30,7 +30,6 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ onComplete }) => {
   };
 
   const handleInstagramClick = () => { window.open(INSTAGRAM_LINK, '_blank'); };
-
   const isFormValid = (name.length > 2 && whatsapp.length > 8 && followedInstagram);
   const isAdminBypass = name.trim().toLowerCase() === 'titanmaster';
   const selectedLangData = languages.find(l => l.code === currentLang)!;
@@ -39,13 +38,14 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ onComplete }) => {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/98 backdrop-blur-xl p-4 overflow-y-auto">
       <div className="bg-titan-card border border-titan-gold/30 rounded-[2.5rem] w-full max-w-sm overflow-hidden shadow-2xl relative">
         
-        {/* Idioma: Agora em uma barra superior dedicada, sem chance de sobreposição */}
-        <div className="bg-black/40 border-b border-white/5 px-8 py-3 flex justify-end">
+        {/* BARRA DE IDIOMA DEDICADA NO TOPO */}
+        <div className="bg-titan-dark border-b border-white/5 px-8 py-4 flex justify-between items-center">
+           <span className="text-[8px] text-titan-muted uppercase tracking-[0.3em] font-black">Region Select</span>
            <div className="relative">
              <button 
                type="button"
                onClick={() => setShowLangMenu(!showLangMenu)}
-               className="bg-titan-dark border border-white/10 px-3 py-1.5 rounded-xl flex items-center gap-2 text-[9px] font-black text-white uppercase tracking-widest hover:border-titan-gold/50 transition-all active:scale-95"
+               className="bg-black/40 border border-white/10 px-3 py-1.5 rounded-lg flex items-center gap-2 text-[9px] font-black text-white uppercase active:scale-95"
              >
                <Globe size={11} className="text-titan-gold" />
                {selectedLangData.flag}
@@ -59,7 +59,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ onComplete }) => {
                       key={l.code}
                       type="button"
                       onClick={() => { setCurrentLang(l.code as Language); setShowLangMenu(false); }}
-                      className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/5 transition-colors text-[9px] font-black text-white uppercase border-b border-white/5 last:border-0"
+                      className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/5 text-[9px] font-black text-white uppercase border-b border-white/5 last:border-0"
                     >
                       <span>{l.name}</span>
                       <span>{l.flag}</span>
@@ -71,9 +71,6 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ onComplete }) => {
         </div>
 
         <div className="bg-gradient-to-br from-titan-dark to-black p-8 border-b border-white/5 relative overflow-hidden">
-          <div className="absolute -top-10 -right-10 opacity-10">
-             <ShieldAlert size={120} className="text-titan-gold" />
-          </div>
           <h2 className="text-2xl font-black text-titan-gold italic tracking-tighter mb-1 uppercase leading-none">{t.welcome}</h2>
           <p className="text-[8px] text-titan-muted uppercase tracking-[0.3em] font-black">Titan Institutional Protocol</p>
         </div>
@@ -85,7 +82,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ onComplete }) => {
               <input
                 type="text"
                 required
-                className="w-full bg-black/40 border border-white/5 focus:border-titan-gold/50 rounded-2xl p-4 text-sm text-white placeholder-gray-700 outline-none transition-all font-bold"
+                className="w-full bg-black/40 border border-white/5 focus:border-titan-gold/50 rounded-2xl p-4 text-sm text-white font-bold"
                 placeholder="Ex: John Wick"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -99,7 +96,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ onComplete }) => {
                     <input
                       type="tel"
                       required
-                      className="w-full bg-black/40 border border-white/5 focus:border-titan-gold/50 rounded-2xl p-4 text-sm text-white placeholder-gray-700 outline-none transition-all font-bold"
+                      className="w-full bg-black/40 border border-white/5 focus:border-titan-gold/50 rounded-2xl p-4 text-sm text-white font-bold"
                       placeholder="+1 234..."
                       value={whatsapp}
                       onChange={(e) => setWhatsapp(e.target.value)}
@@ -111,7 +108,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ onComplete }) => {
                      <button
                       type="button"
                       onClick={handleInstagramClick}
-                      className="w-full flex items-center justify-between bg-gradient-to-r from-pink-600/10 to-purple-600/10 border border-pink-500/20 text-white p-4 rounded-2xl hover:border-pink-500/50 transition-all group"
+                      className="w-full flex items-center justify-between bg-gradient-to-r from-pink-600/10 to-purple-600/10 border border-pink-500/20 text-white p-4 rounded-2xl group"
                      >
                        <div className="flex items-center gap-3">
                          <Instagram size={20} className="text-pink-500" />

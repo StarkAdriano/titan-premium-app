@@ -40,41 +40,37 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpgradeClick, onUpdateLogo, o
     setTimeout(() => setCopiedCode(null), 2000);
   };
 
+  // Added handleFileChange to fix the "Cannot find name 'handleFileChange'" error
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => onUpdateLogo(reader.result as string);
+      reader.onloadend = () => {
+        onUpdateLogo(reader.result as string);
+      };
       reader.readAsDataURL(file);
     }
   };
 
   const handleForceReload = async () => {
     setSyncStatus('syncing');
-    
     try {
         if (navigator.serviceWorker) {
             const registrations = await navigator.serviceWorker.getRegistrations();
-            for (const registration of registrations) {
-                await registration.unregister();
-            }
+            for (const r of registrations) await r.unregister();
         }
         if (window.caches) {
-            const cacheNames = await caches.keys();
-            for (const name of cacheNames) {
-                await caches.delete(name);
-            }
+            const keys = await caches.keys();
+            for (const k of keys) await caches.delete(k);
         }
-    } catch (e) { console.warn("Reset parcial."); }
-
+    } catch (e) {}
     setSyncStatus('success');
     
     setTimeout(() => {
-        // CORREÇÃO CRÍTICA: Usa window.location.href para recarregar exatamente onde o usuário está
-        // Isso evita o erro 404 do Google ao tentar ir para a raiz errada
-        const current = new URL(window.location.href);
-        current.searchParams.set('refresh', Date.now().toString());
-        window.location.replace(current.toString());
+        // SOLUÇÃO PARA O 404: 
+        // Em vez de ir para "/", recarregamos a URL atual.
+        // Isso funciona em qualquer servidor ou subpasta.
+        window.location.reload();
     }, 1000);
   };
 
@@ -82,42 +78,23 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpgradeClick, onUpdateLogo, o
 
   return (
     <div className="p-6 space-y-6 pb-32 bg-titan-darker">
-      <div className="flex flex-col items-center pt-10 pb-8 bg-titan-dark/40 rounded-[3rem] border border-white/5 relative overflow-hidden shadow-2xl">
-        <div className="relative mb-6 group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
-          <div className="w-28 h-28 rounded-[2.5rem] bg-titan-card border-2 border-titan-gold/30 flex items-center justify-center overflow-hidden shadow-2xl">
-             {user.logoUrl ? <img src={user.logoUrl} alt="Logo" className="w-full h-full object-cover" /> : <UserCircle size={56} className="text-titan-gold/40" />}
-          </div>
-          <div className="absolute -bottom-1 -right-1 bg-titan-gold text-black p-2.5 rounded-xl shadow-2xl">
-            <Camera size={16} />
-          </div>
-          <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
-        </div>
-        <div className="text-center px-6 w-full space-y-2">
-          <input 
-            type="text" 
-            value={user.name} 
-            onChange={(e) => onUpdateName(e.target.value)} 
-            className="w-full text-2xl font-black text-white italic tracking-tighter bg-transparent border-none text-center outline-none focus:text-titan-gold transition-colors leading-none uppercase" 
-          />
-          <p className="text-[9px] text-titan-muted uppercase tracking-[0.3em] font-black opacity-60">{user.whatsapp}</p>
-        </div>
-      </div>
-
-      <div className="bg-titan-card/40 border border-white/5 rounded-[2.5rem] p-6">
-        <div className="flex items-center gap-3 mb-4">
-            <Globe size={16} className="text-titan-gold" />
-            <span className="text-[10px] text-white font-black uppercase tracking-widest">{t.global_lang}</span>
+      
+      {/* SEÇÃO DE IDIOMA - AGORA NO TOPO E ISOLADA (SEM SOBREPOSIÇÃO) */}
+      <div className="bg-titan-card/40 border border-white/5 rounded-[2rem] p-5">
+        <div className="flex items-center gap-2 mb-3">
+            <Globe size={14} className="text-titan-gold" />
+            <span className="text-[9px] text-white font-black uppercase tracking-widest">{t.global_lang}</span>
         </div>
         <div className="relative">
-            <button onClick={() => setShowLangMenu(!showLangMenu)} className="w-full flex items-center justify-between bg-black/60 p-4 rounded-2xl border border-white/5 text-xs font-black text-white active:scale-95 transition-all">
+            <button onClick={() => setShowLangMenu(!showLangMenu)} className="w-full flex items-center justify-between bg-black/40 p-4 rounded-xl border border-white/10 text-xs font-black text-white active:scale-95 transition-all">
                 <div className="flex items-center gap-3">
                     <span className="text-xl">{currentLang.flag}</span>
-                    <span className="uppercase tracking-[0.2em]">{currentLang.name}</span>
+                    <span className="uppercase tracking-widest">{currentLang.name}</span>
                 </div>
                 <ChevronDown size={16} className={`text-titan-muted transition-transform ${showLangMenu ? 'rotate-180' : ''}`} />
             </button>
             {showLangMenu && (
-                <div className="absolute top-full left-0 w-full mt-2 bg-titan-dark border border-white/10 rounded-2xl shadow-2xl z-50 overflow-hidden">
+                <div className="absolute top-full left-0 w-full mt-2 bg-titan-dark border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden">
                     {languages.map((lang) => (
                         <button key={lang.code} onClick={() => { onUpdateLanguage(lang.code as Language); setShowLangMenu(false); }} className={`w-full flex items-center justify-between p-4 hover:bg-white/5 border-b border-white/5 last:border-0 ${user.language === lang.code ? 'bg-titan-gold/5' : ''}`}>
                             <div className="flex items-center gap-3">
@@ -132,9 +109,31 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpgradeClick, onUpdateLogo, o
         </div>
       </div>
 
-      <div className={`border rounded-[2.5rem] p-7 space-y-5 shadow-xl transition-all duration-500 ${syncStatus === 'success' ? 'bg-titan-green/10 border-titan-green/40' : 'bg-red-600/5 border-red-600/20'}`}>
+      <div className="flex flex-col items-center pt-8 pb-8 bg-titan-dark/40 rounded-[3rem] border border-white/5 relative overflow-hidden">
+        <div className="relative mb-6 cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+          <div className="w-24 h-24 rounded-[2rem] bg-titan-card border-2 border-titan-gold/30 flex items-center justify-center overflow-hidden">
+             {user.logoUrl ? <img src={user.logoUrl} alt="Logo" className="w-full h-full object-cover" /> : <UserCircle size={48} className="text-titan-gold/40" />}
+          </div>
+          <div className="absolute -bottom-1 -right-1 bg-titan-gold text-black p-2 rounded-lg">
+            <Camera size={14} />
+          </div>
+          <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
+        </div>
+        <div className="text-center px-6 w-full space-y-2">
+          <input 
+            type="text" 
+            value={user.name} 
+            onChange={(e) => onUpdateName(e.target.value)} 
+            className="w-full text-xl font-black text-white italic tracking-tighter bg-transparent border-none text-center outline-none focus:text-titan-gold uppercase" 
+          />
+          <p className="text-[9px] text-titan-muted uppercase tracking-[0.2em] font-black opacity-60">{user.whatsapp}</p>
+        </div>
+      </div>
+
+      {/* SYNC SECTION */}
+      <div className={`border rounded-[2.5rem] p-6 space-y-4 transition-all duration-500 ${syncStatus === 'success' ? 'bg-titan-green/10 border-titan-green/40' : 'bg-red-600/5 border-red-600/20'}`}>
           <div className="flex items-center gap-4">
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-lg ${syncStatus === 'success' ? 'bg-titan-green' : 'bg-red-600'}`}>
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${syncStatus === 'success' ? 'bg-titan-green' : 'bg-red-600'}`}>
                 {syncStatus === 'success' ? <CheckCircle2 size={20} className="text-white" /> : <RefreshCw size={20} className={`text-white ${syncStatus === 'syncing' ? 'animate-spin' : ''}`} />}
               </div>
               <div className="flex-1">
@@ -158,7 +157,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpgradeClick, onUpdateLogo, o
           </button>
       </div>
 
-      <div className="bg-titan-card rounded-[2.5rem] p-7 border border-titan-gold/20 relative overflow-hidden shadow-2xl">
+      <div className="bg-titan-card rounded-[2.5rem] p-7 border border-titan-gold/20 relative overflow-hidden">
         <div className="flex items-start justify-between mb-6">
           <div>
             <span className="text-[9px] text-titan-muted uppercase tracking-[0.3em] block mb-2 font-black">{t.license_protocol}</span>
