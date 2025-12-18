@@ -28,18 +28,12 @@ const Academy: React.FC<AcademyProps> = ({ language }) => {
   const t = translations[language] || translations['pt'];
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
 
-  // Extração de ID com Regex e formato de saída seguro (no-cookie)
-  const getEmbedUrl = (url: string) => {
+  // Extração de ID infalível
+  const getVideoId = (url: string) => {
     if (!url) return '';
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
     const match = url.match(regExp);
-    const videoId = (match && match[2].length === 11) ? match[2] : null;
-    
-    if (videoId) {
-      // Usando youtube-nocookie para evitar bloqueios de PWA/Privacidade
-      return `https://www.youtube-nocookie.com/embed/${videoId}?rel=0&modestbranding=1&autoplay=0&playsinline=1&enablejsapi=1`;
-    }
-    return '';
+    return (match && match[2].length === 11) ? match[2] : '';
   };
 
   const ACADEMY_DATA: CourseModule[] = [
@@ -166,7 +160,8 @@ const Academy: React.FC<AcademyProps> = ({ language }) => {
   const progress = (completedLessons / totalLessons) * 100;
 
   if (selectedLesson) {
-    const embedUrl = getEmbedUrl(selectedLesson.videoUrl);
+    const videoId = getVideoId(selectedLesson.videoUrl);
+    const thumbUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
 
     return (
       <div className="flex flex-col min-h-full bg-titan-darker animate-in slide-in-from-right-4">
@@ -180,59 +175,56 @@ const Academy: React.FC<AcademyProps> = ({ language }) => {
           </div>
         </div>
         
-        {/* Container do Player com Frame Profissional */}
-        <div className="w-full aspect-video bg-black relative shadow-2xl border-b border-titan-gold/10 overflow-hidden group">
-           {embedUrl ? (
-             <iframe 
-               key={selectedLesson.videoUrl}
-               src={embedUrl}
-               title={selectedLesson.title}
-               className="w-full h-full border-0 relative z-10"
-               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-               allowFullScreen
-             ></iframe>
-           ) : (
-             <div className="w-full h-full flex flex-col items-center justify-center gap-4 text-titan-muted/20">
-                <Youtube size={64} className="animate-pulse" />
-                <span className="text-[10px] font-black uppercase tracking-[0.3em]">{t.video_error}</span>
-             </div>
-           )}
-           
-           {/* Fallback de Carregamento */}
-           <div className="absolute inset-0 flex items-center justify-center bg-black z-0">
-                <Zap size={32} className="text-titan-gold animate-pulse" />
-           </div>
+        {/* Visual Profissional: Mostra a capa do vídeo e botão de Play Gigante */}
+        <div className="relative w-full aspect-video bg-black shadow-2xl border-b border-titan-gold/10 overflow-hidden group">
+           <a href={selectedLesson.videoUrl} target="_blank" rel="noopener noreferrer" className="block w-full h-full relative">
+              <img 
+                src={thumbUrl} 
+                alt="Video Thumbnail" 
+                className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity duration-500"
+                onError={(e) => {
+                    (e.target as HTMLImageElement).src = `https://img.youtube.com/vi/${videoId}/0.jpg`;
+                }}
+              />
+              <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-20 h-20 bg-titan-gold rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(212,175,55,0.5)] group-hover:scale-110 transition-transform duration-300">
+                      <PlayCircle size={40} className="text-black ml-1" />
+                  </div>
+              </div>
+              <div className="absolute bottom-4 left-4 right-4 flex justify-between items-center">
+                  <span className="bg-black/80 backdrop-blur-md text-[10px] text-white px-3 py-1 rounded-full border border-white/10 font-black uppercase tracking-widest">
+                    {selectedLesson.duration}
+                  </span>
+                  <div className="flex items-center gap-1.5 text-[10px] text-titan-gold font-black uppercase tracking-widest bg-black/80 px-3 py-1 rounded-full border border-titan-gold/20 shadow-lg">
+                    <Zap size={10} /> 1080P STREAM
+                  </div>
+              </div>
+           </a>
         </div>
 
         <div className="p-6 space-y-6 pb-32">
-          {/* Botão de Ação Crítica: Abrir no YouTube para garantir acesso */}
           <a 
             href={selectedLesson.videoUrl} 
             target="_blank" 
             rel="noopener noreferrer"
-            className="w-full py-5 bg-red-600/10 border border-red-600/30 rounded-2xl flex items-center justify-center gap-3 group active:scale-95 transition-all shadow-xl"
+            className="w-full py-5 bg-titan-gold text-black rounded-2xl flex items-center justify-center gap-3 active:scale-95 transition-all shadow-[0_10px_30px_rgba(212,175,55,0.2)]"
           >
-            <div className="bg-red-600 p-2 rounded-lg">
-                <Youtube size={16} className="text-white" />
-            </div>
-            <span className="text-[11px] font-black text-white uppercase tracking-[0.2em]">
+            <Youtube size={20} />
+            <span className="text-[11px] font-black uppercase tracking-[0.3em]">
                 {t.open_youtube}
             </span>
-            <ExternalLink size={14} className="text-red-500 group-hover:translate-x-1 transition-transform" />
+            <ExternalLink size={14} />
           </a>
 
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <ShieldCheck size={14} className="text-titan-gold" />
-              <span className="text-[10px] text-titan-gold font-black uppercase tracking-[0.3em]">SMC Intel Protocol</span>
+              <span className="text-[10px] text-titan-gold font-black uppercase tracking-[0.3em]">SMC Institutional Intel</span>
             </div>
             <h1 className="text-3xl font-black text-white italic tracking-tighter uppercase leading-none">{selectedLesson.title}</h1>
-            <div className="flex items-center gap-2 text-titan-muted text-[10px] font-black uppercase tracking-widest py-2">
-               <Clock size={12} /> {selectedLesson.duration}
-            </div>
           </div>
 
-          <div className="bg-titan-card/30 rounded-3xl p-8 border border-white/5 space-y-4 shadow-inner">
+          <div className="bg-titan-card/30 rounded-3xl p-8 border border-white/5 space-y-4">
             <h3 className="text-[10px] font-black text-white uppercase tracking-widest flex items-center gap-2">
               <Info size={14} className="text-titan-gold" /> {t.lesson_explanation_title}
             </h3>

@@ -4,17 +4,17 @@ import { UserProfile, Language } from '../types';
 import { translations, languages } from '../i18n';
 import { 
   Shield, 
-  Clock, 
   UserCircle, 
   Lock, 
   Copy, 
   Check, 
   RefreshCw, 
-  CloudLightning,
   Camera,
   Globe,
   ChevronDown,
-  Zap
+  Zap,
+  AlertOctagon,
+  Trash2
 } from 'lucide-react';
 import { ACTIVATION_CODES } from '../constants';
 
@@ -52,10 +52,15 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpgradeClick, onUpdateLogo, o
 
   const handleForceReload = () => {
     setIsSyncing(true);
-    // Limpar apenas cache de interface, mantendo o usuário
+    // Hard Reset: Limpa caches do navegador e recarrega
+    if (window.caches) {
+        caches.keys().then((names) => {
+            for (let name of names) caches.delete(name);
+        });
+    }
     setTimeout(() => {
         window.location.reload();
-    }, 1000);
+    }, 1500);
   };
 
   const currentLang = languages.find(l => l.code === user.language) || languages[0];
@@ -76,6 +81,30 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpgradeClick, onUpdateLogo, o
           <input type="text" value={user.name} onChange={(e) => onUpdateName(e.target.value)} className="text-3xl font-black text-white italic tracking-tighter bg-transparent border-none text-center outline-none focus:text-titan-gold transition-colors leading-none" />
           <p className="text-[10px] text-titan-muted uppercase tracking-[0.3em] font-black mt-2">{user.whatsapp}</p>
         </div>
+      </div>
+
+      {/* NOVO BLOCO: PROTOCOLO DE SINCRONIZAÇÃO (OBRIGATÓRIO PARA MOBILE) */}
+      <div className="bg-red-600/5 border border-red-600/20 rounded-[2.5rem] p-8 space-y-6 shadow-xl relative overflow-hidden">
+          <div className="absolute -top-4 -right-4 text-red-600/10">
+              <AlertOctagon size={120} />
+          </div>
+          <div className="flex items-center gap-4 relative z-10">
+              <div className="w-12 h-12 rounded-2xl bg-red-600 flex items-center justify-center shadow-[0_0_20px_rgba(220,38,38,0.4)]">
+                <RefreshCw size={24} className={`text-white ${isSyncing ? 'animate-spin' : ''}`} />
+              </div>
+              <div>
+                  <h3 className="text-[11px] font-black text-white uppercase tracking-widest leading-none">Protocolo de Sincronização</h3>
+                  <p className="text-[8px] text-red-400 uppercase font-black mt-1 tracking-tighter italic">Use se o app não atualizar os vídeos sozinho</p>
+              </div>
+          </div>
+          <button 
+            onClick={handleForceReload} 
+            disabled={isSyncing}
+            className="w-full py-5 bg-white text-black rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] flex items-center justify-center gap-3 active:scale-95 transition-all shadow-xl"
+          >
+            {isSyncing ? 'RESETANDO...' : 'HARD RESET & CLEAR CACHE'}
+            <Trash2 size={14} />
+          </button>
       </div>
 
       <div className="bg-titan-card/40 border border-white/5 rounded-[2.5rem] p-8">
@@ -133,13 +162,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpgradeClick, onUpdateLogo, o
                       <p className="text-[8px] text-titan-muted uppercase font-bold mt-1 tracking-tighter">{t.encryption_status}</p>
                   </div>
               </div>
-              <button onClick={handleForceReload} className="p-3 text-titan-gold hover:bg-titan-gold/10 rounded-full transition-all active:scale-90">
-                  <RefreshCw size={24} className={isSyncing ? 'animate-spin' : ''} />
-              </button>
           </div>
-          <button onClick={handleForceReload} className="w-full py-3 bg-white/5 border border-white/5 rounded-xl text-[9px] font-black text-titan-muted uppercase tracking-[0.2em] hover:text-white transition-colors">
-             {isSyncing ? 'Sincronizando...' : 'Forçar Atualização de Dados'}
-          </button>
       </div>
 
       {isOwner && (
