@@ -12,7 +12,11 @@ import {
   PlayCircle,
   FileText,
   Clock,
-  Info
+  Info,
+  Layers,
+  Target,
+  BarChart,
+  ShieldAlert
 } from 'lucide-react';
 
 interface AcademyProps {
@@ -23,27 +27,88 @@ const Academy: React.FC<AcademyProps> = ({ language }) => {
   const t = translations[language] || translations['pt'];
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
 
-  // Aqui você poderá inserir os links dos seus vídeos MP4 ou YouTube/Vimeo
+  // GRADE CURRICULAR RESTAURADA - PRONTA PARA SEUS VÍDEOS 16x9
   const ACADEMY_DATA: CourseModule[] = [
     {
       id: 'm1',
-      title: 'IPDA & SMC Architecture',
-      description: 'The algorithmic core of EURUSD.',
+      title: language === 'pt' ? 'Arquitetura Algorítmica (IPDA)' : language === 'en' ? 'Algorithmic Architecture (IPDA)' : 'Arquitectura Algorítmica (IPDA)',
+      description: 'O código por trás do preço.',
       lessons: [
         { 
           id: 'l1', 
           title: 'Liquidez vs Volume', 
           duration: '12:45', 
-          videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4', // Substitua pelo seu link
-          explanation: language === 'pt' ? 'Nesta aula, desvendamos como o algoritmo identifica pools de liquidez antes de grandes expansões.' : language === 'en' ? 'In this lesson, we reveal how the algorithm identifies liquidity pools before major expansions.' : 'En esta lección, revelamos cómo el algoritmo identifica los pools de liquidez antes de las grandes expansiones.',
+          videoUrl: '', // Insira seu link aqui
+          explanation: language === 'pt' ? 'Como as instituições movem o mercado através de pools de liquidez.' : language === 'en' ? 'How institutions move the market through liquidity pools.' : 'Cómo las instituciones mueven el mercado a través de pools de liquidez.',
           completed: true 
         },
         { 
           id: 'l2', 
-          title: 'Paciência Seletiva', 
-          duration: '08:20', 
-          videoUrl: 'https://www.w3schools.com/html/movie.mp4', // Substitua pelo seu link
-          explanation: language === 'pt' ? 'A psicologia por trás de aguardar o setup perfeito no Timeframe institucional.' : language === 'en' ? 'The psychology behind waiting for the perfect setup in the institutional timeframe.' : 'La psicología detrás de esperar el setup perfecto en el timeframe institucional.',
+          title: 'Order Blocks Reais', 
+          duration: '15:10', 
+          videoUrl: '', // Insira seu link aqui
+          explanation: language === 'pt' ? 'Identificando as pegadas exatas dos grandes bancos no gráfico.' : language === 'en' ? 'Identifying the exact footprints of big banks on the chart.' : 'Identificando las huellas exactas de los grandes bancos en el gráfico.',
+          completed: false 
+        }
+      ]
+    },
+    {
+      id: 'm2',
+      title: language === 'pt' ? 'Estrutura de Mercado Elite' : language === 'en' ? 'Elite Market Structure' : 'Estructura de Mercado Elite',
+      description: 'Mapeamento de tendência institucional.',
+      lessons: [
+        { 
+          id: 'l3', 
+          title: 'BOS & CHoCH Profissional', 
+          duration: '18:30', 
+          videoUrl: '', 
+          explanation: language === 'pt' ? 'A diferença entre uma quebra de estrutura real e uma indução de varejo.' : language === 'en' ? 'The difference between a real structure break and retail inducement.' : 'La diferencia entre una ruptura de estructura real e inducción minorista.',
+          completed: false 
+        },
+        { 
+          id: 'l4', 
+          title: 'Mapeamento de Range', 
+          duration: '14:20', 
+          videoUrl: '', 
+          explanation: language === 'pt' ? 'Definindo as zonas de Premium e Discount para execução de alta probabilidade.' : language === 'en' ? 'Defining Premium and Discount zones for high probability execution.' : 'Definiendo zonas de Premium y Discount para ejecución de alta probabilidad.',
+          completed: false 
+        }
+      ]
+    },
+    {
+      id: 'm3',
+      title: language === 'pt' ? 'Liquidez & Armadilhas' : language === 'en' ? 'Liquidity & Traps' : 'Liquidez y Trampas',
+      description: 'Onde o varejo perde e o Titan ganha.',
+      lessons: [
+        { 
+          id: 'l5', 
+          title: 'Inducement (Indução)', 
+          duration: '22:15', 
+          videoUrl: '', 
+          explanation: language === 'pt' ? 'Aprenda a não ser a liquidez do mercado.' : language === 'en' ? 'Learn how not to be the market liquidity.' : 'Aprende a no ser la liquidez del mercado.',
+          completed: false 
+        },
+        { 
+          id: 'l6', 
+          title: 'Fair Value Gaps (FVG)', 
+          duration: '11:50', 
+          videoUrl: '', 
+          explanation: language === 'pt' ? 'Utilizando os desequilíbrios de preço como imãs para o take profit.' : language === 'en' ? 'Using price imbalances as magnets for take profit.' : 'Utilizando desequilibrios de precios como imanes para el take profit.',
+          completed: false 
+        }
+      ]
+    },
+    {
+      id: 'm4',
+      title: language === 'pt' ? 'Gestão de Risco NASA' : language === 'en' ? 'NASA Risk Management' : 'Gestión de Riesgo NASA',
+      description: 'Matemática e Psicologia de Alta Performance.',
+      lessons: [
+        { 
+          id: 'l7', 
+          title: 'Risco Retorno 1:3+', 
+          duration: '09:40', 
+          videoUrl: '', 
+          explanation: language === 'pt' ? 'Como manter a conta positiva mesmo errando mais de 50% das vezes.' : language === 'en' ? 'How to keep the account positive even missing more than 50% of the time.' : 'Cómo mantener la cuenta positiva incluso fallando más del 50% de las veces.',
           completed: false 
         }
       ]
@@ -67,16 +132,22 @@ const Academy: React.FC<AcademyProps> = ({ language }) => {
           </div>
         </div>
         
-        {/* Professional 16:9 Video Player */}
+        {/* Professional 16:9 Video Player Container */}
         <div className="w-full aspect-video bg-black relative shadow-2xl border-b border-titan-gold/10">
-           <video 
-             src={selectedLesson.videoUrl} 
-             controls 
-             className="w-full h-full object-contain"
-             poster="https://images.unsplash.com/photo-1611974714024-4607a50d487f?auto=format&fit=crop&q=80&w=1200"
-           >
-             {t.video_loading}
-           </video>
+           {selectedLesson.videoUrl ? (
+             <video 
+               src={selectedLesson.videoUrl} 
+               controls 
+               className="w-full h-full object-contain"
+             >
+               {t.video_loading}
+             </video>
+           ) : (
+             <div className="w-full h-full flex flex-col items-center justify-center gap-4 text-titan-muted/20">
+                <PlayCircle size={64} className="animate-pulse" />
+                <span className="text-[10px] font-black uppercase tracking-[0.3em]">Waiting Video Feed (16:9)</span>
+             </div>
+           )}
         </div>
 
         <div className="p-8 space-y-8 pb-32">
@@ -99,7 +170,7 @@ const Academy: React.FC<AcademyProps> = ({ language }) => {
 
           <div className="flex items-center gap-4 text-titan-muted text-[10px] font-black uppercase tracking-widest px-2">
              <div className="flex items-center gap-2"><Clock size={14} /> {selectedLesson.duration}</div>
-             <div className="flex items-center gap-2"><FileText size={14} /> PDF Attached</div>
+             <div className="flex items-center gap-2"><FileText size={14} /> Blueprint PDF</div>
           </div>
         </div>
       </div>
@@ -129,7 +200,12 @@ const Academy: React.FC<AcademyProps> = ({ language }) => {
         {ACADEMY_DATA.map((module, mIdx) => (
           <div key={module.id} className="space-y-4">
              <div className="flex items-center gap-4 px-2">
-                <div className="w-12 h-12 rounded-[1rem] bg-titan-dark border border-white/5 flex items-center justify-center font-black text-titan-gold text-xl shadow-xl">{mIdx + 1}</div>
+                <div className="w-12 h-12 rounded-[1rem] bg-titan-dark border border-white/5 flex items-center justify-center font-black text-titan-gold text-xl shadow-xl">
+                  {mIdx === 0 && <Layers size={20} />}
+                  {mIdx === 1 && <BarChart size={20} />}
+                  {mIdx === 2 && <Target size={20} />}
+                  {mIdx === 3 && <ShieldAlert size={20} />}
+                </div>
                 <div className="flex-1">
                     <h3 className="text-lg font-black text-white uppercase tracking-tight leading-none mb-1">{module.title}</h3>
                     <p className="text-[11px] text-titan-muted uppercase tracking-tighter font-medium">{module.description}</p>
