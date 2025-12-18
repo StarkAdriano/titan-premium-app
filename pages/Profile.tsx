@@ -52,47 +52,47 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpgradeClick, onUpdateLogo, o
   const handleForceReload = async () => {
     setSyncStatus('syncing');
     
-    // Processamento de limpeza de forma ultra-segura
+    // Processamento de limpeza ultra-defensivo para evitar erros de runtime do browser
     try {
-        // 1. Limpeza de Caches
         if (typeof window !== 'undefined' && window.caches) {
             const keys = await caches.keys();
             await Promise.all(keys.map(k => caches.delete(k)));
         }
-    } catch (e) { console.warn('Cache storage cleanup skipped'); }
+    } catch (e) { console.warn('Cache storage cleanup failed'); }
 
     try {
-        // 2. Limpeza de Service Workers com verificação de estado ativo
-        // Isso previne o erro "The document is in an invalid state"
+        // CORREÇÃO CRÍTICA: Verificação de Service Worker envolvida em try-catch
+        // para evitar o erro "The document is in an invalid state" em contextos restritos
         if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
-            const registrations = await navigator.serviceWorker.getRegistrations();
-            for (const registration of registrations) {
-                // Apenas tenta desregistrar se estiver em um estado válido
-                try {
-                  await registration.unregister();
-                } catch (regError) {
-                  console.warn('Individual SW unregister failed', regError);
+            try {
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                if (registrations && registrations.length > 0) {
+                    for (const registration of registrations) {
+                        await registration.unregister();
+                    }
                 }
+            } catch (swError) {
+                // Captura silenciosa: se o documento está em estado inválido, ignoramos e seguimos com o reload
+                console.warn('Service Worker access failed due to invalid document state');
             }
         }
     } catch (e) { 
-        console.warn('Service Worker check failed, proceeding to reload'); 
+        console.warn('General Service Worker error'); 
     }
 
     try {
-        // 3. Limpeza de Storage
         localStorage.clear();
         sessionStorage.clear();
-    } catch (e) { console.warn('Storage cleanup skipped'); }
+    } catch (e) { console.warn('Storage cleanup failed'); }
     
     setSyncStatus('success');
     
     setTimeout(() => {
-        // CORREÇÃO: Redireciona para a URL atual com um cache-buster (timestamp)
-        // Isso garante que o recarregamento funcione corretamente em subpastas
-        const currentUrl = window.location.href.split('?')[0];
-        const cacheBuster = `?v=${new Date().getTime()}`;
-        window.location.replace(currentUrl + cacheBuster);
+        // Redireciona para a URL atual garantindo que não use cache (Cache Buster)
+        // Usamos window.location.pathname para manter a compatibilidade com subpastas
+        const currentPath = window.location.pathname;
+        const cacheBuster = `?v=${Date.now()}`;
+        window.location.replace(currentPath + cacheBuster);
     }, 1000);
   };
 
@@ -101,46 +101,45 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpgradeClick, onUpdateLogo, o
   return (
     <div className="p-6 space-y-6 pb-32 bg-titan-darker">
       
-      {/* SEÇÃO DE IDIOMA - INTEGRADA AO FLUXO (EVITA SOBREPOSIÇÃO) */}
-      <div className="bg-titan-card/40 border border-white/5 rounded-[2.5rem] p-5 relative z-50 shadow-lg">
-        <div className="flex items-center justify-between mb-3 px-2">
-            <div className="flex items-center gap-2">
-                <Globe size={14} className="text-titan-gold" />
-                <span className="text-[9px] text-white font-black uppercase tracking-widest">{t.global_lang}</span>
-            </div>
-        </div>
-        <div className="relative">
-            <button 
-              onClick={() => setShowLangMenu(!showLangMenu)} 
-              className="w-full flex items-center justify-between bg-black/40 p-4 rounded-xl border border-white/10 text-xs font-black text-white active:scale-95 transition-all"
-            >
-                <div className="flex items-center gap-3">
-                    <span className="text-xl">{currentLang.flag}</span>
-                    <span className="uppercase tracking-widest">{currentLang.name}</span>
-                </div>
-                <ChevronDown size={16} className={`text-titan-muted transition-transform ${showLangMenu ? 'rotate-180' : ''}`} />
-            </button>
-            {showLangMenu && (
-                <div className="absolute top-full left-0 w-full mt-2 bg-titan-dark border border-white/10 rounded-xl shadow-2xl z-[60] overflow-hidden backdrop-blur-xl">
-                    {languages.map((lang) => (
-                        <button 
-                          key={lang.code} 
-                          onClick={() => { onUpdateLanguage(lang.code as Language); setShowLangMenu(false); }} 
-                          className={`w-full flex items-center justify-between p-4 hover:bg-white/5 border-b border-white/5 last:border-0 ${user.language === lang.code ? 'bg-titan-gold/5' : ''}`}
-                        >
-                            <div className="flex items-center gap-3">
-                                <span className="text-xl">{lang.flag}</span>
-                                <span className={`text-[9px] font-black uppercase tracking-widest ${user.language === lang.code ? 'text-titan-gold' : 'text-white'}`}>{lang.name}</span>
-                            </div>
-                            {user.language === lang.code && <Check size={14} className="text-titan-gold" />}
-                        </button>
-                    ))}
-                </div>
-            )}
-        </div>
+      {/* CABEÇALHO DE PERFIL COM SELETOR DE IDIOMA EM FLEXBOX */}
+      <div className="flex justify-between items-center bg-titan-card/40 border border-white/5 rounded-[2.5rem] p-5 shadow-lg">
+          <div className="flex items-center gap-2">
+              <div className="p-2 bg-titan-gold/10 rounded-lg">
+                <Shield size={18} className="text-titan-gold" />
+              </div>
+              <h1 className="text-lg font-black text-white uppercase italic tracking-tighter">Perfil</h1>
+          </div>
+
+          <div className="relative">
+              <button 
+                onClick={() => setShowLangMenu(!showLangMenu)} 
+                className="flex items-center gap-2 bg-black/40 px-4 py-2 rounded-xl border border-white/10 text-[10px] font-black text-white active:scale-95 transition-all"
+              >
+                  <span className="text-base">{currentLang.flag}</span>
+                  <span className="uppercase tracking-widest">{currentLang.code}</span>
+                  <ChevronDown size={14} className={`text-titan-muted transition-transform ${showLangMenu ? 'rotate-180' : ''}`} />
+              </button>
+              {showLangMenu && (
+                  <div className="absolute top-full right-0 mt-2 w-48 bg-titan-dark border border-white/10 rounded-xl shadow-2xl z-[60] overflow-hidden backdrop-blur-xl animate-in fade-in slide-in-from-top-2">
+                      {languages.map((lang) => (
+                          <button 
+                            key={lang.code} 
+                            onClick={() => { onUpdateLanguage(lang.code as Language); setShowLangMenu(false); }} 
+                            className={`w-full flex items-center justify-between p-4 hover:bg-white/5 border-b border-white/5 last:border-0 ${user.language === lang.code ? 'bg-titan-gold/5' : ''}`}
+                          >
+                              <div className="flex items-center gap-3">
+                                  <span className="text-xl">{lang.flag}</span>
+                                  <span className={`text-[9px] font-black uppercase tracking-widest ${user.language === lang.code ? 'text-titan-gold' : 'text-white'}`}>{lang.name}</span>
+                              </div>
+                              {user.language === lang.code && <Check size={14} className="text-titan-gold" />}
+                          </button>
+                      ))}
+                  </div>
+              )}
+          </div>
       </div>
 
-      {/* HEADER DE PERFIL */}
+      {/* HEADER DE PERFIL (AVATAR E NOME) */}
       <div className="flex flex-col items-center pt-8 pb-8 bg-titan-dark/40 rounded-[3rem] border border-white/5 relative overflow-hidden shadow-xl">
         <div className="relative mb-6 cursor-pointer group" onClick={() => fileInputRef.current?.click()}>
           <div className="w-24 h-24 rounded-[2rem] bg-titan-card border-2 border-titan-gold/30 flex items-center justify-center overflow-hidden transition-all group-hover:border-titan-gold">
