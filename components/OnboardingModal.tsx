@@ -21,11 +21,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ onComplete }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (name.trim().toLowerCase() === 'titanmaster') {
-        onComplete({ 
-            name: 'Desenvolvedor Titan', 
-            whatsapp: 'N/A - CEO Access',
-            language: currentLang
-        });
+        onComplete({ name: 'Desenvolvedor Titan', whatsapp: 'N/A - CEO Access', language: currentLang });
         return;
     }
     if (name && whatsapp && followedInstagram) {
@@ -33,9 +29,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ onComplete }) => {
     }
   };
 
-  const handleInstagramClick = () => {
-    window.open(INSTAGRAM_LINK, '_blank');
-  };
+  const handleInstagramClick = () => { window.open(INSTAGRAM_LINK, '_blank'); };
 
   const isFormValid = (name.length > 2 && whatsapp.length > 8 && followedInstagram);
   const isAdminBypass = name.trim().toLowerCase() === 'titanmaster';
@@ -43,25 +37,27 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ onComplete }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/98 backdrop-blur-xl p-4 overflow-y-auto">
-      <div className="bg-titan-card border border-titan-gold/30 rounded-[2.5rem] w-full max-w-sm overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.8)] relative">
+      <div className="bg-titan-card border border-titan-gold/30 rounded-[2.5rem] w-full max-w-sm overflow-hidden shadow-2xl relative">
         
-        {/* Idioma agora com padding superior maior para não encostar no topo do card */}
-        <div className="absolute top-6 right-6 z-50">
-           <button 
-             onClick={() => setShowLangMenu(!showLangMenu)}
-             className="bg-black/60 backdrop-blur-md border border-white/10 px-3 py-2 rounded-xl flex items-center gap-2 text-[10px] font-black text-white uppercase tracking-widest hover:border-titan-gold/50 transition-all active:scale-95"
-           >
-             <Globe size={12} className="text-titan-gold" />
-             {selectedLangData.flag}
-             <ChevronDown size={10} className={`transition-transform ${showLangMenu ? 'rotate-180' : ''}`} />
-           </button>
-           
-           {showLangMenu && (
-             <div className="absolute top-full right-0 mt-2 w-40 bg-titan-dark border border-white/10 rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-                <div className="max-h-48 overflow-y-auto custom-scrollbar">
+        {/* Idioma: Agora em uma barra superior dedicada, sem chance de sobreposição */}
+        <div className="bg-black/40 border-b border-white/5 px-8 py-3 flex justify-end">
+           <div className="relative">
+             <button 
+               type="button"
+               onClick={() => setShowLangMenu(!showLangMenu)}
+               className="bg-titan-dark border border-white/10 px-3 py-1.5 rounded-xl flex items-center gap-2 text-[9px] font-black text-white uppercase tracking-widest hover:border-titan-gold/50 transition-all active:scale-95"
+             >
+               <Globe size={11} className="text-titan-gold" />
+               {selectedLangData.flag}
+               <ChevronDown size={10} className={`transition-transform ${showLangMenu ? 'rotate-180' : ''}`} />
+             </button>
+             
+             {showLangMenu && (
+               <div className="absolute top-full right-0 mt-2 w-40 bg-titan-dark border border-white/10 rounded-xl shadow-2xl z-[60] overflow-hidden">
                   {languages.map(l => (
                     <button 
                       key={l.code}
+                      type="button"
                       onClick={() => { setCurrentLang(l.code as Language); setShowLangMenu(false); }}
                       className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/5 transition-colors text-[9px] font-black text-white uppercase border-b border-white/5 last:border-0"
                     >
@@ -69,12 +65,12 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ onComplete }) => {
                       <span>{l.flag}</span>
                     </button>
                   ))}
-                </div>
-             </div>
-           )}
+               </div>
+             )}
+           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-titan-dark to-black pt-12 p-8 border-b border-white/5 relative overflow-hidden">
+        <div className="bg-gradient-to-br from-titan-dark to-black p-8 border-b border-white/5 relative overflow-hidden">
           <div className="absolute -top-10 -right-10 opacity-10">
              <ShieldAlert size={120} className="text-titan-gold" />
           </div>
@@ -89,7 +85,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ onComplete }) => {
               <input
                 type="text"
                 required
-                className="w-full bg-black/40 border border-white/5 focus:border-titan-gold/50 rounded-2xl p-4 text-sm text-white placeholder-gray-700 outline-none transition-all shadow-inner font-bold"
+                className="w-full bg-black/40 border border-white/5 focus:border-titan-gold/50 rounded-2xl p-4 text-sm text-white placeholder-gray-700 outline-none transition-all font-bold"
                 placeholder="Ex: John Wick"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -103,7 +99,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ onComplete }) => {
                     <input
                       type="tel"
                       required
-                      className="w-full bg-black/40 border border-white/5 focus:border-titan-gold/50 rounded-2xl p-4 text-sm text-white placeholder-gray-700 outline-none transition-all shadow-inner font-bold"
+                      className="w-full bg-black/40 border border-white/5 focus:border-titan-gold/50 rounded-2xl p-4 text-sm text-white placeholder-gray-700 outline-none transition-all font-bold"
                       placeholder="+1 234..."
                       value={whatsapp}
                       onChange={(e) => setWhatsapp(e.target.value)}
@@ -144,7 +140,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ onComplete }) => {
               disabled={!isFormValid && !isAdminBypass}
               className={`w-full py-5 rounded-2xl font-black text-xs uppercase tracking-[0.3em] flex items-center justify-center gap-3 transition-all ${
                 isFormValid || isAdminBypass
-                  ? 'bg-titan-gold text-black shadow-[0_10px_30px_rgba(212,175,55,0.3)] active:scale-95' 
+                  ? 'bg-titan-gold text-black shadow-xl active:scale-95' 
                   : 'bg-white/5 text-titan-muted cursor-not-allowed grayscale'
               }`}
             >

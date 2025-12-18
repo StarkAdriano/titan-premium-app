@@ -40,32 +40,17 @@
       }
     </script>
     <style>
-      /* Custom Scrollbar for dark theme */
-      ::-webkit-scrollbar {
-        width: 8px;
-      }
-      ::-webkit-scrollbar-track {
-        background: #0f172a; 
-      }
-      ::-webkit-scrollbar-thumb {
-        background: #334155; 
-        border-radius: 4px;
-      }
-      ::-webkit-scrollbar-thumb:hover {
-        background: #475569; 
-      }
+      ::-webkit-scrollbar { width: 8px; }
+      ::-webkit-scrollbar-track { background: #0f172a; }
+      ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
       body {
         background-color: #020617;
         color: #f1f5f9;
         -webkit-tap-highlight-color: transparent;
         overscroll-behavior-y: none;
+        margin: 0;
+        padding: 0;
       }
-      input[type=number]::-webkit-inner-spin-button, 
-      input[type=number]::-webkit-outer-spin-button { 
-        -webkit-appearance: none; 
-        margin: 0; 
-      }
-      /* Garantir que não haja tela branca por falta de altura */
       #root {
         min-height: 100vh;
         display: flex;
@@ -87,7 +72,7 @@
 </head>
   <body>
     <div id="root"></div>
-    <!-- Alterado para caminho relativo para evitar erro de tela branca em subpastas ou reloads -->
-    <script type="module" src="index.tsx"></script>
+    <!-- Script com caminho relativo fixo -->
+    <script type="module" src="./index.tsx"></script>
   </body>
 </html>
