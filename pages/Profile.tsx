@@ -52,6 +52,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpgradeClick, onUpdateLogo, o
   const handleForceReload = async () => {
     setSyncStatus('syncing');
     try {
+        // Limpeza profunda para forçar atualização
         if (navigator.serviceWorker) {
             const regs = await navigator.serviceWorker.getRegistrations();
             for (const r of regs) await r.unregister();
@@ -60,13 +61,15 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpgradeClick, onUpdateLogo, o
             const keys = await caches.keys();
             for (const k of keys) await caches.delete(k);
         }
+        // Opcional: localStorage.clear(); // Cuidado, isso remove o login do usuário
     } catch (e) { console.error(e); }
+    
     setSyncStatus('success');
     
     setTimeout(() => {
-        // CORREÇÃO DEFINITIVA PARA O 404: reload simples mantém o path atual do servidor
+        // CORREÇÃO PARA 404: reload() mantém a URL relativa atual sem tentar ir para a raiz
         window.location.reload();
-    }, 1000);
+    }, 1200);
   };
 
   const currentLang = languages.find(l => l.code === user.language) || languages[0];
@@ -74,8 +77,8 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpgradeClick, onUpdateLogo, o
   return (
     <div className="p-6 space-y-6 pb-32 bg-titan-darker">
       
-      {/* SEÇÃO DE IDIOMA - ISOLADA PARA EVITAR SOBREPOSIÇÃO */}
-      <div className="bg-titan-card/40 border border-white/5 rounded-[2rem] p-5 relative z-50">
+      {/* SEÇÃO DE IDIOMA - ISOLADA NO TOPO PARA EVITAR ATROPELAR O NOME NO MOBILE */}
+      <div className="bg-titan-card/40 border border-white/5 rounded-[2.5rem] p-5 relative z-50 shadow-lg">
         <div className="flex items-center gap-2 mb-3">
             <Globe size={14} className="text-titan-gold" />
             <span className="text-[9px] text-white font-black uppercase tracking-widest">{t.global_lang}</span>
@@ -92,7 +95,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpgradeClick, onUpdateLogo, o
                 <ChevronDown size={16} className={`text-titan-muted transition-transform ${showLangMenu ? 'rotate-180' : ''}`} />
             </button>
             {showLangMenu && (
-                <div className="absolute top-full left-0 w-full mt-2 bg-titan-dark border border-white/10 rounded-xl shadow-2xl z-[60] overflow-hidden">
+                <div className="absolute top-full left-0 w-full mt-2 bg-titan-dark border border-white/10 rounded-xl shadow-2xl z-[60] overflow-hidden backdrop-blur-xl">
                     {languages.map((lang) => (
                         <button 
                           key={lang.code} 
@@ -111,6 +114,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpgradeClick, onUpdateLogo, o
         </div>
       </div>
 
+      {/* CABEÇALHO DE PERFIL */}
       <div className="flex flex-col items-center pt-8 pb-8 bg-titan-dark/40 rounded-[3rem] border border-white/5 relative overflow-hidden shadow-xl">
         <div className="relative mb-6 cursor-pointer group" onClick={() => fileInputRef.current?.click()}>
           <div className="w-24 h-24 rounded-[2rem] bg-titan-card border-2 border-titan-gold/30 flex items-center justify-center overflow-hidden transition-all group-hover:border-titan-gold">
@@ -132,6 +136,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpgradeClick, onUpdateLogo, o
         </div>
       </div>
 
+      {/* BOTÃO DE SINCRONIZAÇÃO FORÇADA */}
       <div className={`border rounded-[2.5rem] p-6 space-y-4 transition-all duration-500 shadow-xl ${syncStatus === 'success' ? 'bg-titan-green/10 border-titan-green/40' : 'bg-red-600/5 border-red-600/20'}`}>
           <div className="flex items-center gap-4">
               <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${syncStatus === 'success' ? 'bg-titan-green' : 'bg-red-600'}`}>
