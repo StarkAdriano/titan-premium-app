@@ -7,6 +7,9 @@
     <meta name="theme-color" content="#020617" />
     <title>Titan Premium - Institutional Brain</title>
 
+    <!-- Define a base path estática para resolver rotas SPA e assets corretamente -->
+    <base href="/">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
@@ -60,7 +63,7 @@
 </head>
   <body>
     <div id="root"></div>
-    <!-- Caminho relativo para o script para evitar erros de 404 em subpastas -->
-    <script type="module" src="./index.tsx"></script>
+    <!-- Caminho absoluto para o script para compatibilidade com SPA e base href -->
+    <script type="module" src="/index.tsx"></script>
   </body>
 </html>

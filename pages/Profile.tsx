@@ -52,47 +52,38 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpgradeClick, onUpdateLogo, o
   const handleForceReload = async () => {
     setSyncStatus('syncing');
     
-    // Processamento de limpeza ultra-defensivo para evitar erros de runtime do browser
     try {
         if (typeof window !== 'undefined' && window.caches) {
             const keys = await caches.keys();
             await Promise.all(keys.map(k => caches.delete(k)));
         }
-    } catch (e) { console.warn('Cache storage cleanup failed'); }
+    } catch (e) { console.warn('Cache storage cleanup skipped'); }
 
     try {
-        // CORREÇÃO CRÍTICA: Verificação de Service Worker envolvida em try-catch
-        // para evitar o erro "The document is in an invalid state" em contextos restritos
-        if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
-            try {
-                const registrations = await navigator.serviceWorker.getRegistrations();
-                if (registrations && registrations.length > 0) {
-                    for (const registration of registrations) {
-                        await registration.unregister();
-                    }
-                }
-            } catch (swError) {
-                // Captura silenciosa: se o documento está em estado inválido, ignoramos e seguimos com o reload
-                console.warn('Service Worker access failed due to invalid document state');
+        // CORREÇÃO: Registro/Desregistro de Service Worker condicionado ao contexto top-level
+        // para evitar erros de "Invalid State" em iframes (como sandbox de IA)
+        if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator && window.top === window.self) {
+            const registrations = await navigator.serviceWorker.getRegistrations();
+            for (const registration of registrations) {
+                await registration.unregister();
             }
         }
     } catch (e) { 
-        console.warn('General Service Worker error'); 
+        console.warn('Service Worker cleanup check failed, proceeding to reload'); 
     }
 
     try {
         localStorage.clear();
         sessionStorage.clear();
-    } catch (e) { console.warn('Storage cleanup failed'); }
+    } catch (e) { console.warn('Storage cleanup skipped'); }
     
     setSyncStatus('success');
     
     setTimeout(() => {
-        // Redireciona para a URL atual garantindo que não use cache (Cache Buster)
-        // Usamos window.location.pathname para manter a compatibilidade com subpastas
-        const currentPath = window.location.pathname;
-        const cacheBuster = `?v=${Date.now()}`;
-        window.location.replace(currentPath + cacheBuster);
+        // CORREÇÃO: Redireciona com cache-buster baseado na URL atual para evitar 404
+        const currentUrl = window.location.href.split('?')[0];
+        const cacheBuster = `?v=${new Date().getTime()}`;
+        window.location.replace(currentUrl + cacheBuster);
     }, 1000);
   };
 
@@ -101,7 +92,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpgradeClick, onUpdateLogo, o
   return (
     <div className="p-6 space-y-6 pb-32 bg-titan-darker">
       
-      {/* CABEÇALHO DE PERFIL COM SELETOR DE IDIOMA EM FLEXBOX */}
+      {/* CABEÇALHO COM FLEXBOX (SEM POSICIONAMENTO ABSOLUTO) */}
       <div className="flex justify-between items-center bg-titan-card/40 border border-white/5 rounded-[2.5rem] p-5 shadow-lg">
           <div className="flex items-center gap-2">
               <div className="p-2 bg-titan-gold/10 rounded-lg">
@@ -120,7 +111,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpgradeClick, onUpdateLogo, o
                   <ChevronDown size={14} className={`text-titan-muted transition-transform ${showLangMenu ? 'rotate-180' : ''}`} />
               </button>
               {showLangMenu && (
-                  <div className="absolute top-full right-0 mt-2 w-48 bg-titan-dark border border-white/10 rounded-xl shadow-2xl z-[60] overflow-hidden backdrop-blur-xl animate-in fade-in slide-in-from-top-2">
+                  <div className="absolute top-full right-0 mt-2 w-48 bg-titan-dark border border-white/10 rounded-xl shadow-2xl z-[60] overflow-hidden backdrop-blur-xl">
                       {languages.map((lang) => (
                           <button 
                             key={lang.code} 

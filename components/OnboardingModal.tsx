@@ -38,9 +38,13 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ onComplete }) => {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/98 backdrop-blur-xl p-4 overflow-y-auto">
       <div className="bg-titan-card border border-titan-gold/30 rounded-[2.5rem] w-full max-w-sm overflow-hidden shadow-2xl relative">
         
-        {/* TOP BAR: Language Selector integrated into the layout flow */}
+        {/* TOP BAR: Language Selector integrated into the layout flow with Flexbox */}
         <div className="bg-titan-dark border-b border-white/5 px-8 py-4 flex justify-between items-center relative z-[60]">
-           <span className="text-[8px] text-titan-muted uppercase tracking-[0.3em] font-black">Region Select</span>
+           <div className="flex items-center gap-2">
+             <ShieldAlert size={14} className="text-titan-gold" />
+             <span className="text-[8px] text-titan-muted uppercase tracking-[0.3em] font-black">Titan Protocol</span>
+           </div>
+           
            <div className="relative">
              <button 
                type="button"
@@ -75,7 +79,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ onComplete }) => {
              <ShieldAlert size={120} className="text-titan-gold" />
           </div>
           <h2 className="text-2xl font-black text-titan-gold italic tracking-tighter mb-1 uppercase leading-none">{t.welcome}</h2>
-          <p className="text-[8px] text-titan-muted uppercase tracking-[0.3em] font-black">Titan Institutional Protocol</p>
+          <p className="text-[8px] text-titan-muted uppercase tracking-[0.3em] font-black">Restricted Access Portal</p>
         </div>
 
         <div className="p-8 space-y-6">
