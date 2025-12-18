@@ -15,7 +15,9 @@ import {
   Target,
   BarChart,
   ShieldAlert,
-  Youtube
+  Youtube,
+  ExternalLink,
+  Zap
 } from 'lucide-react';
 
 interface AcademyProps {
@@ -26,34 +28,32 @@ const Academy: React.FC<AcademyProps> = ({ language }) => {
   const t = translations[language] || translations['pt'];
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
 
-  // Motor de extração de ID do YouTube ultra-robusto
+  // Extração de ID com Regex e formato de saída seguro (no-cookie)
   const getEmbedUrl = (url: string) => {
     if (!url) return '';
-    let videoId = '';
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    const videoId = (match && match[2].length === 11) ? match[2] : null;
     
-    if (url.includes('youtu.be/')) {
-      videoId = url.split('youtu.be/')[1].split(/[?#]/)[0];
-    } else if (url.includes('youtube.com/watch?v=')) {
-      videoId = url.split('v=')[1].split(/[&?#]/)[0];
-    } else {
-      videoId = url.split('/').pop() || '';
+    if (videoId) {
+      // Usando youtube-nocookie para evitar bloqueios de PWA/Privacidade
+      return `https://www.youtube-nocookie.com/embed/${videoId}?rel=0&modestbranding=1&autoplay=0&playsinline=1&enablejsapi=1`;
     }
-    
-    return `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&autoplay=1&mute=0`;
+    return '';
   };
 
   const ACADEMY_DATA: CourseModule[] = [
     {
       id: 'm1',
-      title: language === 'pt' ? 'Arquitetura Algorítmica (IPDA)' : language === 'en' ? 'Algorithmic Architecture (IPDA)' : 'Arquitectura Algorítmica (IPDA)',
-      description: language === 'pt' ? 'O código por trás do preço.' : language === 'en' ? 'The code behind the price.' : 'El código detrás del precio.',
+      title: 'Arquitetura Algorítmica (IPDA)',
+      description: 'O código por trás do preço.',
       lessons: [
         { 
           id: 'l1', 
           title: 'Liquidez vs Volume', 
           duration: '12:45', 
           videoUrl: 'https://youtu.be/HPTU-4t6CtM',
-          explanation: language === 'pt' ? 'Como o algoritmo interbancário identifica pools de liquidez.' : language === 'en' ? 'How the interbank algorithm identifies liquidity pools.' : 'Cómo o algoritmo interbancario identifica pools de liquidez.',
+          explanation: 'Diferença técnica entre pools de liquidez e volume de negociação.',
           completed: true 
         },
         { 
@@ -61,7 +61,7 @@ const Academy: React.FC<AcademyProps> = ({ language }) => {
           title: 'Paciência Seletiva', 
           duration: '10:15', 
           videoUrl: 'https://youtu.be/xlvhZi6AdXE',
-          explanation: language === 'pt' ? 'A arte de esperar o setup perfeito. O lucro está na espera, não na execução.' : language === 'en' ? 'The art of waiting for the perfect setup. Profit is in the waiting, not the execution.' : 'El arte de esperar el setup perfecto.',
+          explanation: 'A virtude de esperar o setup de alta probabilidade ignorando o ruído.',
           completed: false 
         },
         { 
@@ -69,22 +69,22 @@ const Academy: React.FC<AcademyProps> = ({ language }) => {
           title: 'Order Blocks', 
           duration: '15:30', 
           videoUrl: 'https://youtu.be/WoeGeeIox1I',
-          explanation: language === 'pt' ? 'Mapeamento de zonas de oferta e demanda institucional.' : language === 'en' ? 'Institutional supply and demand zone mapping.' : 'Mapeo de zonas de oferta y demanda institucional.',
+          explanation: 'Identificando onde as grandes instituições deixam suas ordens pendentes.',
           completed: false 
         }
       ]
     },
     {
       id: 'm2',
-      title: language === 'pt' ? 'Estrutura de Mercado Elite' : language === 'en' ? 'Elite Market Structure' : 'Estructura de Mercado Elite',
-      description: language === 'pt' ? 'Mapeamento de tendência institucional.' : language === 'en' ? 'Institutional trend mapping.' : 'Mapeo de tendencias institucionales.',
+      title: 'Estrutura de Mercado Elite',
+      description: 'Mapeamento de tendência institucional.',
       lessons: [
         { 
           id: 'l4', 
           title: 'Tendência Institucional', 
           duration: '14:20', 
           videoUrl: 'https://youtu.be/TjYKCLZ4UxA', 
-          explanation: language === 'pt' ? 'Seguindo o rastro do dinheiro inteligente no gráfico.' : language === 'en' ? 'Following the trail of smart money on the chart.' : 'Siguiendo el rastro del dinero inteligente en el gráfico.',
+          explanation: 'Como ler a direção real do mercado através do fluxo de ordens.',
           completed: false 
         },
         { 
@@ -92,7 +92,7 @@ const Academy: React.FC<AcademyProps> = ({ language }) => {
           title: 'Bos & Choch', 
           duration: '11:45', 
           videoUrl: 'https://youtu.be/VOdVaCjUX7A', 
-          explanation: language === 'pt' ? 'A assinatura técnica da mudança de caráter e quebra de estrutura.' : language === 'en' ? 'Technical signature of change of character and break of structure.' : 'La firma técnica del cambio de carácter.',
+          explanation: 'Quebra de estrutura e mudança de caráter para entradas precisas.',
           completed: false 
         },
         { 
@@ -100,22 +100,22 @@ const Academy: React.FC<AcademyProps> = ({ language }) => {
           title: 'Mapeamento de Range', 
           duration: '13:10', 
           videoUrl: 'https://youtu.be/x-sTpp-BAbE', 
-          explanation: language === 'pt' ? 'Definindo áreas de execução Premium e Discount.' : language === 'en' ? 'Defining Premium and Discount execution areas.' : 'Definiendo áreas de ejecución Premium y Discount.',
+          explanation: 'Definição de zonas operacionais dentro de uma perna de tendência.',
           completed: false 
         }
       ]
     },
     {
       id: 'm3',
-      title: language === 'pt' ? 'Liquidez & Armadilhas' : language === 'en' ? 'Liquidity & Traps' : 'Liquidez y Trampas',
-      description: language === 'pt' ? 'Onde o varejo perde e o Titan ganha.' : language === 'en' ? 'Where retail loses and Titan wins.' : 'Donde el minorista pierde y Titan gana.',
+      title: 'Liquidez & Armadilhas',
+      description: 'Onde o varejo perde e o Titan ganha.',
       lessons: [
         { 
           id: 'l7', 
           title: 'Liquidez vs Armadilhas', 
           duration: '16:40', 
           videoUrl: 'https://youtu.be/Hl2JFNRV_ps', 
-          explanation: language === 'pt' ? 'Como identificar onde o varejo está sendo induzido ao erro.' : language === 'en' ? 'How to identify where retail is being misled.' : 'Cómo identificar dónde se está induciendo al error al minorista.',
+          explanation: 'Entenda como o mercado caça stop loss para ganhar combustível.',
           completed: false 
         },
         { 
@@ -123,7 +123,7 @@ const Academy: React.FC<AcademyProps> = ({ language }) => {
           title: 'Indução (Inducement)', 
           duration: '12:20', 
           videoUrl: 'https://youtu.be/-hpD_kqc0fw', 
-          explanation: language === 'pt' ? 'O gatilho psicológico usado pelas instituições para criar liquidez.' : language === 'en' ? 'The psychological trigger used by institutions to create liquidity.' : 'El gatillo psicológico usado por las instituciones.',
+          explanation: 'O movimento falso que convence o varejo a entrar na direção errada.',
           completed: false 
         },
         { 
@@ -131,22 +131,22 @@ const Academy: React.FC<AcademyProps> = ({ language }) => {
           title: 'Fair Value Gap', 
           duration: '09:55', 
           videoUrl: 'https://youtu.be/Jx1jVx_tpTQ', 
-          explanation: language === 'pt' ? 'Ineficiências de preço que servem como imãs magnéticos.' : language === 'en' ? 'Price inefficiencies that act as magnetic magnets.' : 'Ineficiencias de precios que sirven como imanes.',
+          explanation: 'Identificação de ineficiências no preço (Gaps) que precisam ser preenchidos.',
           completed: false 
         }
       ]
     },
     {
       id: 'm4',
-      title: language === 'pt' ? 'Gestão de Risco NASA' : language === 'en' ? 'NASA Risk Management' : 'Gestión de Riesgo NASA',
-      description: language === 'pt' ? 'Matemática e Psicologia de Alta Performance.' : language === 'en' ? 'High Performance Math and Psychology.' : 'Matemáticas y Psicología de Alto Rendimiento.',
+      title: 'Gestão de Risco NASA',
+      description: 'Matemática e Psicologia de Alta Performance.',
       lessons: [
         { 
           id: 'l10', 
           title: 'Gestão de Risco NASA', 
           duration: '20:15', 
           videoUrl: 'https://youtu.be/pcpdNcCQuPk', 
-          explanation: language === 'pt' ? 'O protocolo de sobrevivência definitivo para preservação de capital.' : language === 'en' ? 'The ultimate survival protocol for capital preservation.' : 'El protocolo de supervivencia definitivo.',
+          explanation: 'Proteção de capital em nível profissional para contas de grande escala.',
           completed: false 
         },
         { 
@@ -154,7 +154,7 @@ const Academy: React.FC<AcademyProps> = ({ language }) => {
           title: 'Risco Retorno', 
           duration: '08:45', 
           videoUrl: 'https://youtu.be/cX0AeF-uMeI', 
-          explanation: language === 'pt' ? 'Aumentando seus ganhos com assimetria matemática positiva.' : language === 'en' ? 'Increasing your earnings with positive mathematical asymmetry.' : 'Aumentando sus ganancias con asimetría matemática positiva.',
+          explanation: 'A matemática por trás do lucro a longo prazo usando a assimetria.',
           completed: false 
         }
       ]
@@ -166,6 +166,8 @@ const Academy: React.FC<AcademyProps> = ({ language }) => {
   const progress = (completedLessons / totalLessons) * 100;
 
   if (selectedLesson) {
+    const embedUrl = getEmbedUrl(selectedLesson.videoUrl);
+
     return (
       <div className="flex flex-col min-h-full bg-titan-darker animate-in slide-in-from-right-4">
         <div className="p-5 flex items-center gap-4 border-b border-white/5 bg-titan-dark">
@@ -173,35 +175,56 @@ const Academy: React.FC<AcademyProps> = ({ language }) => {
             <ArrowLeft size={18} />
           </button>
           <div className="flex flex-col">
-            <span className="text-[8px] text-titan-gold font-black uppercase tracking-[0.3em]">Titan Academy Stream</span>
+            <span className="text-[8px] text-titan-gold font-black uppercase tracking-[0.3em]">Titan Cinema Pro</span>
             <h2 className="text-sm font-bold text-white tracking-tight">{selectedLesson.title}</h2>
           </div>
         </div>
         
-        {/* Titan Cinema Engine - 16:9 YouTube Embed - Unique Key to Force Reload */}
-        <div className="w-full aspect-video bg-black relative shadow-2xl border-b border-titan-gold/10 overflow-hidden">
-           {selectedLesson.videoUrl ? (
+        {/* Container do Player com Frame Profissional */}
+        <div className="w-full aspect-video bg-black relative shadow-2xl border-b border-titan-gold/10 overflow-hidden group">
+           {embedUrl ? (
              <iframe 
-               key={selectedLesson.id}
-               src={getEmbedUrl(selectedLesson.videoUrl)}
+               key={selectedLesson.videoUrl}
+               src={embedUrl}
                title={selectedLesson.title}
-               className="w-full h-full border-0"
-               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+               className="w-full h-full border-0 relative z-10"
+               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                allowFullScreen
              ></iframe>
            ) : (
              <div className="w-full h-full flex flex-col items-center justify-center gap-4 text-titan-muted/20">
                 <Youtube size={64} className="animate-pulse" />
-                <span className="text-[10px] font-black uppercase tracking-[0.3em]">Feed Offline</span>
+                <span className="text-[10px] font-black uppercase tracking-[0.3em]">{t.video_error}</span>
              </div>
            )}
+           
+           {/* Fallback de Carregamento */}
+           <div className="absolute inset-0 flex items-center justify-center bg-black z-0">
+                <Zap size={32} className="text-titan-gold animate-pulse" />
+           </div>
         </div>
 
-        <div className="p-8 space-y-8 pb-32">
+        <div className="p-6 space-y-6 pb-32">
+          {/* Botão de Ação Crítica: Abrir no YouTube para garantir acesso */}
+          <a 
+            href={selectedLesson.videoUrl} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="w-full py-5 bg-red-600/10 border border-red-600/30 rounded-2xl flex items-center justify-center gap-3 group active:scale-95 transition-all shadow-xl"
+          >
+            <div className="bg-red-600 p-2 rounded-lg">
+                <Youtube size={16} className="text-white" />
+            </div>
+            <span className="text-[11px] font-black text-white uppercase tracking-[0.2em]">
+                {t.open_youtube}
+            </span>
+            <ExternalLink size={14} className="text-red-500 group-hover:translate-x-1 transition-transform" />
+          </a>
+
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <ShieldCheck size={14} className="text-titan-gold" />
-              <span className="text-[10px] text-titan-gold font-black uppercase tracking-[0.3em]">SMC Institutional Intel</span>
+              <span className="text-[10px] text-titan-gold font-black uppercase tracking-[0.3em]">SMC Intel Protocol</span>
             </div>
             <h1 className="text-3xl font-black text-white italic tracking-tighter uppercase leading-none">{selectedLesson.title}</h1>
             <div className="flex items-center gap-2 text-titan-muted text-[10px] font-black uppercase tracking-widest py-2">
@@ -209,7 +232,7 @@ const Academy: React.FC<AcademyProps> = ({ language }) => {
             </div>
           </div>
 
-          <div className="bg-titan-card/30 rounded-3xl p-8 border border-white/5 space-y-4">
+          <div className="bg-titan-card/30 rounded-3xl p-8 border border-white/5 space-y-4 shadow-inner">
             <h3 className="text-[10px] font-black text-white uppercase tracking-widest flex items-center gap-2">
               <Info size={14} className="text-titan-gold" /> {t.lesson_explanation_title}
             </h3>
@@ -258,12 +281,12 @@ const Academy: React.FC<AcademyProps> = ({ language }) => {
              </div>
              <div className="bg-titan-card/30 border border-white/5 rounded-[2.5rem] overflow-hidden shadow-2xl">
                 {module.lessons.map((lesson) => (
-                  <button key={lesson.id} onClick={() => setSelectedLesson(lesson)} className="w-full flex items-center justify-between p-8 border-b border-white/5 last:border-0 hover:bg-white/5 transition-all group">
+                  <button key={lesson.id} onClick={() => setSelectedLesson(lesson)} className="w-full flex items-center justify-between p-8 border-b border-white/5 last:border-0 hover:bg-white/5 transition-all group text-left">
                     <div className="flex items-center gap-6">
                         <div className={`p-4 rounded-[1.5rem] transition-all ${lesson.completed ? 'bg-titan-green/10 text-titan-green shadow-inner' : 'bg-black/40 text-titan-muted group-hover:text-titan-gold shadow-lg'}`}>
                             {lesson.completed ? <CheckCircle2 size={24} /> : <PlayCircle size={24} />}
                         </div>
-                        <div className="text-left">
+                        <div>
                             <p className="text-sm font-black uppercase tracking-tight text-white group-hover:text-titan-gold transition-colors">{lesson.title}</p>
                             <span className="text-[10px] text-titan-muted uppercase font-bold tracking-widest">{lesson.duration}</span>
                         </div>
