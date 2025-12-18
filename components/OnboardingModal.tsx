@@ -38,7 +38,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ onComplete }) => {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/98 backdrop-blur-xl p-4 overflow-y-auto">
       <div className="bg-titan-card border border-titan-gold/30 rounded-[2.5rem] w-full max-w-sm overflow-hidden shadow-2xl relative">
         
-        {/* BARRA DE IDIOMA DEDICADA NO TOPO - EVITA SOBREPOSIÇÃO */}
+        {/* TOP BAR: Language Selector integrated into the layout flow */}
         <div className="bg-titan-dark border-b border-white/5 px-8 py-4 flex justify-between items-center relative z-[60]">
            <span className="text-[8px] text-titan-muted uppercase tracking-[0.3em] font-black">Region Select</span>
            <div className="relative">
@@ -53,7 +53,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ onComplete }) => {
              </button>
              
              {showLangMenu && (
-               <div className="absolute top-full right-0 mt-2 w-40 bg-titan-dark border border-white/10 rounded-xl shadow-2xl z-[70] overflow-hidden">
+               <div className="absolute top-full right-0 mt-2 w-40 bg-titan-dark border border-white/10 rounded-xl shadow-2xl z-[70] overflow-hidden backdrop-blur-xl">
                   {languages.map(l => (
                     <button 
                       key={l.code}

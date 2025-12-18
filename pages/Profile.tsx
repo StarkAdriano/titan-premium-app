@@ -52,21 +52,32 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpgradeClick, onUpdateLogo, o
   const handleForceReload = async () => {
     setSyncStatus('syncing');
     try {
-        if (navigator.serviceWorker) {
-            const regs = await navigator.serviceWorker.getRegistrations();
-            for (const r of regs) await r.unregister();
+        // CORREÇÃO: Verificação defensiva para evitar o erro "Invalid State" em ambientes restritos
+        if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+            try {
+                const regs = await navigator.serviceWorker.getRegistrations();
+                for (const r of regs) await r.unregister();
+            } catch (swError) {
+                console.warn('Service Worker unregistration skipped:', swError);
+            }
         }
+        
         if (window.caches) {
             const keys = await caches.keys();
             for (const k of keys) await caches.delete(k);
         }
-    } catch (e) { console.error(e); }
+        
+        localStorage.clear();
+        sessionStorage.clear();
+    } catch (e) { 
+        console.error('Cache clearing error:', e); 
+    }
     
     setSyncStatus('success');
     
     setTimeout(() => {
         // CORREÇÃO: Redireciona para a URL atual com um cache-buster (timestamp)
-        // Isso garante que o recarregamento funcione corretamente em subpastas
+        // Isso garante que o recarregamento funcione corretamente em subpastas e force nova versão
         const currentUrl = window.location.href.split('?')[0];
         const cacheBuster = `?v=${new Date().getTime()}`;
         window.location.replace(currentUrl + cacheBuster);
@@ -78,7 +89,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpgradeClick, onUpdateLogo, o
   return (
     <div className="p-6 space-y-6 pb-32 bg-titan-darker">
       
-      {/* SEÇÃO DE IDIOMA - INTEGRADA AO FLUXO PARA EVITAR SOBREPOSIÇÃO NO MOBILE */}
+      {/* SEÇÃO DE IDIOMA - INTEGRADA AO FLUXO (Z-INDEX ISOLADO) */}
       <div className="bg-titan-card/40 border border-white/5 rounded-[2.5rem] p-5 relative z-50 shadow-lg">
         <div className="flex items-center justify-between mb-3 px-2">
             <div className="flex items-center gap-2">
@@ -117,6 +128,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpgradeClick, onUpdateLogo, o
         </div>
       </div>
 
+      {/* HEADER DE PERFIL */}
       <div className="flex flex-col items-center pt-8 pb-8 bg-titan-dark/40 rounded-[3rem] border border-white/5 relative overflow-hidden shadow-xl">
         <div className="relative mb-6 cursor-pointer group" onClick={() => fileInputRef.current?.click()}>
           <div className="w-24 h-24 rounded-[2rem] bg-titan-card border-2 border-titan-gold/30 flex items-center justify-center overflow-hidden transition-all group-hover:border-titan-gold">
@@ -138,6 +150,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpgradeClick, onUpdateLogo, o
         </div>
       </div>
 
+      {/* SYNC BUTTON */}
       <div className={`border rounded-[2.5rem] p-6 space-y-4 transition-all duration-500 shadow-xl ${syncStatus === 'success' ? 'bg-titan-green/10 border-titan-green/40' : 'bg-red-600/5 border-red-600/20'}`}>
           <div className="flex items-center gap-4">
               <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${syncStatus === 'success' ? 'bg-titan-green' : 'bg-red-600'}`}>
