@@ -28,7 +28,6 @@ const Academy: React.FC<AcademyProps> = ({ language }) => {
   const t = translations[language] || translations['pt'];
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
 
-  // Extração de ID infalível
   const getVideoId = (url: string) => {
     if (!url) return '';
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
@@ -161,7 +160,8 @@ const Academy: React.FC<AcademyProps> = ({ language }) => {
 
   if (selectedLesson) {
     const videoId = getVideoId(selectedLesson.videoUrl);
-    const thumbUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+    // Usando HQ Default para garantir que carregue em qualquer rede
+    const thumbUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
 
     return (
       <div className="flex flex-col min-h-full bg-titan-darker animate-in slide-in-from-right-4">
@@ -175,29 +175,22 @@ const Academy: React.FC<AcademyProps> = ({ language }) => {
           </div>
         </div>
         
-        {/* Visual Profissional: Mostra a capa do vídeo e botão de Play Gigante */}
         <div className="relative w-full aspect-video bg-black shadow-2xl border-b border-titan-gold/10 overflow-hidden group">
            <a href={selectedLesson.videoUrl} target="_blank" rel="noopener noreferrer" className="block w-full h-full relative">
               <img 
                 src={thumbUrl} 
                 alt="Video Thumbnail" 
-                className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity duration-500"
-                onError={(e) => {
-                    (e.target as HTMLImageElement).src = `https://img.youtube.com/vi/${videoId}/0.jpg`;
-                }}
+                className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-opacity duration-500"
               />
               <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-20 h-20 bg-titan-gold rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(212,175,55,0.5)] group-hover:scale-110 transition-transform duration-300">
+                  <div className="w-20 h-20 bg-titan-gold rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(212,175,55,0.6)] group-hover:scale-110 transition-transform duration-300">
                       <PlayCircle size={40} className="text-black ml-1" />
                   </div>
               </div>
-              <div className="absolute bottom-4 left-4 right-4 flex justify-between items-center">
-                  <span className="bg-black/80 backdrop-blur-md text-[10px] text-white px-3 py-1 rounded-full border border-white/10 font-black uppercase tracking-widest">
+              <div className="absolute bottom-4 left-4 flex gap-2">
+                  <span className="bg-black/90 backdrop-blur-md text-[10px] text-white px-3 py-1 rounded-full border border-white/10 font-black uppercase tracking-widest shadow-xl">
                     {selectedLesson.duration}
                   </span>
-                  <div className="flex items-center gap-1.5 text-[10px] text-titan-gold font-black uppercase tracking-widest bg-black/80 px-3 py-1 rounded-full border border-titan-gold/20 shadow-lg">
-                    <Zap size={10} /> 1080P STREAM
-                  </div>
               </div>
            </a>
         </div>
@@ -207,19 +200,17 @@ const Academy: React.FC<AcademyProps> = ({ language }) => {
             href={selectedLesson.videoUrl} 
             target="_blank" 
             rel="noopener noreferrer"
-            className="w-full py-5 bg-titan-gold text-black rounded-2xl flex items-center justify-center gap-3 active:scale-95 transition-all shadow-[0_10px_30px_rgba(212,175,55,0.2)]"
+            className="w-full py-5 bg-titan-gold text-black rounded-2xl flex items-center justify-center gap-3 active:scale-95 transition-all shadow-[0_10px_30px_rgba(212,175,55,0.3)] font-black text-xs uppercase tracking-[0.3em]"
           >
             <Youtube size={20} />
-            <span className="text-[11px] font-black uppercase tracking-[0.3em]">
-                {t.open_youtube}
-            </span>
+            {t.open_youtube}
             <ExternalLink size={14} />
           </a>
 
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <ShieldCheck size={14} className="text-titan-gold" />
-              <span className="text-[10px] text-titan-gold font-black uppercase tracking-[0.3em]">SMC Institutional Intel</span>
+              <span className="text-[10px] text-titan-gold font-black uppercase tracking-[0.3em]">Institutional SMC Intel</span>
             </div>
             <h1 className="text-3xl font-black text-white italic tracking-tighter uppercase leading-none">{selectedLesson.title}</h1>
           </div>

@@ -14,7 +14,8 @@ import {
   ChevronDown,
   Zap,
   AlertOctagon,
-  Trash2
+  Trash2,
+  CheckCircle2
 } from 'lucide-react';
 import { ACTIVATION_CODES } from '../constants';
 
@@ -27,9 +28,9 @@ interface ProfileProps {
 }
 
 const Profile: React.FC<ProfileProps> = ({ user, onUpgradeClick, onUpdateLogo, onUpdateName, onUpdateLanguage }) => {
-  const t = translations[user.language] || translations['en'];
+  const t = translations[user.language] || translations['pt'];
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
-  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'success'>('idle');
   const [showLangMenu, setShowLangMenu] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
@@ -50,23 +51,36 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpgradeClick, onUpdateLogo, o
     }
   };
 
-  const handleForceReload = () => {
-    setIsSyncing(true);
-    // Hard Reset: Limpa caches do navegador e recarrega
-    if (window.caches) {
-        caches.keys().then((names) => {
-            for (let name of names) caches.delete(name);
-        });
+  const handleForceReload = async () => {
+    setSyncStatus('syncing');
+    
+    // Bypass técnico: Tenta limpar caches se permitido, senão ignora o erro
+    try {
+        if ('caches' in window) {
+            const keys = await caches.keys();
+            await Promise.all(keys.map(key => caches.delete(key)));
+        }
+    } catch (e) {
+        console.warn("Navegador bloqueou limpeza de cache manual.");
     }
+
+    // Feedback de sucesso antes de reiniciar
     setTimeout(() => {
-        window.location.reload();
-    }, 1500);
+        setSyncStatus('success');
+        setTimeout(() => {
+            // Força o navegador a buscar do servidor ignorando cache local via query string
+            const url = new URL(window.location.href);
+            url.searchParams.set('reload_token', Date.now().toString());
+            window.location.replace(url.toString());
+        }, 800);
+    }, 1200);
   };
 
   const currentLang = languages.find(l => l.code === user.language) || languages[0];
 
   return (
     <div className="p-6 space-y-8 pb-32 bg-titan-darker">
+      {/* Header de Perfil */}
       <div className="flex flex-col items-center py-10 bg-titan-dark/40 rounded-[3rem] border border-white/5 relative overflow-hidden shadow-2xl">
         <div className="relative mb-6 group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
           <div className="w-32 h-32 rounded-[2.5rem] bg-titan-card border-2 border-titan-gold/30 flex items-center justify-center overflow-hidden shadow-2xl group-hover:border-titan-gold transition-all duration-500">
@@ -83,30 +97,34 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpgradeClick, onUpdateLogo, o
         </div>
       </div>
 
-      {/* NOVO BLOCO: PROTOCOLO DE SINCRONIZAÇÃO (OBRIGATÓRIO PARA MOBILE) */}
-      <div className="bg-red-600/5 border border-red-600/20 rounded-[2.5rem] p-8 space-y-6 shadow-xl relative overflow-hidden">
-          <div className="absolute -top-4 -right-4 text-red-600/10">
-              <AlertOctagon size={120} />
-          </div>
+      {/* BLOCO DE SINCRONIZAÇÃO REFORÇADO */}
+      <div className={`border rounded-[2.5rem] p-8 space-y-6 shadow-xl relative overflow-hidden transition-all duration-500 ${syncStatus === 'success' ? 'bg-titan-green/10 border-titan-green/40' : 'bg-red-600/5 border-red-600/20'}`}>
           <div className="flex items-center gap-4 relative z-10">
-              <div className="w-12 h-12 rounded-2xl bg-red-600 flex items-center justify-center shadow-[0_0_20px_rgba(220,38,38,0.4)]">
-                <RefreshCw size={24} className={`text-white ${isSyncing ? 'animate-spin' : ''}`} />
+              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg transition-colors ${syncStatus === 'success' ? 'bg-titan-green' : 'bg-red-600'}`}>
+                {syncStatus === 'success' ? <CheckCircle2 size={24} className="text-white" /> : <RefreshCw size={24} className={`text-white ${syncStatus === 'syncing' ? 'animate-spin' : ''}`} />}
               </div>
               <div>
-                  <h3 className="text-[11px] font-black text-white uppercase tracking-widest leading-none">Protocolo de Sincronização</h3>
-                  <p className="text-[8px] text-red-400 uppercase font-black mt-1 tracking-tighter italic">Use se o app não atualizar os vídeos sozinho</p>
+                  <h3 className="text-[11px] font-black text-white uppercase tracking-widest leading-none">
+                    {syncStatus === 'success' ? t.sync_success : t.sync_button}
+                  </h3>
+                  <p className="text-[8px] text-titan-muted uppercase font-black mt-1 tracking-tighter italic">{t.sync_desc}</p>
               </div>
           </div>
           <button 
             onClick={handleForceReload} 
-            disabled={isSyncing}
-            className="w-full py-5 bg-white text-black rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] flex items-center justify-center gap-3 active:scale-95 transition-all shadow-xl"
+            disabled={syncStatus !== 'idle'}
+            className={`w-full py-5 rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] flex items-center justify-center gap-3 active:scale-95 transition-all shadow-xl ${
+                syncStatus === 'success' ? 'bg-titan-green text-white' : 'bg-white text-black'
+            }`}
           >
-            {isSyncing ? 'RESETANDO...' : 'HARD RESET & CLEAR CACHE'}
-            <Trash2 size={14} />
+            {syncStatus === 'idle' && 'FORÇAR RESET AGORA'}
+            {syncStatus === 'syncing' && 'SINCRONIZANDO...'}
+            {syncStatus === 'success' && 'REINICIANDO...'}
+            <Zap size={14} />
           </button>
       </div>
 
+      {/* Seletor de Idioma */}
       <div className="bg-titan-card/40 border border-white/5 rounded-[2.5rem] p-8">
         <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
@@ -153,25 +171,17 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpgradeClick, onUpdateLogo, o
         <button onClick={onUpgradeClick} className="w-full bg-titan-gold text-black py-5 rounded-2xl font-black text-xs uppercase tracking-[0.4em] active:scale-95 shadow-xl">{t.upgrade_account}</button>
       </div>
 
-      <div className="bg-titan-card/40 border border-white/5 rounded-[2.5rem] p-8 space-y-4 shadow-xl">
-          <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-titan-dark flex items-center justify-center border border-white/5 shadow-lg"><Zap size={24} className="text-titan-gold" /></div>
-                  <div>
-                      <p className="text-[10px] text-white font-black uppercase tracking-widest leading-none">OS_Core v3.2</p>
-                      <p className="text-[8px] text-titan-muted uppercase font-bold mt-1 tracking-tighter">{t.encryption_status}</p>
-                  </div>
-              </div>
-          </div>
+      <div className="bg-titan-card/40 border border-white/5 rounded-[2.5rem] p-8 space-y-4 shadow-xl text-center">
+          <p className="text-[11px] font-bold text-titan-muted">{t.copyright}</p>
+          <p className="text-[10px] text-titan-muted/60 font-medium">{t.developed_by}</p>
       </div>
 
       {isOwner && (
-          <div className="bg-red-900/10 border border-red-500/30 rounded-[2.5rem] p-8 space-y-5 animate-in slide-in-from-bottom-6">
+          <div className="bg-red-900/10 border border-red-500/30 rounded-[2.5rem] p-8 space-y-5">
               <div className="flex items-center gap-3 text-red-500">
                   <Lock size={20} />
                   <h3 className="font-black text-xs uppercase tracking-[0.2em]">{t.ceo_terminal}</h3>
               </div>
-              <p className="text-[9px] text-red-200/40 uppercase font-black italic">{t.ceo_desc}</p>
               <div className="space-y-3 max-h-60 overflow-y-auto">
                   {Object.entries(ACTIVATION_CODES).map(([code, days]) => (
                       <button key={code} onClick={() => handleCopyCode(code)} className="w-full flex items-center justify-between bg-black/60 p-4 rounded-2xl border border-white/5 hover:border-titan-gold transition-all group">
@@ -185,13 +195,6 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpgradeClick, onUpdateLogo, o
               </div>
           </div>
       )}
-
-      <div className="text-center pt-10 space-y-1">
-         <p className="text-[11px] font-bold text-titan-muted">{t.copyright}</p>
-         <p className="text-[10px] text-titan-muted/60 font-medium">
-           {t.developed_by}
-         </p>
-      </div>
     </div>
   );
 };

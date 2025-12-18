@@ -29,7 +29,10 @@ export const translations: Record<Language, any> = {
     open_youtube: 'ABRIR NO APP YOUTUBE',
     video_error: 'Falha no sinal de vídeo',
     connected: 'CONECTADO', offline: 'OFFLINE',
-    equilibrium: 'EQUILÍBRIO', smc_validated: 'SMC SETUP VALIDADO'
+    equilibrium: 'EQUILÍBRIO', smc_validated: 'SMC SETUP VALIDADO',
+    sync_button: 'FORÇAR ATUALIZAÇÃO DO APP',
+    sync_success: 'SINCRONIA CONCLUÍDA',
+    sync_desc: 'Use se os vídeos ou sinais estiverem desatualizados.'
   },
   en: {
     terminal: 'Terminal', academy: 'Academy', access: 'Access', network: 'Network',
@@ -58,7 +61,10 @@ export const translations: Record<Language, any> = {
     open_youtube: 'OPEN IN YOUTUBE APP',
     video_error: 'Video signal failure',
     connected: 'CONNECTED', offline: 'OFFLINE',
-    equilibrium: 'EQUILIBRIUM', smc_validated: 'SMC SETUP VALIDATED'
+    equilibrium: 'EQUILIBRIUM', smc_validated: 'SMC SETUP VALIDADO',
+    sync_button: 'FORCE APP UPDATE',
+    sync_success: 'SYNC COMPLETE',
+    sync_desc: 'Use if videos or signals are outdated.'
   },
   es: {
     terminal: 'Terminal', academy: 'Academia', access: 'Acceso', network: 'Red',
@@ -87,7 +93,10 @@ export const translations: Record<Language, any> = {
     open_youtube: 'ABRIR EN APP YOUTUBE',
     video_error: 'Fallo en señal de video',
     connected: 'CONECTADO', offline: 'DESCONECTADO',
-    equilibrium: 'EQUILIBRIO', smc_validated: 'SMC SETUP VALIDADO'
+    equilibrium: 'EQUILIBRIO', smc_validated: 'SMC SETUP VALIDADO',
+    sync_button: 'FORZAR ACTUALIZACIÓN',
+    sync_success: 'SINCRONÍA COMPLETADA',
+    sync_desc: 'Use si los videos o señales están desactualizados.'
   }
 };
 
