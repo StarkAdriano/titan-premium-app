@@ -54,24 +54,35 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpgradeClick, onUpdateLogo, o
   const handleForceReload = async () => {
     setSyncStatus('syncing');
     
-    // Bypass técnico: Tenta limpar caches se permitido, senão ignora o erro
+    // PROTOCOLO NUCLEAR: Limpeza de Cache e Service Workers
     try {
-        if ('caches' in window) {
-            const keys = await caches.keys();
-            await Promise.all(keys.map(key => caches.delete(key)));
+        // 1. Unregister de Service Workers (Causa principal do erro "movido/excluído")
+        if ('serviceWorker' in navigator) {
+            const registrations = await navigator.serviceWorker.getRegistrations();
+            for (let registration of registrations) {
+                await registration.unregister();
+            }
         }
+
+        // 2. Limpeza de Caches API
+        if ('caches' in window) {
+            const cacheNames = await caches.keys();
+            await Promise.all(cacheNames.map(name => caches.delete(name)));
+        }
+        
+        // 3. Limpeza de LocalStorage temporário (opcional, mantemos o usuário logado)
+        // localStorage.clear(); // Não limpamos para não deslogar o comandante
     } catch (e) {
-        console.warn("Navegador bloqueou limpeza de cache manual.");
+        console.warn("Alguns protocolos de limpeza foram restringidos pelo sistema.");
     }
 
-    // Feedback de sucesso antes de reiniciar
     setTimeout(() => {
         setSyncStatus('success');
         setTimeout(() => {
-            // Força o navegador a buscar do servidor ignorando cache local via query string
-            const url = new URL(window.location.href);
-            url.searchParams.set('reload_token', Date.now().toString());
-            window.location.replace(url.toString());
+            // REDIRECIONAMENTO DE RAIZ: Força o navegador a recarregar do zero absoluto
+            // Adicionamos um timestamp para garantir que o servidor não mande versão em cache
+            const clearUrl = window.location.origin + window.location.pathname + '?reset=' + Date.now();
+            window.location.href = clearUrl;
         }, 800);
     }, 1200);
   };
@@ -80,7 +91,6 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpgradeClick, onUpdateLogo, o
 
   return (
     <div className="p-6 space-y-8 pb-32 bg-titan-darker">
-      {/* Header de Perfil */}
       <div className="flex flex-col items-center py-10 bg-titan-dark/40 rounded-[3rem] border border-white/5 relative overflow-hidden shadow-2xl">
         <div className="relative mb-6 group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
           <div className="w-32 h-32 rounded-[2.5rem] bg-titan-card border-2 border-titan-gold/30 flex items-center justify-center overflow-hidden shadow-2xl group-hover:border-titan-gold transition-all duration-500">
@@ -97,7 +107,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpgradeClick, onUpdateLogo, o
         </div>
       </div>
 
-      {/* BLOCO DE SINCRONIZAÇÃO REFORÇADO */}
+      {/* BLOCO DE SINCRONIZAÇÃO BLINDADO - RESOLVE ERRO DE NAVEGAÇÃO */}
       <div className={`border rounded-[2.5rem] p-8 space-y-6 shadow-xl relative overflow-hidden transition-all duration-500 ${syncStatus === 'success' ? 'bg-titan-green/10 border-titan-green/40' : 'bg-red-600/5 border-red-600/20'}`}>
           <div className="flex items-center gap-4 relative z-10">
               <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg transition-colors ${syncStatus === 'success' ? 'bg-titan-green' : 'bg-red-600'}`}>
@@ -117,14 +127,13 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpgradeClick, onUpdateLogo, o
                 syncStatus === 'success' ? 'bg-titan-green text-white' : 'bg-white text-black'
             }`}
           >
-            {syncStatus === 'idle' && 'FORÇAR RESET AGORA'}
-            {syncStatus === 'syncing' && 'SINCRONIZANDO...'}
+            {syncStatus === 'idle' && 'EXECUTAR RESET NUCLEAR'}
+            {syncStatus === 'syncing' && 'LIMPANDO SISTEMA...'}
             {syncStatus === 'success' && 'REINICIANDO...'}
             <Zap size={14} />
           </button>
       </div>
 
-      {/* Seletor de Idioma */}
       <div className="bg-titan-card/40 border border-white/5 rounded-[2.5rem] p-8">
         <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
