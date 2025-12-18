@@ -38,8 +38,8 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ onComplete }) => {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/98 backdrop-blur-xl p-4 overflow-y-auto">
       <div className="bg-titan-card border border-titan-gold/30 rounded-[2.5rem] w-full max-w-sm overflow-hidden shadow-2xl relative">
         
-        {/* BARRA DE IDIOMA DEDICADA NO TOPO */}
-        <div className="bg-titan-dark border-b border-white/5 px-8 py-4 flex justify-between items-center">
+        {/* BARRA DE IDIOMA DEDICADA NO TOPO - EVITA SOBREPOSIÇÃO */}
+        <div className="bg-titan-dark border-b border-white/5 px-8 py-4 flex justify-between items-center relative z-[60]">
            <span className="text-[8px] text-titan-muted uppercase tracking-[0.3em] font-black">Region Select</span>
            <div className="relative">
              <button 
@@ -53,7 +53,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ onComplete }) => {
              </button>
              
              {showLangMenu && (
-               <div className="absolute top-full right-0 mt-2 w-40 bg-titan-dark border border-white/10 rounded-xl shadow-2xl z-[60] overflow-hidden">
+               <div className="absolute top-full right-0 mt-2 w-40 bg-titan-dark border border-white/10 rounded-xl shadow-2xl z-[70] overflow-hidden">
                   {languages.map(l => (
                     <button 
                       key={l.code}
@@ -71,6 +71,9 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ onComplete }) => {
         </div>
 
         <div className="bg-gradient-to-br from-titan-dark to-black p-8 border-b border-white/5 relative overflow-hidden">
+          <div className="absolute -top-10 -right-10 opacity-10">
+             <ShieldAlert size={120} className="text-titan-gold" />
+          </div>
           <h2 className="text-2xl font-black text-titan-gold italic tracking-tighter mb-1 uppercase leading-none">{t.welcome}</h2>
           <p className="text-[8px] text-titan-muted uppercase tracking-[0.3em] font-black">Titan Institutional Protocol</p>
         </div>
@@ -82,7 +85,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ onComplete }) => {
               <input
                 type="text"
                 required
-                className="w-full bg-black/40 border border-white/5 focus:border-titan-gold/50 rounded-2xl p-4 text-sm text-white font-bold"
+                className="w-full bg-black/40 border border-white/5 focus:border-titan-gold/50 rounded-2xl p-4 text-sm text-white font-bold outline-none transition-all"
                 placeholder="Ex: John Wick"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -96,7 +99,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ onComplete }) => {
                     <input
                       type="tel"
                       required
-                      className="w-full bg-black/40 border border-white/5 focus:border-titan-gold/50 rounded-2xl p-4 text-sm text-white font-bold"
+                      className="w-full bg-black/40 border border-white/5 focus:border-titan-gold/50 rounded-2xl p-4 text-sm text-white font-bold outline-none transition-all"
                       placeholder="+1 234..."
                       value={whatsapp}
                       onChange={(e) => setWhatsapp(e.target.value)}
@@ -108,7 +111,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ onComplete }) => {
                      <button
                       type="button"
                       onClick={handleInstagramClick}
-                      className="w-full flex items-center justify-between bg-gradient-to-r from-pink-600/10 to-purple-600/10 border border-pink-500/20 text-white p-4 rounded-2xl group"
+                      className="w-full flex items-center justify-between bg-gradient-to-r from-pink-600/10 to-purple-600/10 border border-pink-500/20 text-white p-4 rounded-2xl group active:scale-95 transition-all"
                      >
                        <div className="flex items-center gap-3">
                          <Instagram size={20} className="text-pink-500" />
