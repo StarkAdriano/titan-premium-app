@@ -51,37 +51,45 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpgradeClick, onUpdateLogo, o
 
   const handleForceReload = async () => {
     setSyncStatus('syncing');
+    
+    // Processamento de limpeza de forma ultra-segura para evitar crash no document state
     try {
-        // CORREÇÃO: Verificação defensiva para evitar o erro "Invalid State" em ambientes restritos
-        if (navigator.serviceWorker && navigator.serviceWorker.controller) {
-            try {
-                const regs = await navigator.serviceWorker.getRegistrations();
-                for (const r of regs) await r.unregister();
-            } catch (swError) {
-                console.warn('Service Worker unregistration skipped:', swError);
-            }
-        }
-        
+        // 1. Limpeza de Caches (Geralmente seguro em todos os browsers)
         if (window.caches) {
             const keys = await caches.keys();
-            for (const k of keys) await caches.delete(k);
+            await Promise.all(keys.map(k => caches.delete(k)));
         }
-        
+    } catch (e) { console.warn('Cache storage cleanup skipped'); }
+
+    try {
+        // 2. Limpeza de Service Workers (A causa do erro "Invalid State" em alguns contexts)
+        // Usamos uma verificação mais rigorosa e catch silencioso
+        if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
+            const registrations = await navigator.serviceWorker.getRegistrations();
+            for (const registration of registrations) {
+                await registration.unregister();
+            }
+        }
+    } catch (e) { 
+        // Silenciamos o erro de Invalid State pois não deve impedir o reload do app
+        console.warn('Service Worker registration check skipped or failed'); 
+    }
+
+    try {
+        // 3. Limpeza de Storage para reset total do estado
         localStorage.clear();
         sessionStorage.clear();
-    } catch (e) { 
-        console.error('Cache clearing error:', e); 
-    }
+    } catch (e) { console.warn('Storage cleanup skipped'); }
     
     setSyncStatus('success');
     
     setTimeout(() => {
-        // CORREÇÃO: Redireciona para a URL atual com um cache-buster (timestamp)
-        // Isso garante que o recarregamento funcione corretamente em subpastas e force nova versão
-        const currentUrl = window.location.href.split('?')[0];
-        const cacheBuster = `?v=${new Date().getTime()}`;
-        window.location.replace(currentUrl + cacheBuster);
-    }, 1200);
+        // Força o recarregamento total da página ignorando o cache do browser
+        // Adicionamos um timestamp na URL para garantir que o servidor não retorne cache
+        const url = new URL(window.location.href);
+        url.searchParams.set('reload', Date.now().toString());
+        window.location.replace(url.toString());
+    }, 1000);
   };
 
   const currentLang = languages.find(l => l.code === user.language) || languages[0];
@@ -89,7 +97,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpgradeClick, onUpdateLogo, o
   return (
     <div className="p-6 space-y-6 pb-32 bg-titan-darker">
       
-      {/* SEÇÃO DE IDIOMA - INTEGRADA AO FLUXO (Z-INDEX ISOLADO) */}
+      {/* SEÇÃO DE IDIOMA - INTEGRADA AO FLUXO (EVITA SOBREPOSIÇÃO) */}
       <div className="bg-titan-card/40 border border-white/5 rounded-[2.5rem] p-5 relative z-50 shadow-lg">
         <div className="flex items-center justify-between mb-3 px-2">
             <div className="flex items-center gap-2">
