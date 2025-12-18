@@ -26,7 +26,7 @@ const Academy: React.FC<AcademyProps> = ({ language }) => {
   const t = translations[language] || translations['pt'];
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
 
-  // Motor de extração de ID do YouTube robusto
+  // Motor de extração de ID do YouTube ultra-robusto
   const getEmbedUrl = (url: string) => {
     if (!url) return '';
     let videoId = '';
@@ -39,7 +39,7 @@ const Academy: React.FC<AcademyProps> = ({ language }) => {
       videoId = url.split('/').pop() || '';
     }
     
-    return `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&autoplay=0`;
+    return `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&autoplay=1&mute=0`;
   };
 
   const ACADEMY_DATA: CourseModule[] = [
@@ -53,7 +53,7 @@ const Academy: React.FC<AcademyProps> = ({ language }) => {
           title: 'Liquidez vs Volume', 
           duration: '12:45', 
           videoUrl: 'https://youtu.be/HPTU-4t6CtM',
-          explanation: language === 'pt' ? 'Entenda como o algoritmo interbancário busca pools de liquidez para injetar volume.' : language === 'en' ? 'Understand how the interbank algorithm seeks liquidity pools to inject volume.' : 'Comprenda cómo el algoritmo interbancario busca pools de liquidez para inyectar volumen.',
+          explanation: language === 'pt' ? 'Como o algoritmo interbancário identifica pools de liquidez.' : language === 'en' ? 'How the interbank algorithm identifies liquidity pools.' : 'Cómo o algoritmo interbancario identifica pools de liquidez.',
           completed: true 
         },
         { 
@@ -61,7 +61,7 @@ const Academy: React.FC<AcademyProps> = ({ language }) => {
           title: 'Paciência Seletiva', 
           duration: '10:15', 
           videoUrl: 'https://youtu.be/xlvhZi6AdXE',
-          explanation: language === 'pt' ? 'A virtude mais cara do trader: saber quando o mercado não oferece vantagem matemática.' : language === 'en' ? 'The trader\'s most expensive virtue: knowing when the market offers no mathematical advantage.' : 'A virtude mais cara do trader: saber quando o mercado não oferece vantagem matemática.',
+          explanation: language === 'pt' ? 'A arte de esperar o setup perfeito. O lucro está na espera, não na execução.' : language === 'en' ? 'The art of waiting for the perfect setup. Profit is in the waiting, not the execution.' : 'El arte de esperar el setup perfecto.',
           completed: false 
         },
         { 
@@ -69,7 +69,7 @@ const Academy: React.FC<AcademyProps> = ({ language }) => {
           title: 'Order Blocks', 
           duration: '15:30', 
           videoUrl: 'https://youtu.be/WoeGeeIox1I',
-          explanation: language === 'pt' ? 'Identificação precisa de zonas de oferta e demanda institucional.' : language === 'en' ? 'Precise identification of institutional supply and demand zones.' : 'Identificación precisa de zonas de oferta y demanda institucional.',
+          explanation: language === 'pt' ? 'Mapeamento de zonas de oferta e demanda institucional.' : language === 'en' ? 'Institutional supply and demand zone mapping.' : 'Mapeo de zonas de oferta y demanda institucional.',
           completed: false 
         }
       ]
@@ -84,7 +84,7 @@ const Academy: React.FC<AcademyProps> = ({ language }) => {
           title: 'Tendência Institucional', 
           duration: '14:20', 
           videoUrl: 'https://youtu.be/TjYKCLZ4UxA', 
-          explanation: language === 'pt' ? 'Aprenda a ler o fluxo de ordens real, ignorando o ruído do varejo.' : language === 'en' ? 'Learn to read real order flow, ignoring retail noise.' : 'Aprenda a leer el flujo de órdenes real, ignorando el ruido minorista.',
+          explanation: language === 'pt' ? 'Seguindo o rastro do dinheiro inteligente no gráfico.' : language === 'en' ? 'Following the trail of smart money on the chart.' : 'Siguiendo el rastro del dinero inteligente en el gráfico.',
           completed: false 
         },
         { 
@@ -92,7 +92,7 @@ const Academy: React.FC<AcademyProps> = ({ language }) => {
           title: 'Bos & Choch', 
           duration: '11:45', 
           videoUrl: 'https://youtu.be/VOdVaCjUX7A', 
-          explanation: language === 'pt' ? 'A assinatura da reversão e continuidade de tendência profissional.' : language === 'en' ? 'The signature of professional trend reversal and continuity.' : 'La firma de la reversión y continuidad de tendencia profesional.',
+          explanation: language === 'pt' ? 'A assinatura técnica da mudança de caráter e quebra de estrutura.' : language === 'en' ? 'Technical signature of change of character and break of structure.' : 'La firma técnica del cambio de carácter.',
           completed: false 
         },
         { 
@@ -100,7 +100,7 @@ const Academy: React.FC<AcademyProps> = ({ language }) => {
           title: 'Mapeamento de Range', 
           duration: '13:10', 
           videoUrl: 'https://youtu.be/x-sTpp-BAbE', 
-          explanation: language === 'pt' ? 'Definindo o campo de batalha: Premium vs Discount.' : language === 'en' ? 'Defining the battlefield: Premium vs Discount.' : 'Definiendo el campo de batalla: Premium vs Discount.',
+          explanation: language === 'pt' ? 'Definindo áreas de execução Premium e Discount.' : language === 'en' ? 'Defining Premium and Discount execution areas.' : 'Definiendo áreas de ejecución Premium y Discount.',
           completed: false 
         }
       ]
@@ -115,7 +115,7 @@ const Academy: React.FC<AcademyProps> = ({ language }) => {
           title: 'Liquidez vs Armadilhas', 
           duration: '16:40', 
           videoUrl: 'https://youtu.be/Hl2JFNRV_ps', 
-          explanation: language === 'pt' ? 'O mercado não se move por notícias, move-se por liquidez pendente.' : language === 'en' ? 'The market doesn\'t move by news, it moves by pending liquidity.' : 'El mercado no se mueve por noticias, se mueve por liquidez pendiente.',
+          explanation: language === 'pt' ? 'Como identificar onde o varejo está sendo induzido ao erro.' : language === 'en' ? 'How to identify where retail is being misled.' : 'Cómo identificar dónde se está induciendo al error al minorista.',
           completed: false 
         },
         { 
@@ -123,7 +123,7 @@ const Academy: React.FC<AcademyProps> = ({ language }) => {
           title: 'Indução (Inducement)', 
           duration: '12:20', 
           videoUrl: 'https://youtu.be/-hpD_kqc0fw', 
-          explanation: language === 'pt' ? 'Como as instituições enganam traders precoces para criar combustível de preço.' : language === 'en' ? 'How institutions trick early traders to create price fuel.' : 'Cómo las instituciones engañan a los traders prematuros para crear combustible de precios.',
+          explanation: language === 'pt' ? 'O gatilho psicológico usado pelas instituições para criar liquidez.' : language === 'en' ? 'The psychological trigger used by institutions to create liquidity.' : 'El gatillo psicológico usado por las instituciones.',
           completed: false 
         },
         { 
@@ -131,7 +131,7 @@ const Academy: React.FC<AcademyProps> = ({ language }) => {
           title: 'Fair Value Gap', 
           duration: '09:55', 
           videoUrl: 'https://youtu.be/Jx1jVx_tpTQ', 
-          explanation: language === 'pt' ? 'Identificando ineficiências que o preço é obrigado a mitigar.' : language === 'en' ? 'Identifying inefficiencies that the price is forced to mitigate.' : 'Identificar ineficiencias que el precio se ve obligado a mitigar.',
+          explanation: language === 'pt' ? 'Ineficiências de preço que servem como imãs magnéticos.' : language === 'en' ? 'Price inefficiencies that act as magnetic magnets.' : 'Ineficiencias de precios que sirven como imanes.',
           completed: false 
         }
       ]
@@ -146,7 +146,7 @@ const Academy: React.FC<AcademyProps> = ({ language }) => {
           title: 'Gestão de Risco NASA', 
           duration: '20:15', 
           videoUrl: 'https://youtu.be/pcpdNcCQuPk', 
-          explanation: language === 'pt' ? 'Protocolos de sobrevivência e escala para contas de seis dígitos.' : language === 'en' ? 'Survival and scaling protocols for six-figure accounts.' : 'Protocolos de supervivencia y escala para cuentas de seis cifras.',
+          explanation: language === 'pt' ? 'O protocolo de sobrevivência definitivo para preservação de capital.' : language === 'en' ? 'The ultimate survival protocol for capital preservation.' : 'El protocolo de supervivencia definitivo.',
           completed: false 
         },
         { 
@@ -154,7 +154,7 @@ const Academy: React.FC<AcademyProps> = ({ language }) => {
           title: 'Risco Retorno', 
           duration: '08:45', 
           videoUrl: 'https://youtu.be/cX0AeF-uMeI', 
-          explanation: language === 'pt' ? 'A matemática sagrada do trading: Por que a taxa de acerto é secundária.' : language === 'en' ? 'The sacred math of trading: Why win rate is secondary.' : 'La matemática sagrada del trading: Por qué el win rate es secundario.',
+          explanation: language === 'pt' ? 'Aumentando seus ganhos com assimetria matemática positiva.' : language === 'en' ? 'Increasing your earnings with positive mathematical asymmetry.' : 'Aumentando sus ganancias con asimetría matemática positiva.',
           completed: false 
         }
       ]
@@ -178,10 +178,11 @@ const Academy: React.FC<AcademyProps> = ({ language }) => {
           </div>
         </div>
         
-        {/* Titan Cinema Engine - 16:9 YouTube Embed - Fixed Logic */}
+        {/* Titan Cinema Engine - 16:9 YouTube Embed - Unique Key to Force Reload */}
         <div className="w-full aspect-video bg-black relative shadow-2xl border-b border-titan-gold/10 overflow-hidden">
            {selectedLesson.videoUrl ? (
              <iframe 
+               key={selectedLesson.id}
                src={getEmbedUrl(selectedLesson.videoUrl)}
                title={selectedLesson.title}
                className="w-full h-full border-0"

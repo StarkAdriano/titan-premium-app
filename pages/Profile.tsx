@@ -13,7 +13,8 @@ import {
   CloudLightning,
   Camera,
   Globe,
-  ChevronDown
+  ChevronDown,
+  Zap
 } from 'lucide-react';
 import { ACTIVATION_CODES } from '../constants';
 
@@ -47,6 +48,14 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpgradeClick, onUpdateLogo, o
       reader.onloadend = () => onUpdateLogo(reader.result as string);
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleForceReload = () => {
+    setIsSyncing(true);
+    // Limpar apenas cache de interface, mantendo o usuário
+    setTimeout(() => {
+        window.location.reload();
+    }, 1000);
   };
 
   const currentLang = languages.find(l => l.code === user.language) || languages[0];
@@ -115,6 +124,24 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpgradeClick, onUpdateLogo, o
         <button onClick={onUpgradeClick} className="w-full bg-titan-gold text-black py-5 rounded-2xl font-black text-xs uppercase tracking-[0.4em] active:scale-95 shadow-xl">{t.upgrade_account}</button>
       </div>
 
+      <div className="bg-titan-card/40 border border-white/5 rounded-[2.5rem] p-8 space-y-4 shadow-xl">
+          <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-titan-dark flex items-center justify-center border border-white/5 shadow-lg"><Zap size={24} className="text-titan-gold" /></div>
+                  <div>
+                      <p className="text-[10px] text-white font-black uppercase tracking-widest leading-none">OS_Core v3.2</p>
+                      <p className="text-[8px] text-titan-muted uppercase font-bold mt-1 tracking-tighter">{t.encryption_status}</p>
+                  </div>
+              </div>
+              <button onClick={handleForceReload} className="p-3 text-titan-gold hover:bg-titan-gold/10 rounded-full transition-all active:scale-90">
+                  <RefreshCw size={24} className={isSyncing ? 'animate-spin' : ''} />
+              </button>
+          </div>
+          <button onClick={handleForceReload} className="w-full py-3 bg-white/5 border border-white/5 rounded-xl text-[9px] font-black text-titan-muted uppercase tracking-[0.2em] hover:text-white transition-colors">
+             {isSyncing ? 'Sincronizando...' : 'Forçar Atualização de Dados'}
+          </button>
+      </div>
+
       {isOwner && (
           <div className="bg-red-900/10 border border-red-500/30 rounded-[2.5rem] p-8 space-y-5 animate-in slide-in-from-bottom-6">
               <div className="flex items-center gap-3 text-red-500">
@@ -135,19 +162,6 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpgradeClick, onUpdateLogo, o
               </div>
           </div>
       )}
-
-      <div className="bg-titan-card/40 border border-white/5 rounded-[2.5rem] p-8 flex items-center justify-between shadow-xl">
-          <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-titan-dark flex items-center justify-center border border-white/5 shadow-lg"><CloudLightning size={24} className="text-titan-gold" /></div>
-              <div>
-                  <p className="text-[10px] text-white font-black uppercase tracking-widest leading-none">OS_Core v3.1</p>
-                  <p className="text-[8px] text-titan-muted uppercase font-bold mt-1 tracking-tighter">{t.encryption_status}</p>
-              </div>
-          </div>
-          <button onClick={() => {setIsSyncing(true); setTimeout(() => setIsSyncing(false), 1500);}} className="p-3 text-titan-gold hover:bg-titan-gold/10 rounded-full">
-              <RefreshCw size={24} className={isSyncing ? 'animate-spin' : ''} />
-          </button>
-      </div>
 
       <div className="text-center pt-10 space-y-1">
          <p className="text-[11px] font-bold text-titan-muted">{t.copyright}</p>
