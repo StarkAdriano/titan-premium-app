@@ -45,7 +45,6 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ onComplete }) => {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/98 backdrop-blur-xl p-4 overflow-y-auto">
       <div className="bg-titan-card border border-titan-gold/30 rounded-[2.5rem] w-full max-w-sm overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.8)] relative">
         
-        {/* Language Selection Bar */}
         <div className="absolute top-4 right-4 z-50">
            <button 
              onClick={() => setShowLangMenu(!showLangMenu)}

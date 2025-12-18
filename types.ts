@@ -5,7 +5,7 @@ export enum SignalStatus {
   WAIT = 'ESPERAR'
 }
 
-export type Language = 'pt' | 'en' | 'es' | 'it' | 'ja' | 'zh' | 'he' | 'ru';
+export type Language = 'pt' | 'en' | 'es';
 
 export interface HistoryEntry {
   id: string;
@@ -46,9 +46,9 @@ export interface Lesson {
   id: string;
   title: string;
   duration: string;
-  imageUrl: string; // Alterado de videoUrl para imageUrl
+  videoUrl: string; // Foco em vídeo agora
+  explanation: string; // Explicação textual traduzida
   completed: boolean;
-  pdfUrl?: string;
 }
 
 export interface CourseModule {
@@ -56,6 +56,17 @@ export interface CourseModule {
   title: string;
   description: string;
   lessons: Lesson[];
+}
+
+// Added CourseProduct interface to resolve the missing export error in constants.ts
+export interface CourseProduct {
+  id: string;
+  name: string;
+  description: string;
+  priceDisplay: string;
+  stripeLink: string;
+  tag: string;
+  priority: number;
 }
 
 export interface UserProfile {
@@ -70,15 +81,5 @@ export interface UserProfile {
   redeemedCodes: string[];
   courseProgress?: Record<string, boolean>;
   activeAccountType?: 'DEMO' | 'REAL';
-  language: Language; // Novo campo
-}
-
-export interface CourseProduct {
-  id: string;
-  name: string;
-  description: string;
-  priceDisplay?: string;
-  stripeLink: string;
-  tag: string;
-  priority: number;
+  language: Language;
 }

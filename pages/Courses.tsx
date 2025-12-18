@@ -9,11 +9,10 @@ import {
   Zap,
   Star,
   ShieldCheck,
-  Cpu,
-  BarChart3,
-  Image as ImageIcon,
-  Maximize2,
-  X
+  PlayCircle,
+  FileText,
+  Clock,
+  Info
 } from 'lucide-react';
 
 interface AcademyProps {
@@ -21,27 +20,32 @@ interface AcademyProps {
 }
 
 const Academy: React.FC<AcademyProps> = ({ language }) => {
-  const t = translations[language] || translations['en'];
+  const t = translations[language] || translations['pt'];
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
-  const [isFullMap, setIsFullMap] = useState(false);
 
+  // Aqui você poderá inserir os links dos seus vídeos MP4 ou YouTube/Vimeo
   const ACADEMY_DATA: CourseModule[] = [
     {
       id: 'm1',
-      title: 'Arquitetura IPDA & SMC',
-      description: t.smc_briefing,
+      title: 'IPDA & SMC Architecture',
+      description: 'The algorithmic core of EURUSD.',
       lessons: [
-        { id: 'l1', title: 'O Código do IPDA', duration: 'Masterclass', imageUrl: 'https://images.unsplash.com/photo-1551288049-bbbda536639a?auto=format&fit=crop&q=80&w=1200', completed: true },
-        { id: 'l2', title: 'Liquidez vs Volume', duration: 'Deep Dive', imageUrl: 'https://images.unsplash.com/photo-1611974714024-4607a50d487f?auto=format&fit=crop&q=80&w=1200', completed: true }
-      ]
-    },
-    {
-      id: 'm2',
-      title: 'Estrutura de Mercado Elite',
-      description: t.certified_grade,
-      lessons: [
-        { id: 'l3', title: 'Mapeamento de Range', duration: 'Advanced', imageUrl: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=1200', completed: false },
-        { id: 'l4', title: 'CHoCH: A Virada de Fluxo', duration: 'SMC Core', imageUrl: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&q=80&w=1200', completed: false }
+        { 
+          id: 'l1', 
+          title: 'Liquidez vs Volume', 
+          duration: '12:45', 
+          videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4', // Substitua pelo seu link
+          explanation: language === 'pt' ? 'Nesta aula, desvendamos como o algoritmo identifica pools de liquidez antes de grandes expansões.' : language === 'en' ? 'In this lesson, we reveal how the algorithm identifies liquidity pools before major expansions.' : 'En esta lección, revelamos cómo el algoritmo identifica los pools de liquidez antes de las grandes expansiones.',
+          completed: true 
+        },
+        { 
+          id: 'l2', 
+          title: 'Paciência Seletiva', 
+          duration: '08:20', 
+          videoUrl: 'https://www.w3schools.com/html/movie.mp4', // Substitua pelo seu link
+          explanation: language === 'pt' ? 'A psicologia por trás de aguardar o setup perfeito no Timeframe institucional.' : language === 'en' ? 'The psychology behind waiting for the perfect setup in the institutional timeframe.' : 'La psicología detrás de esperar el setup perfecto en el timeframe institucional.',
+          completed: false 
+        }
       ]
     }
   ];
@@ -53,66 +57,49 @@ const Academy: React.FC<AcademyProps> = ({ language }) => {
   if (selectedLesson) {
     return (
       <div className="flex flex-col min-h-full bg-titan-darker animate-in slide-in-from-right-4">
-        {isFullMap && (
-          <div className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in zoom-in">
-             <button onClick={() => setIsFullMap(false)} className="absolute top-10 right-10 z-[210] p-4 bg-white/10 rounded-full text-white hover:bg-white/20 transition-all">
-                <X size={28} />
-             </button>
-             <img src={selectedLesson.imageUrl} className="max-w-full max-h-full object-contain rounded-xl shadow-2xl" alt="Full Resolution" />
-          </div>
-        )}
-
         <div className="p-5 flex items-center gap-4 border-b border-white/5 bg-titan-dark">
           <button onClick={() => setSelectedLesson(null)} className="p-2 text-titan-muted hover:text-white transition-colors bg-white/5 rounded-full">
             <ArrowLeft size={18} />
           </button>
           <div className="flex flex-col">
-            <span className="text-[8px] text-titan-gold font-black uppercase tracking-[0.3em]">Titan Alpha Intelligence</span>
+            <span className="text-[8px] text-titan-gold font-black uppercase tracking-[0.3em]">Titan Academy Player</span>
             <h2 className="text-sm font-bold text-white tracking-tight">{selectedLesson.title}</h2>
           </div>
         </div>
         
-        <div className="aspect-video bg-black relative overflow-hidden border-b border-titan-gold/10">
-          <img className="w-full h-full object-cover opacity-90" src={selectedLesson.imageUrl} alt={selectedLesson.title} />
-          <div className="absolute inset-0 bg-gradient-to-t from-titan-darker via-transparent to-transparent"></div>
-          <div className="absolute inset-0 pointer-events-none p-6 flex flex-col justify-between">
-            <div className="flex justify-between items-start">
-               <div className="bg-black/60 backdrop-blur-lg border border-titan-gold/40 px-3 py-1.5 rounded-lg flex items-center gap-2">
-                  <Cpu size={12} className="text-titan-gold" />
-                  <span className="text-[8px] text-titan-gold font-black tracking-widest uppercase">SCANNING_DATA</span>
-               </div>
-               <button onClick={() => setIsFullMap(true)} className="pointer-events-auto bg-titan-gold/10 p-3 rounded-xl border border-titan-gold/30 hover:bg-titan-gold/20 transition-all">
-                  <Maximize2 size={16} className="text-titan-gold" />
-               </button>
-            </div>
-            <div className="flex justify-between items-end text-[7px] text-white/50 font-mono">
-               <p>SOURCE: INSTITUTIONAL_BRAIN<br/>QUALITY: 4K_UHD</p>
-               <BarChart3 size={24} className="text-titan-gold opacity-30" />
-            </div>
-          </div>
+        {/* Professional 16:9 Video Player */}
+        <div className="w-full aspect-video bg-black relative shadow-2xl border-b border-titan-gold/10">
+           <video 
+             src={selectedLesson.videoUrl} 
+             controls 
+             className="w-full h-full object-contain"
+             poster="https://images.unsplash.com/photo-1611974714024-4607a50d487f?auto=format&fit=crop&q=80&w=1200"
+           >
+             {t.video_loading}
+           </video>
         </div>
 
-        <div className="p-8 space-y-10">
-          <div className="flex items-start justify-between">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <ShieldCheck size={14} className="text-titan-gold" />
-                <span className="text-[10px] text-titan-gold font-black uppercase tracking-[0.3em]">{t.certified_grade}</span>
-              </div>
-              <h1 className="text-4xl font-black text-white italic tracking-tighter uppercase leading-none">{selectedLesson.title}</h1>
+        <div className="p-8 space-y-8 pb-32">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <ShieldCheck size={14} className="text-titan-gold" />
+              <span className="text-[10px] text-titan-gold font-black uppercase tracking-[0.3em]">SMC Institutional Intel</span>
             </div>
+            <h1 className="text-3xl font-black text-white italic tracking-tighter uppercase leading-none">{selectedLesson.title}</h1>
           </div>
 
-          <div className="bg-titan-card/30 rounded-3xl p-8 border border-white/5 space-y-6 relative overflow-hidden">
+          <div className="bg-titan-card/30 rounded-3xl p-8 border border-white/5 space-y-4">
             <h3 className="text-[10px] font-black text-white uppercase tracking-widest flex items-center gap-2">
-              <Zap size={14} className="text-titan-gold" /> {t.smc_briefing}
+              <Info size={14} className="text-titan-gold" /> {t.lesson_explanation_title}
             </h3>
             <p className="text-[13px] text-titan-muted leading-relaxed font-medium">
-                {t.academy_desc}
+                {selectedLesson.explanation}
             </p>
-            <button onClick={() => setIsFullMap(true)} className="w-full flex items-center justify-center gap-3 p-6 bg-titan-gold text-black rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] active:scale-95 shadow-2xl hover:bg-titan-goldLight transition-all">
-              <ImageIcon size={20} /> {t.full_resolution}
-            </button>
+          </div>
+
+          <div className="flex items-center gap-4 text-titan-muted text-[10px] font-black uppercase tracking-widest px-2">
+             <div className="flex items-center gap-2"><Clock size={14} /> {selectedLesson.duration}</div>
+             <div className="flex items-center gap-2"><FileText size={14} /> PDF Attached</div>
           </div>
         </div>
       </div>
@@ -153,7 +140,7 @@ const Academy: React.FC<AcademyProps> = ({ language }) => {
                   <button key={lesson.id} onClick={() => setSelectedLesson(lesson)} className="w-full flex items-center justify-between p-8 border-b border-white/5 last:border-0 hover:bg-white/5 transition-all group">
                     <div className="flex items-center gap-6">
                         <div className={`p-4 rounded-[1.5rem] transition-all ${lesson.completed ? 'bg-titan-green/10 text-titan-green shadow-inner' : 'bg-black/40 text-titan-muted group-hover:text-titan-gold shadow-lg'}`}>
-                            {lesson.completed ? <CheckCircle2 size={24} /> : <ImageIcon size={24} />}
+                            {lesson.completed ? <CheckCircle2 size={24} /> : <PlayCircle size={24} />}
                         </div>
                         <div className="text-left">
                             <p className="text-sm font-black uppercase tracking-tight text-white group-hover:text-titan-gold transition-colors">{lesson.title}</p>
