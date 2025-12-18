@@ -45,10 +45,11 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ onComplete }) => {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/98 backdrop-blur-xl p-4 overflow-y-auto">
       <div className="bg-titan-card border border-titan-gold/30 rounded-[2.5rem] w-full max-w-sm overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.8)] relative">
         
-        <div className="absolute top-4 right-4 z-50">
+        {/* Idioma agora com padding superior maior para não encostar no topo do card */}
+        <div className="absolute top-6 right-6 z-50">
            <button 
              onClick={() => setShowLangMenu(!showLangMenu)}
-             className="bg-black/40 backdrop-blur-md border border-white/10 px-3 py-2 rounded-xl flex items-center gap-2 text-[10px] font-black text-white uppercase tracking-widest hover:border-titan-gold/50 transition-all"
+             className="bg-black/60 backdrop-blur-md border border-white/10 px-3 py-2 rounded-xl flex items-center gap-2 text-[10px] font-black text-white uppercase tracking-widest hover:border-titan-gold/50 transition-all active:scale-95"
            >
              <Globe size={12} className="text-titan-gold" />
              {selectedLangData.flag}
@@ -73,12 +74,12 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ onComplete }) => {
            )}
         </div>
 
-        <div className="bg-gradient-to-br from-titan-dark to-black p-8 border-b border-white/5 relative overflow-hidden">
+        <div className="bg-gradient-to-br from-titan-dark to-black pt-12 p-8 border-b border-white/5 relative overflow-hidden">
           <div className="absolute -top-10 -right-10 opacity-10">
              <ShieldAlert size={120} className="text-titan-gold" />
           </div>
-          <h2 className="text-3xl font-black text-titan-gold italic tracking-tighter mb-1 uppercase leading-none">{t.welcome}</h2>
-          <p className="text-[9px] text-titan-muted uppercase tracking-[0.3em] font-bold">Titan Institutional Protocol</p>
+          <h2 className="text-2xl font-black text-titan-gold italic tracking-tighter mb-1 uppercase leading-none">{t.welcome}</h2>
+          <p className="text-[8px] text-titan-muted uppercase tracking-[0.3em] font-black">Titan Institutional Protocol</p>
         </div>
 
         <div className="p-8 space-y-6">
@@ -96,7 +97,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ onComplete }) => {
             </div>
 
             {!isAdminBypass && (
-                <div className="space-y-5 animate-in fade-in slide-in-from-top-4 duration-500">
+                <div className="space-y-5">
                   <div className="space-y-1">
                     <label className="text-[9px] font-black uppercase text-titan-gold tracking-widest ml-1">{t.whatsapp_placeholder}</label>
                     <input
