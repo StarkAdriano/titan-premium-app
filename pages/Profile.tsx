@@ -54,36 +54,33 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpgradeClick, onUpdateLogo, o
   const handleForceReload = async () => {
     setSyncStatus('syncing');
     
-    // PROTOCOLO NUCLEAR: Limpeza de Cache e Service Workers
     try {
-        // 1. Unregister de Service Workers (Causa principal do erro "movido/excluído")
-        if ('serviceWorker' in navigator) {
+        // 1. Limpeza de Service Workers
+        if (navigator.serviceWorker) {
             const registrations = await navigator.serviceWorker.getRegistrations();
-            for (let registration of registrations) {
+            for (const registration of registrations) {
                 await registration.unregister();
             }
         }
 
-        // 2. Limpeza de Caches API
-        if ('caches' in window) {
+        // 2. Limpeza de Caches
+        if (window.caches) {
             const cacheNames = await caches.keys();
-            await Promise.all(cacheNames.map(name => caches.delete(name)));
+            for (const name of cacheNames) {
+                await caches.delete(name);
+            }
         }
-        
-        // 3. Limpeza de LocalStorage temporário (opcional, mantemos o usuário logado)
-        // localStorage.clear(); // Não limpamos para não deslogar o comandante
     } catch (e) {
-        console.warn("Alguns protocolos de limpeza foram restringidos pelo sistema.");
+        console.warn("Reset parcial: algumas camadas de cache são protegidas pelo sistema.");
     }
 
+    setSyncStatus('success');
+    
+    // Pequena pausa para o usuário ver o sucesso antes do "pulo"
     setTimeout(() => {
-        setSyncStatus('success');
-        setTimeout(() => {
-            // REDIRECIONAMENTO DE RAIZ: Força o navegador a recarregar do zero absoluto
-            // Adicionamos um timestamp para garantir que o servidor não mande versão em cache
-            const clearUrl = window.location.origin + window.location.pathname + '?reset=' + Date.now();
-            window.location.href = clearUrl;
-        }, 800);
+        // MODO ULTRA SEGURO: Redireciona para a raiz absoluta sem query strings complexas
+        // Isso força o navegador a recarregar o index.html original
+        window.location.assign(window.location.origin + '/');
     }, 1200);
   };
 
@@ -101,13 +98,13 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpgradeClick, onUpdateLogo, o
           </div>
           <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
         </div>
-        <div className="text-center">
-          <input type="text" value={user.name} onChange={(e) => onUpdateName(e.target.value)} className="text-3xl font-black text-white italic tracking-tighter bg-transparent border-none text-center outline-none focus:text-titan-gold transition-colors leading-none" />
+        <div className="text-center px-4">
+          <input type="text" value={user.name} onChange={(e) => onUpdateName(e.target.value)} className="w-full text-3xl font-black text-white italic tracking-tighter bg-transparent border-none text-center outline-none focus:text-titan-gold transition-colors leading-none" />
           <p className="text-[10px] text-titan-muted uppercase tracking-[0.3em] font-black mt-2">{user.whatsapp}</p>
         </div>
       </div>
 
-      {/* BLOCO DE SINCRONIZAÇÃO BLINDADO - RESOLVE ERRO DE NAVEGAÇÃO */}
+      {/* BLOCO DE SINCRONIZAÇÃO - VERSÃO ULTRA COMPATÍVEL */}
       <div className={`border rounded-[2.5rem] p-8 space-y-6 shadow-xl relative overflow-hidden transition-all duration-500 ${syncStatus === 'success' ? 'bg-titan-green/10 border-titan-green/40' : 'bg-red-600/5 border-red-600/20'}`}>
           <div className="flex items-center gap-4 relative z-10">
               <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg transition-colors ${syncStatus === 'success' ? 'bg-titan-green' : 'bg-red-600'}`}>
@@ -127,9 +124,9 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpgradeClick, onUpdateLogo, o
                 syncStatus === 'success' ? 'bg-titan-green text-white' : 'bg-white text-black'
             }`}
           >
-            {syncStatus === 'idle' && 'EXECUTAR RESET NUCLEAR'}
-            {syncStatus === 'syncing' && 'LIMPANDO SISTEMA...'}
-            {syncStatus === 'success' && 'REINICIANDO...'}
+            {syncStatus === 'idle' && 'SINCRONIZAR AGORA'}
+            {syncStatus === 'syncing' && 'LIMPANDO...'}
+            {syncStatus === 'success' && 'SUCESSO! REINICIANDO...'}
             <Zap size={14} />
           </button>
       </div>
