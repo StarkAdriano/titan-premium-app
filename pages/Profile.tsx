@@ -60,13 +60,15 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpgradeClick, onUpdateLogo, o
             const keys = await caches.keys();
             for (const k of keys) await caches.delete(k);
         }
-        localStorage.clear(); // Limpeza profunda
-    } catch (e) {}
+        localStorage.clear();
+    } catch (e) { console.error(e); }
     setSyncStatus('success');
     
     setTimeout(() => {
-        // CORREÇÃO: window.location.reload() é o método mais seguro para evitar 404
-        window.location.reload();
+        // Redirecionamento robusto: recarrega a página mantendo o caminho atual
+        // Isso evita o erro 404 ao tentar ir para a raiz do servidor.
+        const currentUrl = window.location.href.split('?')[0];
+        window.location.replace(currentUrl + '?refresh=' + Date.now());
     }, 1000);
   };
 
@@ -75,8 +77,8 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpgradeClick, onUpdateLogo, o
   return (
     <div className="p-6 space-y-6 pb-32 bg-titan-darker">
       
-      {/* SEÇÃO DE IDIOMA - ISOLADA NO TOPO */}
-      <div className="bg-titan-card/40 border border-white/5 rounded-[2rem] p-5">
+      {/* SEÇÃO DE IDIOMA - ISOLADA NO TOPO (Z-INDEX ALTO) */}
+      <div className="bg-titan-card/40 border border-white/5 rounded-[2rem] p-5 relative z-50">
         <div className="flex items-center gap-2 mb-3">
             <Globe size={14} className="text-titan-gold" />
             <span className="text-[9px] text-white font-black uppercase tracking-widest">{t.global_lang}</span>
@@ -90,7 +92,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpgradeClick, onUpdateLogo, o
                 <ChevronDown size={16} className={`text-titan-muted transition-transform ${showLangMenu ? 'rotate-180' : ''}`} />
             </button>
             {showLangMenu && (
-                <div className="absolute top-full left-0 w-full mt-2 bg-titan-dark border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden">
+                <div className="absolute top-full left-0 w-full mt-2 bg-titan-dark border border-white/10 rounded-xl shadow-2xl z-[60] overflow-hidden">
                     {languages.map((lang) => (
                         <button key={lang.code} onClick={() => { onUpdateLanguage(lang.code as Language); setShowLangMenu(false); }} className={`w-full flex items-center justify-between p-4 hover:bg-white/5 border-b border-white/5 last:border-0 ${user.language === lang.code ? 'bg-titan-gold/5' : ''}`}>
                             <div className="flex items-center gap-3">
