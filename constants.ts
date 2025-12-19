@@ -2,7 +2,7 @@
 import { Asset, SignalStatus, CourseProduct } from './types';
 
 // VERSÃO DO APP - Altere este número para forçar o logout e atualização de todos os clientes
-export const APP_VERSION = '3.3.5'; 
+export const APP_VERSION = '3.3.6'; 
 
 export const INITIAL_ASSETS: Asset[] = [
   {

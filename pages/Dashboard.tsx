@@ -6,12 +6,6 @@ import {
   RotateCcw,
   Terminal,
   Search,
-  ShieldAlert,
-  Target,
-  ArrowDownCircle,
-  ArrowUpCircle,
-  AlertTriangle,
-  Info
 } from 'lucide-react';
 
 interface DashboardState {
@@ -35,29 +29,30 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState,
   const [isValidating, setIsValidating] = useState(false);
 
   const generateInstitutionalAnalysis = (price: number): AnalysisResult => {
-    // Configurações de faixas para EURUSD (Exemplo de níveis institucionais)
-    const supportRange = { min: 1.05000, max: 1.05200 };
-    const resistanceRange = { min: 1.05750, max: 1.05950 };
+    // LÓGICA DINÂMICA: Calcula zonas reais baseadas no preço de entrada (Range de 35 pips)
+    const pipValue = 0.00010;
+    const rangePips = 35;
     
-    const isDiscount = price >= supportRange.min && price <= supportRange.max;
-    const isPremium = price >= resistanceRange.min && price <= resistanceRange.max;
+    const supportLevel = price - (rangePips * pipValue);
+    const resistanceLevel = price + (rangePips * pipValue);
+    
+    // Status baseado na proximidade das extremidades (Zonas de Rejeição/Interesse)
+    // Se o preço está muito próximo do suporte ou resistência calculados
+    const isNearSupport = price <= (supportLevel + (10 * pipValue));
+    const isNearResistance = price >= (resistanceLevel - (10 * pipValue));
     
     let status = SignalStatus.WAIT;
-    let motive = "PRECO EM MEIO DE FAIXA OU SEM GATILHO CLARO";
+    let motive = "PRECO EM EQUILIBRIO (FAIR VALUE)";
     let zone: 'PREMIUM' | 'DISCOUNT' | 'EQUILIBRIUM' = 'EQUILIBRIUM';
 
-    if (isDiscount) {
+    if (isNearSupport) {
         zone = 'DISCOUNT';
         status = SignalStatus.BUY;
-        motive = "CAPTURA DE LIQUIDEZ EM ZONA DE SUPORTE";
-    } else if (isPremium) {
+        motive = "CAPTURA EM ZONA DE DESCONTO INSTITUCIONAL";
+    } else if (isNearResistance) {
         zone = 'PREMIUM';
         status = SignalStatus.SELL;
-        motive = "REJEICAO EM ZONA DE RESISTENCIA INSTITUCIONAL";
-    } else {
-        zone = 'EQUILIBRIUM';
-        status = SignalStatus.WAIT;
-        motive = "MERCADO EM EQUILIBRIO (FAIR VALUE)";
+        motive = "REJEICAO EM ZONA DE PREMIO H1";
     }
 
     const priceStr = price.toFixed(5);
@@ -67,29 +62,35 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState,
         statusMotive: motive,
         referencePrice: priceStr,
         zoneContext: zone,
-        institutionalContext: `Estrutura geral consolidada com viés de defesa em zonas extremas. O preco atual de ${priceStr} interage com niveis de liquidez de H1. Mercado vem defendendo acima de 1.05000 e demonstrando teste de zona de premio em 1.05800.`,
+        institutionalContext: `Fluxo de ordens intraday analisado em ${priceStr}. O algoritmo IPDA identifica liquidez pendente na faixa de ${supportLevel.toFixed(5)} (Sell-side) e defesa de oferta em ${resistanceLevel.toFixed(5)} (Buy-side). Estrutura sugere busca por zonas de desequilibrio antes da expansao principal.`,
         zones: {
-            support: ["1.05100 – 1.05000 (Imediato)", "1.04850 – 1.04550 (Profundo)"],
-            resistance: ["1.05750 – 1.05950 (Venda Direta)", "1.06200 – 1.06450 (Extensao)"]
+            support: [
+                `${supportLevel.toFixed(5)} – ${(supportLevel - 0.0010).toFixed(5)} (Zona A)`,
+                `${(supportLevel - 0.0025).toFixed(5)} – ${(supportLevel - 0.0040).toFixed(5)} (Zona B)`
+            ],
+            resistance: [
+                `${resistanceLevel.toFixed(5)} – ${(resistanceLevel + 0.0010).toFixed(5)} (Zona A)`,
+                `${(resistanceLevel + 0.0025).toFixed(5)} – ${(resistanceLevel + 0.0040).toFixed(5)} (Zona B)`
+            ]
         },
         buyPlan: {
-            isIdeal: isDiscount,
-            reason: !isDiscount ? "Regiao de meio de faixa ou proximidade de resistencia. Sem defesa clara de suporte ou gatilho de inversao." : undefined,
-            entry: isDiscount ? "Faixa de 1.05100 – 1.05200" : undefined,
-            stop: isDiscount ? "Abaixo de 1.05000 (Invalidacao tecnica)" : undefined,
-            targets: isDiscount ? "1.05750 (Alvo 1) / 1.06200 (Alvo 2)" : undefined,
-            rr: isDiscount ? "Minimo 2:1" : undefined
+            isIdeal: isNearSupport,
+            reason: !isNearSupport ? "Preco acima da zona de desconto ideal. Risco de mitigacao tardia." : undefined,
+            entry: isNearSupport ? `Entre ${supportLevel.toFixed(5)} e ${(supportLevel + 0.0005).toFixed(5)}` : undefined,
+            stop: isNearSupport ? `Abaixo de ${(supportLevel - 0.0015).toFixed(5)}` : undefined,
+            targets: isNearSupport ? `${priceStr} (T1) / ${resistanceLevel.toFixed(5)} (T2)` : undefined,
+            rr: isNearSupport ? "Minimo 1:3" : undefined
         },
         sellPlan: {
-            isIdeal: isPremium,
-            reason: !isPremium ? "Regiao de suporte ou mercado ainda com vies comprador. Sem rejeicao clara em resistencia de premio." : undefined,
-            entry: isPremium ? "Faixa de 1.05750 – 1.05850" : undefined,
-            stop: isPremium ? "Acima de 1.05950 (Invalidacao tecnica)" : undefined,
-            targets: isPremium ? "1.05200 (Alvo 1) / 1.04850 (Alvo 2)" : undefined,
-            rr: isPremium ? "Minimo 2:1" : undefined
+            isIdeal: isNearResistance,
+            reason: !isNearResistance ? "Preco abaixo da zona de premio ideal. Movimento ja em curso ou sem rejeicao clara." : undefined,
+            entry: isNearResistance ? `Entre ${resistanceLevel.toFixed(5)} e ${(resistanceLevel - 0.0005).toFixed(5)}` : undefined,
+            stop: isNearResistance ? `Acima de ${(resistanceLevel + 0.0015).toFixed(5)}` : undefined,
+            targets: isNearResistance ? `${priceStr} (T1) / ${supportLevel.toFixed(5)} (T2)` : undefined,
+            rr: isNearResistance ? "Minimo 1:3" : undefined
         },
-        riskManagement: "Risco por operacao: entre 0.5% e 1% do capital total. Nunca aumentar lote para recuperar prejuizo. Operar menos e melhor do que operar mal: preferir ESPERAR quando o preco esta em meio de faixa.",
-        officialGuideline: `Enquanto o preco estiver acima de 1.05000 e abaixo de 1.05750 sem romper com forca, o foco e ESPERAR por desconto em suporte para comprar ou rejeicao forte em premio para vender. Nenhuma entrada agressiva contra a tendencia principal.`
+        riskManagement: "RISCO RECOMENDADO: 0.5% A 1.0% POR OPERACAO. EXPOSICAO MAXIMA DIARIA DE 2%. EM CASO DE STOP, AGUARDAR NOVA CAPTURA DE LIQUIDEZ EM TIMEFRFrame SUPERIOR (H4).",
+        officialGuideline: `O foco operacional em ${priceStr} e aguardar a confirmacao de rejeicao nas extremidades calculadas. Nao operar em meio de range (Equilibrium) para evitar violinadas de liquidez interna.`
     };
   };
 
@@ -113,7 +114,6 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState,
 
   return (
     <div className="flex flex-col min-h-full pb-32 bg-titan-darker animate-in fade-in duration-500">
-      {/* Header Profissional - Estilo Terminal */}
       <div className="px-6 py-5 flex items-center justify-between border-b border-white/5 bg-titan-dark/95 backdrop-blur-xl sticky top-0 z-20">
         <div className="flex items-center gap-3">
           <Terminal size={18} className="text-titan-gold" />
@@ -122,19 +122,18 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState,
           </h2>
         </div>
         <div className="bg-titan-gold/10 px-3 py-1 rounded border border-titan-gold/20">
-            <span className="text-[8px] font-black text-titan-gold uppercase tracking-widest">REAL-TIME BRIDGE</span>
+            <span className="text-[8px] font-black text-titan-gold uppercase tracking-widest">DINAMIC ANALYTICS</span>
         </div>
       </div>
 
       <div className="p-6 space-y-6">
-        {/* Input de Preco do Setup */}
         <div className="bg-titan-card/30 border border-white/5 rounded-[2.5rem] p-8 shadow-2xl">
           <div className="flex flex-col items-center gap-5">
             <div className="text-center">
                 <label className="text-[9px] font-black text-titan-gold uppercase tracking-[0.4em] mb-1 block">
                     Preco Atual de Execucao
                 </label>
-                <p className="text-[8px] text-titan-muted uppercase tracking-widest font-bold opacity-40 italic">EURUSD SPOT / INTRADAY</p>
+                <p className="text-[8px] text-titan-muted uppercase tracking-widest font-bold opacity-40 italic">DIGITE O PRECO DA SUA CORRETORA</p>
             </div>
             
             <input 
@@ -156,24 +155,22 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState,
                     className="w-full bg-titan-gold text-black py-5 rounded-2xl font-black text-[11px] uppercase tracking-[0.4em] shadow-xl flex items-center justify-center gap-3 active:scale-95 disabled:opacity-20 transition-all"
                 >
                     {isValidating ? <Loader2 className="animate-spin" size={18} /> : <Search size={18} />} 
-                    ATUALIZAR SETUP COMPLETO
+                    PROCESSAR SETUP DINAMICO
                 </button>
             ) : (
                 <button 
                     onClick={() => onUpdateState({...savedState, isRevealed: false})} 
                     className="flex items-center gap-2 bg-white/5 px-6 py-3 rounded-xl text-[9px] text-white uppercase font-black tracking-widest hover:bg-white/10 transition-all border border-white/10"
                 >
-                    <RotateCcw size={12} /> NOVO SCAN DE PRECO
+                    <RotateCcw size={12} /> RECALCULAR COM NOVO PRECO
                 </button>
             )}
           </div>
         </div>
 
-        {/* Resposta Estruturada - Estilo Bloomberg (Sem Emojis) */}
         {savedState.isRevealed && savedState.analysisSnapshot && (
             <div className="space-y-6 animate-in slide-in-from-bottom-6 duration-700">
                 
-                {/* Linha 1: STATUS OFICIAL */}
                 <div className={`p-8 rounded-[2rem] border-2 flex flex-col items-center text-center shadow-2xl ${
                     savedState.analysisSnapshot.status === SignalStatus.BUY ? 'bg-titan-green/5 border-titan-green' : 
                     savedState.analysisSnapshot.status === SignalStatus.SELL ? 'bg-titan-red/5 border-titan-red' : 'bg-titan-gold/5 border-titan-gold'
@@ -186,7 +183,6 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState,
                     </h3>
                 </div>
 
-                {/* Secao: Contexto institucional */}
                 <div className="space-y-2">
                     <h4 className="text-[9px] font-black text-titan-gold uppercase tracking-widest px-1">Seção: Contexto institucional</h4>
                     <div className="bg-titan-card/40 border border-white/5 rounded-3xl p-6">
@@ -196,7 +192,6 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState,
                     </div>
                 </div>
 
-                {/* Secao: Zonas de preco do setup */}
                 <div className="space-y-2">
                     <h4 className="text-[9px] font-black text-titan-gold uppercase tracking-widest px-1">Seção: Zonas de preço do setup</h4>
                     <div className="grid grid-cols-1 gap-4">
@@ -219,7 +214,6 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState,
                     </div>
                 </div>
 
-                {/* Secao: Plano de compra */}
                 <div className="space-y-2">
                     <h4 className="text-[9px] font-black text-titan-gold uppercase tracking-widest px-1">Seção: Plano de compra</h4>
                     <div className={`rounded-3xl p-6 border ${savedState.analysisSnapshot.buyPlan.isIdeal ? 'bg-titan-green/10 border-titan-green/50' : 'bg-black/40 border-white/5'}`}>
@@ -250,7 +244,6 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState,
                     </div>
                 </div>
 
-                {/* Secao: Plano de venda */}
                 <div className="space-y-2">
                     <h4 className="text-[9px] font-black text-titan-gold uppercase tracking-widest px-1">Seção: Plano de venda</h4>
                     <div className={`rounded-3xl p-6 border ${savedState.analysisSnapshot.sellPlan.isIdeal ? 'bg-titan-red/10 border-titan-red/50' : 'bg-black/40 border-white/5'}`}>
@@ -281,7 +274,6 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState,
                     </div>
                 </div>
 
-                {/* Secao: Gestao de risco (obrigatoria) */}
                 <div className="space-y-2">
                     <h4 className="text-[9px] font-black text-red-500 uppercase tracking-widest px-1">Seção: Gestão de risco (obrigatória)</h4>
                     <div className="bg-red-950/20 border border-red-900/40 rounded-3xl p-6 shadow-lg">
@@ -291,7 +283,6 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState,
                     </div>
                 </div>
 
-                {/* Secao: Diretriz oficial do setup */}
                 <div className="space-y-2 pb-12">
                     <h4 className="text-[9px] font-black text-titan-gold uppercase tracking-widest px-1">Seção: Diretriz oficial do setup</h4>
                     <div className="bg-titan-gold/5 border border-titan-gold/20 rounded-3xl p-6">
@@ -300,7 +291,6 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState,
                         </p>
                     </div>
                 </div>
-                
             </div>
         )}
       </div>
