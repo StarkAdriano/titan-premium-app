@@ -8,12 +8,8 @@ import {
   Lock, 
   Copy, 
   Check, 
-  RefreshCw, 
   Camera,
-  Globe,
-  ChevronDown,
-  Zap,
-  CheckCircle2
+  ChevronDown
 } from 'lucide-react';
 import { ACTIVATION_CODES } from '../constants';
 
@@ -28,7 +24,6 @@ interface ProfileProps {
 const Profile: React.FC<ProfileProps> = ({ user, onUpgradeClick, onUpdateLogo, onUpdateName, onUpdateLanguage }) => {
   const t = translations[user.language] || translations['pt'];
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
-  const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'success'>('idle');
   const [showLangMenu, setShowLangMenu] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
@@ -49,50 +44,12 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpgradeClick, onUpdateLogo, o
     }
   };
 
-  const handleForceReload = async () => {
-    setSyncStatus('syncing');
-    
-    try {
-        if (typeof window !== 'undefined' && window.caches) {
-            const keys = await caches.keys();
-            await Promise.all(keys.map(k => caches.delete(k)));
-        }
-    } catch (e) { console.warn('Cache storage cleanup skipped'); }
-
-    try {
-        // CORREÇÃO: Registro/Desregistro de Service Worker condicionado ao contexto top-level
-        // para evitar erros de "Invalid State" em iframes (como sandbox de IA)
-        if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator && window.top === window.self) {
-            const registrations = await navigator.serviceWorker.getRegistrations();
-            for (const registration of registrations) {
-                await registration.unregister();
-            }
-        }
-    } catch (e) { 
-        console.warn('Service Worker cleanup check failed, proceeding to reload'); 
-    }
-
-    try {
-        localStorage.clear();
-        sessionStorage.clear();
-    } catch (e) { console.warn('Storage cleanup skipped'); }
-    
-    setSyncStatus('success');
-    
-    setTimeout(() => {
-        // CORREÇÃO: Redireciona com cache-buster baseado na URL atual para evitar 404
-        const currentUrl = window.location.href.split('?')[0];
-        const cacheBuster = `?v=${new Date().getTime()}`;
-        window.location.replace(currentUrl + cacheBuster);
-    }, 1000);
-  };
-
   const currentLang = languages.find(l => l.code === user.language) || languages[0];
 
   return (
     <div className="p-6 space-y-6 pb-32 bg-titan-darker">
       
-      {/* CABEÇALHO COM FLEXBOX (SEM POSICIONAMENTO ABSOLUTO) */}
+      {/* CABEÇALHO COM FLEXBOX */}
       <div className="flex justify-between items-center bg-titan-card/40 border border-white/5 rounded-[2.5rem] p-5 shadow-lg">
           <div className="flex items-center gap-2">
               <div className="p-2 bg-titan-gold/10 rounded-lg">
@@ -150,33 +107,6 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpgradeClick, onUpdateLogo, o
           />
           <p className="text-[9px] text-titan-muted uppercase tracking-[0.2em] font-black opacity-60">{user.whatsapp}</p>
         </div>
-      </div>
-
-      {/* SYNC BUTTON */}
-      <div className={`border rounded-[2.5rem] p-6 space-y-4 transition-all duration-500 shadow-xl ${syncStatus === 'success' ? 'bg-titan-green/10 border-titan-green/40' : 'bg-red-600/5 border-red-600/20'}`}>
-          <div className="flex items-center gap-4">
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${syncStatus === 'success' ? 'bg-titan-green' : 'bg-red-600'}`}>
-                {syncStatus === 'success' ? <CheckCircle2 size={20} className="text-white" /> : <RefreshCw size={20} className={`text-white ${syncStatus === 'syncing' ? 'animate-spin' : ''}`} />}
-              </div>
-              <div className="flex-1">
-                  <h3 className="text-[10px] font-black text-white uppercase tracking-widest leading-none">
-                    {syncStatus === 'success' ? t.sync_success : t.sync_button}
-                  </h3>
-                  <p className="text-[8px] text-titan-muted uppercase font-black mt-1 tracking-tighter italic">{t.sync_desc}</p>
-              </div>
-          </div>
-          <button 
-            onClick={handleForceReload} 
-            disabled={syncStatus !== 'idle'}
-            className={`w-full py-4 rounded-xl font-black text-[10px] uppercase tracking-[0.3em] flex items-center justify-center gap-3 active:scale-95 transition-all shadow-xl ${
-                syncStatus === 'success' ? 'bg-titan-green text-white' : 'bg-white text-black'
-            }`}
-          >
-            {syncStatus === 'idle' && 'SINCRONIZAR AGORA'}
-            {syncStatus === 'syncing' && 'PROCESSANDO...'}
-            {syncStatus === 'success' && 'REINICIANDO...'}
-            <Zap size={14} />
-          </button>
       </div>
 
       <div className="bg-titan-card rounded-[2.5rem] p-7 border border-titan-gold/20 relative overflow-hidden shadow-xl">
