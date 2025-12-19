@@ -1,7 +1,9 @@
+
 import { Asset, SignalStatus, CourseProduct } from './types';
 
-// Mock Data for Assets - ONLY EURUSD
-// Atualizado para 1.05450 para ser mais próximo da realidade atual do que 1.08/1.17
+// VERSÃO DO APP - Altere este número para forçar o logout e atualização de todos os clientes
+export const APP_VERSION = '3.3.5'; 
+
 export const INITIAL_ASSETS: Asset[] = [
   {
     id: '1',
@@ -21,7 +23,6 @@ export const INITIAL_ASSETS: Asset[] = [
   }
 ];
 
-// Product List
 export const PRODUCTS: CourseProduct[] = [
   {
     id: 'prod_app',
@@ -40,24 +41,6 @@ export const PRODUCTS: CourseProduct[] = [
     tag: 'Curso Online',
     priority: 3,
     priceDisplay: 'R$ 5.000,00'
-  },
-  {
-    id: 'prod_mastermind',
-    name: 'Imersão Mastermind Presencial – 3 Dias',
-    description: 'Experiência presencial intensiva de 3 dias, com foco em estratégia, mente e execução.',
-    stripeLink: 'https://buy.stripe.com/cNi3cu9mDbjs2xD4KPcwg01',
-    tag: 'Presencial',
-    priority: 2,
-    priceDisplay: 'R$ 25.000,00'
-  },
-  {
-    id: 'prod_alpha',
-    name: 'Conselho Alpha – Mentoria Private Equity',
-    description: 'Mentoria de alto nível voltada a Private Equity, estratégia e visão de negócio.',
-    stripeLink: 'https://buy.stripe.com/00w5kC9mD87gb49a59cwg00',
-    tag: 'Mentoria High-Ticket',
-    priority: 1,
-    priceDisplay: 'R$ 100.000,00'
   }
 ];
 
@@ -68,39 +51,7 @@ export const CONTACT_WHATSAPP_LINK = 'https://wa.me/5517992666579';
 export const INSTAGRAM_LINK = 'https://www.instagram.com/aerovisao.ia/';
 export const INSTAGRAM_HANDLE = '@aerovisao.ia';
 
-/* 
-  === ESTOQUE DE CÓDIGOS TITAN ===
-  Instruções para o CEO:
-  1. Quando o cliente pagar, escolha um código abaixo que ainda não foi usado.
-  2. Envie o código pelo WhatsApp.
-  3. Marque na sua planilha pessoal que este código já foi vendido.
-  
-  Formatos:
-  - 30 dias (Mensal)
-  - 90 dias (Trimestral)
-  - 365 dias (Anual)
-*/
-
 export const ACTIVATION_CODES: Record<string, number> = {
-    // --- LOTE A (JANEIRO/FEVEREIRO) ---
-    'TITAN-START-01': 30, 'TITAN-START-02': 30, 'TITAN-START-03': 30, 'TITAN-START-04': 30,
-    'TITAN-START-05': 30, 'TITAN-START-06': 30, 'TITAN-START-07': 30, 'TITAN-START-08': 30,
-    'TITAN-START-09': 30, 'TITAN-START-10': 30,
-
-    // --- LOTE B (PRO MENSAL - ESTOQUE GRANDE) ---
-    'PRO-KEY-101': 30, 'PRO-KEY-102': 30, 'PRO-KEY-103': 30, 'PRO-KEY-104': 30, 'PRO-KEY-105': 30,
-    'PRO-KEY-106': 30, 'PRO-KEY-107': 30, 'PRO-KEY-108': 30, 'PRO-KEY-109': 30, 'PRO-KEY-110': 30,
-    'PRO-KEY-111': 30, 'PRO-KEY-112': 30, 'PRO-KEY-113': 30, 'PRO-KEY-114': 30, 'PRO-KEY-115': 30,
-    'PRO-KEY-116': 30, 'PRO-KEY-117': 30, 'PRO-KEY-118': 30, 'PRO-KEY-119': 30, 'PRO-KEY-120': 30,
-    'PRO-KEY-121': 30, 'PRO-KEY-122': 30, 'PRO-KEY-123': 30, 'PRO-KEY-124': 30, 'PRO-KEY-125': 30,
-    
-    // --- LOTE C (TRIMESTRAL - R$ 250,00) ---
-    'TITAN-3M-A1': 90, 'TITAN-3M-A2': 90, 'TITAN-3M-A3': 90, 'TITAN-3M-A4': 90, 'TITAN-3M-A5': 90,
-
-    // --- LOTE D (ANUAL - VIP) ---
-    'VIP-YEAR-01': 365, 'VIP-YEAR-02': 365, 'VIP-YEAR-03': 365,
-
-    // --- CÓDIGOS ESPECIAIS / BACKDOOR ---
-    'TITAN-MASTER-RENEW': 30,  // Uso de emergência se algum cliente travar
-    'TITAN-LIFETIME': 36500    // Acesso Vitalício (R$ 997,00 ou mais)
+    'TITAN-START-01': 30, 'TITAN-START-02': 30, 'PRO-KEY-101': 30,
+    'TITAN-3M-A1': 90, 'VIP-YEAR-01': 365, 'TITAN-LIFETIME': 36500
 };

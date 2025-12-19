@@ -8,7 +8,7 @@ import Academy from './pages/Courses';
 import Profile from './pages/Profile';
 import Contact from './pages/Contact';
 import { UserProfile, Asset, AnalysisResult, Language } from './types';
-import { INITIAL_ASSETS, ACTIVATION_CODES } from './constants';
+import { INITIAL_ASSETS, ACTIVATION_CODES, APP_VERSION } from './constants';
 import { translations } from './i18n';
 
 const getTodayFormatted = () => {
@@ -39,6 +39,7 @@ const parseDate = (dateStr: string): Date | null => {
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [user, setUser] = useState<UserProfile | null>(null);
+  const [isUpdating, setIsUpdating] = useState(false);
   const [dashboardState, setDashboardState] = useState<{
       userPrice: string;
       isRevealed: boolean;
@@ -55,7 +56,38 @@ const App: React.FC = () => {
 
   const [assets] = useState<Asset[]>(INITIAL_ASSETS);
 
+  // LÓGICA DE AUTO-UPDATE REMOTO
   useEffect(() => {
+    const checkVersionAndSync = async () => {
+        const storedVersion = localStorage.getItem('titan_app_version');
+        
+        // Se a versão do código for diferente da salva, forçamos o logout e reload
+        if (storedVersion && storedVersion !== APP_VERSION) {
+            setIsUpdating(true);
+            localStorage.clear(); // Limpa tudo (incluindo usuário) para garantir nova versão
+            sessionStorage.clear();
+            localStorage.setItem('titan_app_version', APP_VERSION);
+            
+            // Pequeno delay para feedback visual de atualização
+            setTimeout(() => {
+                const currentUrl = window.location.href.split('?')[0];
+                window.location.replace(`${currentUrl}?update=${Date.now()}`);
+            }, 1500);
+            return;
+        }
+        
+        // Se não houver versão salva, salvamos a atual sem deslogar
+        if (!storedVersion) {
+            localStorage.setItem('titan_app_version', APP_VERSION);
+        }
+    };
+
+    checkVersionAndSync();
+  }, []);
+
+  useEffect(() => {
+    if (isUpdating) return;
+
     const storedUser = localStorage.getItem('titan_user');
     if (storedUser) {
       try {
@@ -86,7 +118,7 @@ const App: React.FC = () => {
           setUser(null);
       }
     }
-  }, []);
+  }, [isUpdating]);
 
   const handleOnboardingComplete = (data: Partial<UserProfile>) => {
     const now = new Date();
@@ -124,6 +156,16 @@ const App: React.FC = () => {
           redeemedCodes: [...(user.redeemedCodes || []), code]
       });
   };
+
+  if (isUpdating) {
+      return (
+          <div className="min-h-screen bg-titan-darker flex flex-col items-center justify-center p-8 text-center">
+              <div className="w-16 h-16 border-4 border-titan-gold/20 border-t-titan-gold rounded-full animate-spin mb-6"></div>
+              <h2 className="text-titan-gold font-black uppercase tracking-[0.3em] text-xs">Sincronizando Protocolo</h2>
+              <p className="text-titan-muted text-[10px] mt-2 uppercase font-bold tracking-widest">Atualizando para v{APP_VERSION}...</p>
+          </div>
+      );
+  }
 
   if (user?.planType === 'EXPIRED') return <ExpiredLockScreen onUnlock={handleManualUnlock} />;
   if (!user || !user.isOnboarded) return <OnboardingModal onComplete={handleOnboardingComplete} />;
