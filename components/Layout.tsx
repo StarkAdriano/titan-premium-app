@@ -24,27 +24,8 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange, userL
   ];
 
   return (
-    <div className="min-h-screen bg-titan-darker text-titan-text flex flex-col font-sans max-w-md mx-auto shadow-2xl shadow-black border-x border-white/5">
-      <header className="px-6 py-5 bg-titan-dark border-b border-white/5 flex justify-between items-center sticky top-0 z-20 shadow-lg">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-titan-gold/10 rounded-lg border border-titan-gold/20">
-             <Terminal size={18} className="text-titan-gold" />
-          </div>
-          <div>
-            <h1 className="text-lg font-black tracking-tighter text-white uppercase italic leading-none">Titan<span className="text-titan-gold">Premium</span></h1>
-            <p className="text-[8px] text-titan-muted uppercase font-bold tracking-[0.3em] mt-1">Institutional Brain v3.1</p>
-          </div>
-        </div>
-        <div className="w-10 h-10 rounded-xl bg-titan-darker border border-titan-gold/30 flex items-center justify-center overflow-hidden shadow-inner group cursor-pointer hover:border-titan-gold transition-all">
-           {userLogo ? (
-             <img src={userLogo} alt="User Logo" className="w-full h-full object-cover" />
-           ) : (
-             <User size={18} className="text-titan-gold/60 group-hover:text-titan-gold transition-colors" />
-           )}
-        </div>
-      </header>
-
-      <main className="flex-1 overflow-y-auto pb-24 scroll-smooth">
+    <div className="min-h-screen bg-titan-darker text-titan-text flex flex-col font-sans max-w-md mx-auto shadow-2xl shadow-black border-x border-white/5 relative">
+      <main className="flex-1 overflow-y-auto pb-24 scroll-smooth custom-scrollbar">
         {children}
       </main>
 

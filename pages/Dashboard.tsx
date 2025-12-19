@@ -1,37 +1,17 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { Asset, SignalStatus, AnalysisResult } from '../types';
 import { 
-  Shield, 
   Loader2,
-  Lock,
-  BarChart2, 
-  Monitor, 
-  Wifi,
-  Activity,
-  AlertTriangle,
-  Skull,
-  TrendingUp,
-  Wallet,
   RotateCcw,
-  ChevronRight,
-  ShieldCheck,
-  User as UserIcon,
-  ArrowLeft,
-  CheckCircle2,
-  Globe,
-  Copy,
-  Info,
+  Terminal,
+  Search,
+  ShieldAlert,
   Target,
   ArrowDownCircle,
   ArrowUpCircle,
-  Terminal,
-  Server,
-  Fingerprint,
-  LineChart,
-  Briefcase,
-  Landmark,
-  Zap
+  AlertTriangle,
+  Info
 } from 'lucide-react';
 
 interface DashboardState {
@@ -46,102 +26,79 @@ interface DashboardProps {
   asset: Asset; 
   savedState: DashboardState;
   onUpdateState: (newState: DashboardState) => void;
-  activeAccountType?: 'DEMO' | 'REAL';
-  onAccountTypeChange: (type: 'DEMO' | 'REAL') => void;
   translations: any;
+  activeAccountType?: 'DEMO' | 'REAL';
+  onAccountTypeChange?: (type: 'DEMO' | 'REAL') => void;
 }
 
-const InstitutionalChart = () => {
-  const container = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
-    script.type = "text/javascript";
-    script.async = true;
-    script.innerHTML = JSON.stringify({
-      "autosize": true,
-      "symbol": "FX:EURUSD",
-      "interval": "15",
-      "timezone": "Etc/UTC",
-      "theme": "dark",
-      "style": "1",
-      "locale": "br",
-      "enable_publishing": false,
-      "hide_top_toolbar": true,
-      "hide_legend": true,
-      "save_image": false,
-      "backgroundColor": "rgba(2, 6, 23, 1)",
-      "gridColor": "rgba(30, 41, 59, 0.3)",
-      "allow_symbol_change": false,
-      "container_id": "tradingview_chart"
-    });
-    if (container.current) {
-        container.current.appendChild(script);
-    }
-  }, []);
-
-  return (
-    <div className="w-full h-[300px] bg-titan-darker rounded-2xl overflow-hidden border border-white/5 shadow-inner" id="tradingview_chart" ref={container}>
-      <div className="tradingview-widget-container__widget"></div>
-    </div>
-  );
-};
-
-const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState, activeAccountType = 'REAL', onAccountTypeChange, translations: t }) => {
+const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState, translations: t }) => {
   const [isValidating, setIsValidating] = useState(false);
-  const [isBrokerConnected, setIsBrokerConnected] = useState(false);
-  const [showBrokerModal, setShowBrokerModal] = useState(false);
-  const [selectedBroker, setSelectedBroker] = useState<any>(null);
-  const [showTradeTicket, setShowTradeTicket] = useState(false);
-  const [pendingSide, setPendingSide] = useState<'BUY' | 'SELL' | null>(null);
 
-  const brokers = [
-    { id: 'pepperstone', name: 'Pepperstone', icon: Zap, color: 'bg-red-600' },
-    { id: 'oanda', name: 'OANDA', icon: Globe, color: 'bg-blue-700' },
-    { id: 'forex', name: 'FOREX.com', icon: Landmark, color: 'bg-slate-800' },
-    { id: 'ic', name: 'IC Markets', icon: Activity, color: 'bg-emerald-600' }
-  ];
+  const generateInstitutionalAnalysis = (price: number): AnalysisResult => {
+    // Lógica de Equilíbrio baseada em níveis reais de EURUSD
+    const equilibrium = 1.05450;
+    const isPremium = price > equilibrium + 0.00030;
+    const isDiscount = price < equilibrium - 0.00030;
+    
+    let status = SignalStatus.WAIT;
+    let motive = "PREÇO EM EQUILÍBRIO";
+    let zone: 'PREMIUM' | 'DISCOUNT' | 'EQUILIBRIUM' = 'EQUILIBRIUM';
 
-  const handleReveal = () => {
+    if (isPremium) {
+        zone = 'PREMIUM';
+        status = SignalStatus.SELL;
+        motive = "REJEIÇÃO EM ZONA DE PRÊMIO";
+    } else if (isDiscount) {
+        zone = 'DISCOUNT';
+        status = SignalStatus.BUY;
+        motive = "DEFESA EM ZONA DE DESCONTO";
+    }
+
+    const priceStr = price.toFixed(5);
+
+    return {
+        status,
+        statusMotive: motive,
+        referencePrice: priceStr,
+        zoneContext: zone,
+        institutionalContext: `O mercado apresenta estrutura de ${price > equilibrium ? 'distribuição' : 'acumulação'} no intraday. O preço atual em ${priceStr} interage com níveis de liquidez institucional de H1. Notamos defesa clara em regiões psicológicas.`,
+        zones: {
+            support: ["1.05100 – 1.05000", "1.04850 – 1.04550"],
+            resistance: ["1.05800 – 1.06000", "1.06250 – 1.06500"]
+        },
+        buyPlan: {
+            isIdeal: isDiscount,
+            reason: isDiscount ? undefined : "Preço muito próximo de alvo ou em região de prêmio.",
+            entry: isDiscount ? "Faixa de 1.05100 – 1.05200" : undefined,
+            stop: isDiscount ? "Abaixo de 1.05000" : undefined,
+            targets: isDiscount ? "1.05800 (T1) / 1.06200 (T2)" : undefined,
+            rr: isDiscount ? "Mínimo 2:1" : undefined
+        },
+        sellPlan: {
+            isIdeal: isPremium,
+            reason: isPremium ? undefined : "Mercado ainda com viés comprador ou em região de suporte.",
+            entry: isPremium ? "Faixa de 1.05800 – 1.05900" : undefined,
+            stop: isPremium ? "Acima de 1.06050" : undefined,
+            targets: isPremium ? "1.05200 (T1) / 1.04850 (T2)" : undefined,
+            rr: isPremium ? "Mínimo 2:1" : undefined
+        },
+        riskManagement: "Risco por operação: entre 0.5% e 1% do capital total. Nunca aumentar lote para recuperar prejuízo.",
+        officialGuideline: `Enquanto o preço estiver em ${zone}, o foco é ${status === SignalStatus.WAIT ? 'AGUARDAR gatilho limpo' : status + ' alinhado ao fluxo'}. Nenhuma entrada agressiva contra a tendência principal.`
+    };
+  };
+
+  const handleContextScan = () => {
     const sanitizedPrice = savedState.userPrice.replace(',', '.');
     const priceNum = parseFloat(sanitizedPrice);
+    
     if (!isNaN(priceNum)) {
         setIsValidating(true);
         setTimeout(() => {
-            const lastDigit = Math.floor(priceNum * 100000) % 10;
-            const equilibrium = 1.05500;
-            const zone = priceNum > equilibrium + 0.0010 ? 'PREMIUM' : priceNum < equilibrium - 0.0010 ? 'DISCOUNT' : 'EQUILIBRIUM';
-            
-            let status = SignalStatus.WAIT;
-            let rationaleKey = "rationale_wait";
-
-            if (lastDigit <= 3 && zone === 'DISCOUNT') {
-                status = SignalStatus.BUY;
-                rationaleKey = "rationale_buy";
-            } else if (lastDigit >= 7 && zone === 'PREMIUM') {
-                status = SignalStatus.SELL;
-                rationaleKey = "rationale_sell";
-            }
-
-            const sl = status === SignalStatus.BUY ? (priceNum - 0.0012).toFixed(5) : (priceNum + 0.0012).toFixed(5);
-            const tp = status === SignalStatus.BUY ? (priceNum + 0.0036).toFixed(5) : (priceNum - 0.0036).toFixed(5);
-
+            const result = generateInstitutionalAnalysis(priceNum);
             onUpdateState({ 
                 ...savedState, 
                 isRevealed: true, 
-                analysisSnapshot: {
-                    status,
-                    shortSummary: status === SignalStatus.WAIT ? t.equilibrium : t.smc_validated,
-                    detailedAnalysis: "",
-                    rationale: t[rationaleKey], 
-                    validationStatus: zone === 'EQUILIBRIUM' ? 'WARNING' : 'OK',
-                    validationMsg: 'Protocolo Processado',
-                    referencePrice: sanitizedPrice,
-                    stopLoss: status !== SignalStatus.WAIT ? sl : undefined,
-                    takeProfit: status !== SignalStatus.WAIT ? tp : undefined,
-                    zoneContext: zone as any
-                }
+                analysisSnapshot: result
             });
             setIsValidating(false);
         }, 1200);
@@ -149,125 +106,200 @@ const Dashboard: React.FC<DashboardProps> = ({ asset, savedState, onUpdateState,
   };
 
   return (
-    <div className="flex flex-col min-h-full pb-32 bg-titan-darker font-sans">
-      <div className="px-4 py-4 bg-titan-dark flex items-center justify-between border-b border-white/5 sticky top-0 z-20 shadow-lg">
-         <div className="flex flex-col">
-            <h2 className="text-sm font-black text-white italic tracking-tighter leading-none flex items-center gap-2 uppercase">
-                <Terminal size={16} className="text-titan-gold" />
-                EURUSD <span className="text-titan-gold">{t.terminal}</span>
-            </h2>
-            <div className="flex items-center gap-1.5 mt-1.5">
-                <div className={`w-1 h-1 rounded-full ${isBrokerConnected ? 'bg-titan-green shadow-[0_0_5px_#10b981]' : 'bg-titan-muted'}`}></div>
-                <span className="text-[8px] text-titan-muted font-black tracking-[0.2em] uppercase">
-                    {isBrokerConnected ? `${selectedBroker?.name} LIVE` : t.offline}
-                </span>
+    <div className="flex flex-col min-h-full pb-32 bg-titan-darker animate-in fade-in duration-500">
+      {/* Header Profissional */}
+      <div className="px-6 py-5 flex items-center justify-between border-b border-white/5 bg-titan-dark/80 backdrop-blur-xl sticky top-0 z-20">
+        <div className="flex items-center gap-3">
+          <Terminal size={20} className="text-titan-gold" />
+          <h2 className="text-sm font-black text-white uppercase tracking-widest italic">
+            EURUSD <span className="text-titan-gold/60">INSTITUTIONAL SETUP</span>
+          </h2>
+        </div>
+        <div className="bg-titan-gold/10 px-3 py-1 rounded-full border border-titan-gold/20">
+            <span className="text-[9px] font-black text-titan-gold uppercase tracking-tighter">Mesa Proprietária</span>
+        </div>
+      </div>
+
+      <div className="p-6 space-y-6">
+        {/* Input de Preço de Execução */}
+        <div className="bg-titan-card/20 border border-white/5 rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-4 opacity-5">
+            <Target size={80} />
+          </div>
+          
+          <div className="flex flex-col items-center gap-5 relative z-10">
+            <div className="flex flex-col items-center">
+                <label className="text-[10px] font-black text-titan-gold uppercase tracking-[0.4em] mb-1">
+                    Preço Atual Broker
+                </label>
+                <p className="text-[9px] text-titan-muted uppercase tracking-widest font-bold">Intraday / Swing Curto</p>
             </div>
-         </div>
-         <button onClick={() => { if(!isBrokerConnected) setShowBrokerModal(true); }} className={`px-4 py-2 rounded-xl text-[10px] font-black border transition-all active:scale-95 ${isBrokerConnected ? 'bg-titan-green/10 border-titan-green/30 text-titan-green' : 'bg-titan-gold text-black border-titan-gold shadow-lg'}`}>
-            {isBrokerConnected ? t.connected : t.connect}
-         </button>
-      </div>
+            
+            <input 
+                type="text" 
+                inputMode="decimal" 
+                value={savedState.userPrice} 
+                onChange={(e) => onUpdateState({...savedState, userPrice: e.target.value})} 
+                placeholder="1.05450" 
+                disabled={savedState.isRevealed} 
+                className={`w-full bg-black/60 border-2 text-center font-mono text-5xl py-8 rounded-[2rem] transition-all outline-none ${
+                    savedState.isRevealed ? 'border-titan-gold/10 text-titan-muted/50' : 'border-white/10 text-white focus:border-titan-gold/40'
+                }`} 
+            />
 
-      <div className="px-4 py-2">
-          <div className="bg-titan-card/40 rounded-[2.5rem] p-8 border border-white/5 shadow-2xl relative overflow-hidden mt-6">
-                <input 
-                    type="text" 
-                    inputMode="decimal" 
-                    value={savedState.userPrice} 
-                    onChange={(e) => onUpdateState({...savedState, userPrice: e.target.value})} 
-                    placeholder="1.00000" 
-                    disabled={savedState.isRevealed} 
-                    className="w-full bg-black/60 border border-white/10 text-white font-mono text-5xl p-7 rounded-[2rem] outline-none focus:border-titan-gold transition-all text-center mb-6 shadow-inner" 
-                />
+            {!savedState.isRevealed ? (
+                <button 
+                    onClick={handleContextScan} 
+                    disabled={isValidating || !savedState.userPrice} 
+                    className="w-full bg-titan-gold text-black py-5 rounded-2xl font-black text-xs uppercase tracking-[0.4em] shadow-xl flex items-center justify-center gap-3 active:scale-95 disabled:opacity-20 transition-all"
+                >
+                    {isValidating ? <Loader2 className="animate-spin" size={20} /> : <Search size={20} />} 
+                    ATUALIZAR SETUP
+                </button>
+            ) : (
+                <button 
+                    onClick={() => onUpdateState({...savedState, isRevealed: false})} 
+                    className="flex items-center gap-2 bg-white/5 px-6 py-3 rounded-xl text-[10px] text-white uppercase font-black tracking-widest hover:bg-white/10 transition-all border border-white/10"
+                >
+                    <RotateCcw size={14} /> NOVO PREÇO
+                </button>
+            )}
+          </div>
+        </div>
+
+        {/* Relatório Estruturado */}
+        {savedState.isRevealed && savedState.analysisSnapshot && (
+            <div className="space-y-6 animate-in slide-in-from-bottom-6 duration-700">
                 
-                {!savedState.isRevealed ? (
-                    <button onClick={handleReveal} disabled={isValidating || !savedState.userPrice} className="w-full bg-titan-gold text-black py-5 rounded-2xl font-black text-xs uppercase tracking-[0.4em] shadow-xl flex items-center justify-center gap-3 active:scale-95 disabled:opacity-20 transition-all">
-                        {isValidating ? <Loader2 className="animate-spin" size={20} /> : <Shield size={20} />} {t.run_analysis}
-                    </button>
-                ) : (
-                    <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
-                        <div className={`flex flex-col items-center justify-center p-10 rounded-[2.5rem] border-2 text-center bg-black/80 min-h-[220px] transition-all duration-700 ${
-                            savedState.analysisSnapshot?.status === SignalStatus.BUY ? 'border-titan-green shadow-[0_0_60px_rgba(16,185,129,0.1)]' : 
-                            savedState.analysisSnapshot?.status === SignalStatus.SELL ? 'border-titan-red shadow-[0_0_60px_rgba(239,68,68,0.1)]' : 'border-slate-800'
-                        }`}>
-                            <h3 className={`font-black italic tracking-tighter leading-none ${
-                                savedState.analysisSnapshot?.status === SignalStatus.BUY ? 'text-titan-green text-7xl' : 
-                                savedState.analysisSnapshot?.status === SignalStatus.SELL ? 'text-titan-red text-7xl' : 'text-slate-600 text-5xl'
-                            }`}>
-                                {savedState.analysisSnapshot?.status === SignalStatus.BUY ? t.buy : savedState.analysisSnapshot?.status === SignalStatus.SELL ? t.sell : t.wait}
-                            </h3>
-                        </div>
-                        
-                        <div className="bg-titan-dark/60 border border-white/5 rounded-3xl p-6">
-                            <h4 className="text-titan-gold text-[8px] font-black uppercase tracking-widest mb-3 flex items-center gap-2">
-                                <Activity size={12} /> {t.institutional_rationale}
-                            </h4>
-                            <p className="text-[12px] text-titan-muted leading-relaxed font-medium italic">
-                                "{savedState.analysisSnapshot?.rationale}"
-                            </p>
-                        </div>
-
-                        <button onClick={() => onUpdateState({...savedState, isRevealed: false})} className="w-full py-2 text-titan-muted text-[10px] uppercase font-black tracking-widest flex items-center justify-center gap-2 hover:text-white transition-colors">
-                            <RotateCcw size={14} /> {t.clear_memory}
-                        </button>
-                    </div>
-                )}
-          </div>
-      </div>
-
-      {savedState.isRevealed && savedState.analysisSnapshot?.status !== SignalStatus.WAIT && (
-          <div className="px-4 py-2 space-y-4">
-              <div className="bg-titan-card/50 rounded-[2.5rem] p-8 border border-titan-gold/10 shadow-2xl">
-                  <div className="flex items-center justify-between mb-6">
-                      <div className="flex items-center gap-2">
-                          <Target size={16} className="text-titan-gold" />
-                          <span className="text-[10px] text-white font-black uppercase tracking-widest">{t.trade_plan}</span>
-                      </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-5">
-                      <button 
-                        onClick={() => { setPendingSide('SELL'); setShowTradeTicket(true); }}
-                        disabled={!isBrokerConnected} 
-                        className={`py-8 rounded-3xl font-black text-2xl italic tracking-tighter border-b-4 transition-all flex flex-col items-center justify-center ${isBrokerConnected ? 'bg-red-600 border-red-900 text-white active:scale-95 shadow-xl' : 'bg-white/5 text-titan-muted opacity-20'}`}
-                      >
-                        <ArrowDownCircle size={28} className="mb-2" /> {t.sell}
-                      </button>
-                      <button 
-                        onClick={() => { setPendingSide('BUY'); setShowTradeTicket(true); }}
-                        disabled={!isBrokerConnected} 
-                        className={`py-8 rounded-3xl font-black text-2xl italic tracking-tighter border-b-4 transition-all flex flex-col items-center justify-center ${isBrokerConnected ? 'bg-titan-green border-green-900 text-white active:scale-95 shadow-xl' : 'bg-white/5 text-titan-muted opacity-20'}`}
-                      >
-                        <ArrowUpCircle size={28} className="mb-2" /> {t.buy}
-                      </button>
-                  </div>
-              </div>
-          </div>
-      )}
-
-      {showBrokerModal && (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center p-6 bg-black/95 backdrop-blur-md animate-in fade-in">
-            <div className="bg-titan-card border border-white/10 rounded-[3.5rem] w-full max-w-sm overflow-hidden shadow-2xl">
-                <div className="p-8 border-b border-white/5 flex justify-between items-center bg-titan-dark">
-                    <h3 className="text-xl font-black text-white tracking-tight uppercase leading-none">Bridge Gateway</h3>
-                    <button onClick={() => setShowBrokerModal(false)} className="text-white/40 hover:text-white transition-colors p-2 bg-white/5 rounded-full">✕</button>
+                {/* Linha 1: STATUS OFICIAL */}
+                <div className={`p-8 rounded-[2rem] border-2 flex flex-col items-center text-center shadow-2xl ${
+                    savedState.analysisSnapshot.status === SignalStatus.BUY ? 'bg-titan-green/10 border-titan-green' : 
+                    savedState.analysisSnapshot.status === SignalStatus.SELL ? 'bg-titan-red/10 border-titan-red' : 'bg-titan-gold/10 border-titan-gold'
+                }`}>
+                    <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.5em] mb-4">Status Oficial</span>
+                    <h3 className={`font-black italic tracking-tighter leading-none text-4xl uppercase ${
+                        savedState.analysisSnapshot.status === SignalStatus.BUY ? 'text-titan-green' : 
+                        savedState.analysisSnapshot.status === SignalStatus.SELL ? 'text-titan-red' : 'text-titan-gold'
+                    }`}>
+                        STATUS: {savedState.analysisSnapshot.status} – {savedState.analysisSnapshot.statusMotive}
+                    </h3>
                 </div>
-                <div className="p-10 max-h-[500px] overflow-y-auto">
-                    {brokers.map((b) => (
-                        <button key={b.id} onClick={() => { setSelectedBroker(b); setIsBrokerConnected(true); setShowBrokerModal(false); }} className="w-full flex items-center justify-between p-6 bg-black/40 border border-white/5 rounded-3xl mb-4 hover:border-titan-gold/40 transition-all group">
-                            <div className="flex items-center gap-5">
-                                <div className={`w-14 h-14 ${b.color} rounded-2xl flex items-center justify-center shadow-lg transition-transform group-hover:scale-105`}><b.icon size={26} className="text-white" /></div>
-                                <div className="text-left">
-                                    <p className="text-lg font-bold text-white group-hover:text-titan-gold transition-colors">{b.name}</p>
+
+                {/* Seção: Contexto Institucional */}
+                <div className="bg-titan-card/40 border border-white/5 rounded-3xl p-6 space-y-3">
+                    <div className="flex items-center gap-2">
+                        <ShieldAlert size={16} className="text-titan-gold" />
+                        <h4 className="text-[10px] font-black text-white uppercase tracking-widest">Contexto Institucional</h4>
+                    </div>
+                    <p className="text-[13px] text-titan-muted leading-relaxed font-medium">
+                        {savedState.analysisSnapshot.institutionalContext}
+                    </p>
+                </div>
+
+                {/* Seção: Zonas de Preço */}
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-titan-card/30 border border-titan-green/20 rounded-3xl p-5">
+                        <h4 className="text-[9px] font-black text-titan-green uppercase tracking-widest mb-3 flex items-center gap-2">
+                            <ArrowUpCircle size={12} /> Suporte / Desconto
+                        </h4>
+                        <ul className="space-y-1">
+                            {savedState.analysisSnapshot.zones.support.map((z, i) => (
+                                <li key={i} className="text-[11px] font-mono text-white/80">{z}</li>
+                            ))}
+                        </ul>
+                    </div>
+                    <div className="bg-titan-card/30 border border-titan-red/20 rounded-3xl p-5">
+                        <h4 className="text-[9px] font-black text-titan-red uppercase tracking-widest mb-3 flex items-center gap-2">
+                            <ArrowDownCircle size={12} /> Prêmio / Resistência
+                        </h4>
+                        <ul className="space-y-1">
+                            {savedState.analysisSnapshot.zones.resistance.map((z, i) => (
+                                <li key={i} className="text-[11px] font-mono text-white/80">{z}</li>
+                            ))}
+                        </ul>
+                    </div>
+                </div>
+
+                {/* Seção: Planos de Execução */}
+                <div className="space-y-4">
+                    {/* Plano de Compra */}
+                    <div className={`rounded-3xl p-6 border ${savedState.analysisSnapshot.buyPlan.isIdeal ? 'bg-titan-green/5 border-titan-green/30' : 'bg-black/20 border-white/5 opacity-60'}`}>
+                        <h4 className="text-[10px] font-black text-titan-green uppercase tracking-widest mb-4">Plano de Compra</h4>
+                        {savedState.analysisSnapshot.buyPlan.isIdeal ? (
+                            <div className="grid grid-cols-2 gap-y-4 gap-x-6">
+                                <div>
+                                    <span className="text-[8px] uppercase text-titan-muted font-black block">Entrada</span>
+                                    <span className="text-xs font-mono font-bold text-white">{savedState.analysisSnapshot.buyPlan.entry}</span>
+                                </div>
+                                <div>
+                                    <span className="text-[8px] uppercase text-titan-muted font-black block">Stop Técnico</span>
+                                    <span className="text-xs font-mono font-bold text-titan-red">{savedState.analysisSnapshot.buyPlan.stop}</span>
+                                </div>
+                                <div className="col-span-2">
+                                    <span className="text-[8px] uppercase text-titan-muted font-black block">Alvos Principais</span>
+                                    <span className="text-xs font-mono font-bold text-titan-green">{savedState.analysisSnapshot.buyPlan.targets}</span>
+                                </div>
+                                <div>
+                                    <span className="text-[8px] uppercase text-titan-muted font-black block">R:R Esperado</span>
+                                    <span className="text-xs font-black text-titan-gold">{savedState.analysisSnapshot.buyPlan.rr}</span>
                                 </div>
                             </div>
-                            <ChevronRight size={20} className="text-titan-muted" />
-                        </button>
-                    ))}
+                        ) : (
+                            <p className="text-[11px] text-titan-muted italic">{savedState.analysisSnapshot.buyPlan.reason}</p>
+                        )}
+                    </div>
+
+                    {/* Plano de Venda */}
+                    <div className={`rounded-3xl p-6 border ${savedState.analysisSnapshot.sellPlan.isIdeal ? 'bg-titan-red/5 border-titan-red/30' : 'bg-black/20 border-white/5 opacity-60'}`}>
+                        <h4 className="text-[10px] font-black text-titan-red uppercase tracking-widest mb-4">Plano de Venda</h4>
+                        {savedState.analysisSnapshot.sellPlan.isIdeal ? (
+                            <div className="grid grid-cols-2 gap-y-4 gap-x-6">
+                                <div>
+                                    <span className="text-[8px] uppercase text-titan-muted font-black block">Entrada</span>
+                                    <span className="text-xs font-mono font-bold text-white">{savedState.analysisSnapshot.sellPlan.entry}</span>
+                                </div>
+                                <div>
+                                    <span className="text-[8px] uppercase text-titan-muted font-black block">Stop Técnico</span>
+                                    <span className="text-xs font-mono font-bold text-titan-red">{savedState.analysisSnapshot.sellPlan.stop}</span>
+                                </div>
+                                <div className="col-span-2">
+                                    <span className="text-[8px] uppercase text-titan-muted font-black block">Alvos Principais</span>
+                                    <span className="text-xs font-mono font-bold text-titan-green">{savedState.analysisSnapshot.sellPlan.targets}</span>
+                                </div>
+                                <div>
+                                    <span className="text-[8px] uppercase text-titan-muted font-black block">R:R Esperado</span>
+                                    <span className="text-xs font-black text-titan-gold">{savedState.analysisSnapshot.sellPlan.rr}</span>
+                                </div>
+                            </div>
+                        ) : (
+                            <p className="text-[11px] text-titan-muted italic">{savedState.analysisSnapshot.sellPlan.reason}</p>
+                        )}
+                    </div>
                 </div>
+
+                {/* Seção: Gestão de Risco */}
+                <div className="bg-red-950/20 border border-red-900/40 rounded-3xl p-6 flex gap-4">
+                    <div className="text-red-500 shrink-0"><AlertTriangle size={24} /></div>
+                    <div className="space-y-1">
+                        <h4 className="text-[10px] font-black text-red-500 uppercase tracking-widest">Gestão de Risco Obrigatória</h4>
+                        <p className="text-[11px] text-white/70 leading-relaxed">{savedState.analysisSnapshot.riskManagement}</p>
+                    </div>
+                </div>
+
+                {/* Seção: Diretriz Oficial */}
+                <div className="bg-titan-gold/5 border border-titan-gold/20 rounded-3xl p-6 space-y-3">
+                    <div className="flex items-center gap-2">
+                        <Info size={16} className="text-titan-gold" />
+                        <h4 className="text-[10px] font-black text-titan-gold uppercase tracking-widest">Diretriz Oficial do Setup</h4>
+                    </div>
+                    <p className="text-[12px] text-white font-medium italic border-l-2 border-titan-gold/40 pl-4 leading-relaxed">
+                        "{savedState.analysisSnapshot.officialGuideline}"
+                    </p>
+                </div>
+                
             </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

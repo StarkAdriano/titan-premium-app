@@ -29,25 +29,40 @@ export interface Asset {
 
 export interface AnalysisResult {
     status: SignalStatus;
-    shortSummary: string;
-    detailedAnalysis: string;
-    rationale: string;
-    validationMsg: string;
-    validationStatus: 'OK' | 'WARNING';
+    statusMotive: string;
+    institutionalContext: string;
+    zones: {
+        support: string[];
+        resistance: string[];
+    };
+    buyPlan: {
+        isIdeal: boolean;
+        reason?: string;
+        entry?: string;
+        stop?: string;
+        targets?: string;
+        rr?: string;
+    };
+    sellPlan: {
+        isIdeal: boolean;
+        reason?: string;
+        entry?: string;
+        stop?: string;
+        targets?: string;
+        rr?: string;
+    };
+    riskManagement: string;
+    officialGuideline: string;
     referencePrice: string;
-    stopLoss?: string;
-    takeProfit?: string;
-    rrRatio?: string;
-    zoneContext?: 'PREMIUM' | 'DISCOUNT' | 'EQUILIBRIUM';
-    liquidityTarget?: string;
+    zoneContext: 'PREMIUM' | 'DISCOUNT' | 'EQUILIBRIUM';
 }
 
 export interface Lesson {
   id: string;
   title: string;
   duration: string;
-  videoUrl: string; // Foco em vídeo agora
-  explanation: string; // Explicação textual traduzida
+  videoUrl: string;
+  explanation: string;
   completed: boolean;
 }
 
@@ -58,7 +73,6 @@ export interface CourseModule {
   lessons: Lesson[];
 }
 
-// Added CourseProduct interface to resolve the missing export error in constants.ts
 export interface CourseProduct {
   id: string;
   name: string;
