@@ -1,0 +1,17 @@
+
+{
+  "short_name": "Titan Premium",
+  "name": "Titan Premium Institutional",
+  "icons": [
+    {
+      "src": "https://raw.githubusercontent.com/lucide-react/lucide/main/icons/shield-check.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#020617",
+  "background_color": "#020617"
+}

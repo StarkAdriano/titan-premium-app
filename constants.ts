@@ -1,8 +1,8 @@
 
 import { Asset, SignalStatus, CourseProduct } from './types';
 
-// VERSÃO DO APP - Altere este número para forçar o logout e atualização de todos os clientes
-export const APP_VERSION = '3.3.6'; 
+// VERSÃO DO APP - Garante a sincronia final ao subir para produção/mauns.ai
+export const APP_VERSION = '3.3.7'; 
 
 export const INITIAL_ASSETS: Asset[] = [
   {

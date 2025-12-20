@@ -3,12 +3,14 @@
 <html lang="pt-BR" class="dark">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <meta name="theme-color" content="#020617" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Titan Premium - Institutional Brain</title>
 
-    <!-- Define a base path estática para resolver rotas SPA e assets corretamente -->
-    <base href="/">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/lucide-react/lucide/main/icons/shield-check.png">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -40,11 +42,17 @@
         padding: 0; 
         overflow-x: hidden;
         -webkit-font-smoothing: antialiased;
+        user-select: none; /* Evita seleção de texto para parecer app nativo */
+        -webkit-tap-highlight-color: transparent;
       }
       #root { min-height: 100vh; display: flex; flex-direction: column; }
       .custom-scrollbar::-webkit-scrollbar { width: 4px; }
       .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
       .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(212,175,55,0.2); border-radius: 10px; }
+      
+      /* Ajuste para Notch de iPhones */
+      .safe-top { padding-top: env(safe-area-inset-top); }
+      .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
     </style>
 <script type="importmap">
 {
@@ -63,7 +71,6 @@
 </head>
   <body>
     <div id="root"></div>
-    <!-- Caminho absoluto para o script para compatibilidade com SPA e base href -->
     <script type="module" src="/index.tsx"></script>
   </body>
 </html>
